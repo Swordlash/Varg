@@ -1,0 +1,19 @@
+interface template Function a b where
+    function call (arg:a) : abstract b
+
+interface template HttpResponseHandler a implementing Function HttpResponse a where
+    function handle (url:HttpResponse) : abstract a
+    implement function call (arg:HttpResponse) : a = this . handle arg 
+
+
+interface class Http where   
+    function get (url:String) : abstract HttpResponse
+    function post (url:String) (post:JSON) : abstract HttpResponse
+
+    internal function handleGet (url:string) (handler: HttpResponseHandler a) : a = handler . handle (this.get url)
+
+    function postStr (url:String) (post:String) : HttpResponse = this . post url (JSON.fromString post)
+
+class HttpImpl implementing Http where
+    implement function get (url : String) : HttpResponse = none
+    implement function post (url:String) (post:JSON) : HttpResponse = none

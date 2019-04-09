@@ -1,0 +1,12 @@
+interface template Functor type where
+    function fmap (f : a -> b) : abstract type b
+
+template Either a b implementing Functor (Either a) where
+    Left has
+        public value : a
+    Right has
+        public value : b
+
+    implement function fmap (f : b -> c) : Either a c = match this with
+        Either.Left _ -> this
+        Either.Right val -> Either.Right (f c)

@@ -1,0 +1,2 @@
+template Comparator a [b deriving Comparable a] where
+    function compare (x : b) (y : a) : Bool = x < y  

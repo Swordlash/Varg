@@ -1,0 +1,117 @@
+comment "#" ;
+comment "#/" "/#" ;
+
+layout "define", "where", "has", "with";
+layout stop "in";
+
+entrypoints ProgramDef;
+
+Program. ProgramDef ::= [ImportDef] [ClassDef] ;
+terminator ClassDef "";
+
+Import. ImportDef ::= "import" UIdent ";";
+terminator ImportDef "";
+
+token UIdent (upper (letter | digit)*);
+token LIdent (lower (letter | digit)*);
+token MFun ('.' (letter | digit)*);
+
+--terminator TypeParam "";
+InferredTypeParam.   TypeParam ::= LIdent ; -- template (inferred) type param
+ConcreteTypeParam.   TypeParam ::= UIdent ; -- concrete type param
+
+terminator                    ConstrTypeParam "";
+UnconstrainedTypeParam.       ConstrTypeParam ::= TypeParam ;
+SuperConstrainedTypeParam.    ConstrTypeParam ::= "[" TypeParam "super" TypeDef "]" ;
+DerivingConstrainedTypeParam. ConstrTypeParam ::= "[" TypeParam "deriving" TypeDef "]" ;
+
+terminator           ArgDef "";
+ArgumentDefinition.  ArgDef    ::= "(" LIdent ":" TypeDef ")" ;
+InferredArgumentDef. ArgDef    ::= LIdent ;
+
+ConcreteType.  PrimType ::= UIdent [ConstrTypeParam] ; -- concrete type with type params
+TemplateType.  PrimType ::= LIdent [ConstrTypeParam] ; -- template type with type params
+
+Type.              TypeDef ::= [PrimType] ;
+coercions          TypeDef 1 ;
+separator      PrimType "->";
+
+
+Class.             ClassType ::= UIdent TypeDef;
+separator nonempty ClassType ",";
+
+StructDefinition.    ClassDef  ::= [ClassModifier] "struct" UIdent "where" "{" [ClassField] "}" ;                                             -- structure definition
+ClassDefinition.     ClassDef  ::= [ClassModifier] "class" UIdent IsImplementing IsDeriving "where" "{" ClassContents "}" ;                        -- class definition
+TemplateDefinition.  ClassDef  ::= [ClassModifier] "template" UIdent [ConstrTypeParam] IsImplementing IsDeriving "where" "{" ClassContents "}" ;   -- template with type parameters
+
+Implementing.     IsImplementing ::= "implementing" [ClassType] ;
+NotImplementing.  IsImplementing ::= ;
+
+Deriving.    IsDeriving ::= "deriving" ClassType ;
+NotDeriving. IsDeriving ::= ;
+
+terminator ClassModifier "";
+rules      ClassModifier ::= "module" | "interface" | "sealed" ; -- module class is internal to module, all others are exported, sealed is not to be inherited
+
+ClassContent. ClassContents ::= [MemberDef] [FunDef] ;
+
+EmptyMemberDefinition. MemberDef ::= UIdent; -- variant type definition, like Either . Left / Right
+MemberDefinition.      MemberDef ::= UIdent "has" "{" [ClassField] "}" ; -- variant type with own fields 
+separator              MemberDef ";" ;
+
+MemberFunctionDefinition.    FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] ":" TypeDef "=" Expr ;
+AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] ":" "abstract" TypeDef ; -- abstract function, to be implemented in subclasses
+separator                    FunDef ";";
+
+terminator FunctionModifier "";
+rules      FunctionModifier ::= "static" | "internal" | "implement" | "final | unique" ; -- like in Java, internal means private
+
+ModifiedClassField.   ClassField ::= FieldModifier LIdent ":" TypeDef ;
+NormalClassField.     ClassField ::= LIdent ":" TypeDef ;
+separator             ClassField ";";
+
+rules FieldModifier ::= "public" | "internal | unique" ;
+
+EDefinitionsList.   Expr   ::= "define" "{" [AsDef] "}" "in" Expr ; -- example: 'define 34 as x in 7*x', with list variant
+EDefinition.        Expr   ::= "define" AsDef "in" Expr           ;
+
+separator         AsDef ";" ;
+IDefinition.      AsDef ::= Expr "as" LIdent ;
+
+EMatch.             Expr  ::= "match" Expr "with" "{" [MatchClause] "}" ; -- e.g., 'match this with { Either.Left a -> ...; Either.Right a -> ...}'
+
+separator     MatchClause ";" ;
+IMatchClause. MatchClause ::= Expr "->" Expr;
+
+EIfThenElse.        Expr  ::= "if" Expr "then" Expr "else" Expr ;
+
+ThisFunctor.     Functorial ::= "this" ;
+SuperFunctor.    Functorial ::= "super";
+TypeFunctor.     Functorial ::= UIdent ;
+InstanceFunctor. Functorial ::= LIdent ;
+MemberFunctor.   Functorial ::= MFun ;
+
+ArgExpr.            Arg ::= Expr6 ;
+ArgFunc.            Arg ::= Functorial ; 
+terminator          Arg "";
+
+EApply.             Expr5 ::= Functorial [Arg] ;
+
+ELambda.            Expr ::= "(" "\\" [ArgDef] ":" TypeDef "=>" Expr ")" ; -- lambda expr
+
+EEq.                Expr1  ::= Expr1  "==" Expr2 ;
+ELq.                Expr1  ::= Expr2 "<"  Expr2 ;
+EGt.                Expr1  ::= Expr2 ">"  Expr2 ;
+ELeq.               Expr1  ::= Expr2 "<=" Expr2 ;
+EGeq.               Expr1  ::= Expr2 ">=" Expr2 ;
+EAdd.               Expr2 ::= Expr2 "+"  Expr3 ;
+ESub.               Expr2 ::= Expr2 "-"  Expr3 ;
+EMul.               Expr3 ::= Expr3 "*"  Expr4 ;
+EDiv.               Expr3 ::= Expr3 "/"  Expr4 ;
+EPow.               Expr4 ::= Expr5 "^"  Expr4 ;
+
+EInt.               Expr5 ::= Integer ;
+EReal.              Expr5 ::= Double  ;
+EWild.              Expr5 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
+
+coercions           Expr 6 ;
