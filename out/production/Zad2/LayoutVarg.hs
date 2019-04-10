@@ -212,49 +212,49 @@ sToken p s = PT p (TS s i)
       "," -> 5
       "-" -> 6
       "->" -> 7
-      "." -> 8
-      "/" -> 9
-      ":" -> 10
-      ";" -> 11
-      "<" -> 12
-      "<=" -> 13
-      "=" -> 14
-      "==" -> 15
-      "=>" -> 16
-      ">" -> 17
-      ">=" -> 18
-      "False" -> 19
-      "True" -> 20
-      "[" -> 21
-      "\\" -> 22
-      "]" -> 23
-      "^" -> 24
-      "_" -> 25
-      "abstract" -> 26
-      "as" -> 27
-      "class" -> 28
-      "define" -> 29
-      "deriving" -> 30
-      "else" -> 31
-      "final" -> 32
-      "function" -> 33
-      "has" -> 34
-      "if" -> 35
-      "implement" -> 36
-      "implementing" -> 37
-      "import" -> 38
-      "in" -> 39
-      "interface" -> 40
-      "internal" -> 41
-      "match" -> 42
-      "module" -> 43
-      "public" -> 44
-      "sealed" -> 45
-      "static" -> 46
-      "struct" -> 47
-      "super" -> 48
-      "template" -> 49
-      "then" -> 50
+      "/" -> 8
+      ":" -> 9
+      ";" -> 10
+      "<" -> 11
+      "<=" -> 12
+      "=" -> 13
+      "==" -> 14
+      "=>" -> 15
+      ">" -> 16
+      ">=" -> 17
+      "?" -> 18
+      "[" -> 19
+      "\\" -> 20
+      "]" -> 21
+      "^" -> 22
+      "_" -> 23
+      "abstract" -> 24
+      "as" -> 25
+      "class" -> 26
+      "define" -> 27
+      "deriving" -> 28
+      "else" -> 29
+      "final | unique" -> 30
+      "function" -> 31
+      "has" -> 32
+      "if" -> 33
+      "implement" -> 34
+      "implementing" -> 35
+      "import" -> 36
+      "in" -> 37
+      "interface" -> 38
+      "internal" -> 39
+      "internal | unique" -> 40
+      "match" -> 41
+      "module" -> 42
+      "public" -> 43
+      "sealed" -> 44
+      "static" -> 45
+      "struct" -> 46
+      "super" -> 47
+      "template" -> 48
+      "then" -> 49
+      "this" -> 50
       "where" -> 51
       "with" -> 52
       "{" -> 53

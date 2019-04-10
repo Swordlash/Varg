@@ -30,42 +30,43 @@ import ErrM
   '=>' { PT _ (TS _ 15) }
   '>' { PT _ (TS _ 16) }
   '>=' { PT _ (TS _ 17) }
-  '[' { PT _ (TS _ 18) }
-  '\\' { PT _ (TS _ 19) }
-  ']' { PT _ (TS _ 20) }
-  '^' { PT _ (TS _ 21) }
-  '_' { PT _ (TS _ 22) }
-  'abstract' { PT _ (TS _ 23) }
-  'as' { PT _ (TS _ 24) }
-  'class' { PT _ (TS _ 25) }
-  'define' { PT _ (TS _ 26) }
-  'deriving' { PT _ (TS _ 27) }
-  'else' { PT _ (TS _ 28) }
-  'final | unique' { PT _ (TS _ 29) }
-  'function' { PT _ (TS _ 30) }
-  'has' { PT _ (TS _ 31) }
-  'if' { PT _ (TS _ 32) }
-  'implement' { PT _ (TS _ 33) }
-  'implementing' { PT _ (TS _ 34) }
-  'import' { PT _ (TS _ 35) }
-  'in' { PT _ (TS _ 36) }
-  'interface' { PT _ (TS _ 37) }
-  'internal' { PT _ (TS _ 38) }
-  'internal | unique' { PT _ (TS _ 39) }
-  'match' { PT _ (TS _ 40) }
-  'module' { PT _ (TS _ 41) }
-  'public' { PT _ (TS _ 42) }
-  'sealed' { PT _ (TS _ 43) }
-  'static' { PT _ (TS _ 44) }
-  'struct' { PT _ (TS _ 45) }
-  'super' { PT _ (TS _ 46) }
-  'template' { PT _ (TS _ 47) }
-  'then' { PT _ (TS _ 48) }
-  'this' { PT _ (TS _ 49) }
-  'where' { PT _ (TS _ 50) }
-  'with' { PT _ (TS _ 51) }
-  '{' { PT _ (TS _ 52) }
-  '}' { PT _ (TS _ 53) }
+  '?' { PT _ (TS _ 18) }
+  '[' { PT _ (TS _ 19) }
+  '\\' { PT _ (TS _ 20) }
+  ']' { PT _ (TS _ 21) }
+  '^' { PT _ (TS _ 22) }
+  '_' { PT _ (TS _ 23) }
+  'abstract' { PT _ (TS _ 24) }
+  'as' { PT _ (TS _ 25) }
+  'class' { PT _ (TS _ 26) }
+  'define' { PT _ (TS _ 27) }
+  'deriving' { PT _ (TS _ 28) }
+  'else' { PT _ (TS _ 29) }
+  'final | unique' { PT _ (TS _ 30) }
+  'function' { PT _ (TS _ 31) }
+  'has' { PT _ (TS _ 32) }
+  'if' { PT _ (TS _ 33) }
+  'implement' { PT _ (TS _ 34) }
+  'implementing' { PT _ (TS _ 35) }
+  'import' { PT _ (TS _ 36) }
+  'in' { PT _ (TS _ 37) }
+  'interface' { PT _ (TS _ 38) }
+  'internal' { PT _ (TS _ 39) }
+  'internal | unique' { PT _ (TS _ 40) }
+  'match' { PT _ (TS _ 41) }
+  'module' { PT _ (TS _ 42) }
+  'public' { PT _ (TS _ 43) }
+  'sealed' { PT _ (TS _ 44) }
+  'static' { PT _ (TS _ 45) }
+  'struct' { PT _ (TS _ 46) }
+  'super' { PT _ (TS _ 47) }
+  'template' { PT _ (TS _ 48) }
+  'then' { PT _ (TS _ 49) }
+  'this' { PT _ (TS _ 50) }
+  'where' { PT _ (TS _ 51) }
+  'with' { PT _ (TS _ 52) }
+  '{' { PT _ (TS _ 53) }
+  '}' { PT _ (TS _ 54) }
 
 L_integ  { PT _ (TI $$) }
 L_doubl  { PT _ (TD $$) }
@@ -95,13 +96,14 @@ ListImportDef : {- empty -} { [] }
 TypeParam :: { TypeParam }
 TypeParam : LIdent { AbsVarg.InferredTypeParam $1 }
           | UIdent { AbsVarg.ConcreteTypeParam $1 }
+          | '?' { AbsVarg.WildcardTypeParam }
 ListConstrTypeParam :: { [ConstrTypeParam] }
 ListConstrTypeParam : {- empty -} { [] }
                     | ListConstrTypeParam ConstrTypeParam { flip (:) $1 $2 }
 ConstrTypeParam :: { ConstrTypeParam }
 ConstrTypeParam : TypeParam { AbsVarg.UnconstrainedTypeParam $1 }
-                | '[' TypeParam 'super' TypeDef ']' { AbsVarg.SuperConstrainedTypeParam $2 $4 }
-                | '[' TypeParam 'deriving' TypeDef ']' { AbsVarg.DerivingConstrainedTypeParam $2 $4 }
+                | '[' TypeParam 'super' ListTypeDef ']' { AbsVarg.SuperConstrainedTypeParam $2 $4 }
+                | '[' TypeParam 'deriving' ListTypeDef ']' { AbsVarg.DerivingConstrainedTypeParam $2 $4 }
 ListArgDef :: { [ArgDef] }
 ListArgDef : {- empty -} { [] }
            | ListArgDef ArgDef { flip (:) $1 $2 }
@@ -115,6 +117,9 @@ TypeDef :: { TypeDef }
 TypeDef : ListPrimType { AbsVarg.Type $1 } | TypeDef1 { $1 }
 TypeDef1 :: { TypeDef }
 TypeDef1 : '(' TypeDef ')' { $2 }
+ListTypeDef :: { [TypeDef] }
+ListTypeDef : TypeDef { (:[]) $1 }
+            | TypeDef ',' ListTypeDef { (:) $1 $3 }
 ListPrimType :: { [PrimType] }
 ListPrimType : {- empty -} { [] }
              | PrimType { (:[]) $1 }
@@ -151,8 +156,14 @@ ListMemberDef : {- empty -} { [] }
               | MemberDef { (:[]) $1 }
               | MemberDef ';' ListMemberDef { (:) $1 $3 }
 FunDef :: { FunDef }
-FunDef : ListFunctionModifier 'function' LIdent ListArgDef ':' TypeDef '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 (reverse $4) $6 $8 }
-       | ListFunctionModifier 'function' LIdent ListArgDef ':' 'abstract' TypeDef { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 (reverse $4) $7 }
+FunDef : ListFunctionModifier 'function' LIdent ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 (reverse $4) $5 $7 }
+       | ListFunctionModifier 'function' LIdent ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 (reverse $4) $5 }
+RetType :: { RetType }
+RetType : ':' TypeDef { AbsVarg.ReturnType $2 }
+        | {- empty -} { AbsVarg.InferredReturnType }
+AbsRetType :: { AbsRetType }
+AbsRetType : ':' 'abstract' TypeDef { AbsVarg.AbsReturnType $3 }
+           | {- empty -} { AbsVarg.AbsInferredReturnType }
 ListFunDef :: { [FunDef] }
 ListFunDef : {- empty -} { [] }
            | FunDef { (:[]) $1 }
@@ -181,6 +192,7 @@ Expr : 'define' '{' ListAsDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'match' Expr 'with' '{' ListMatchClause '}' { AbsVarg.EMatch $2 $5 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
      | '(' '\\' ListArgDef ':' TypeDef '=>' Expr ')' { AbsVarg.ELambda (reverse $3) $5 $7 }
+     | '[' ListListElem ']' { AbsVarg.EList $2 }
      | Expr1 { $1 }
 ListAsDef :: { [AsDef] }
 ListAsDef : {- empty -} { [] }
@@ -207,10 +219,13 @@ ListArg :: { [Arg] }
 ListArg : {- empty -} { [] } | ListArg Arg { flip (:) $1 $2 }
 Expr5 :: { Expr }
 Expr5 : Functorial ListArg { AbsVarg.EApply $1 (reverse $2) }
-      | Integer { AbsVarg.EInt $1 }
-      | Double { AbsVarg.EReal $1 }
-      | '_' { AbsVarg.EWild }
       | Expr6 { $1 }
+ListElem :: { ListElem }
+ListElem : Expr { AbsVarg.EListElem $1 }
+ListListElem :: { [ListElem] }
+ListListElem : {- empty -} { [] }
+             | ListElem { (:[]) $1 }
+             | ListElem ',' ListListElem { (:) $1 $3 }
 Expr1 :: { Expr }
 Expr1 : Expr1 '==' Expr2 { AbsVarg.EEq $1 $3 }
       | Expr2 '<' Expr2 { AbsVarg.ELq $1 $3 }
@@ -229,7 +244,10 @@ Expr3 : Expr3 '*' Expr4 { AbsVarg.EMul $1 $3 }
 Expr4 :: { Expr }
 Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 } | Expr5 { $1 }
 Expr6 :: { Expr }
-Expr6 : '(' Expr ')' { $2 }
+Expr6 : Integer { AbsVarg.EInt $1 }
+      | Double { AbsVarg.EReal $1 }
+      | '_' { AbsVarg.EWild }
+      | '(' Expr ')' { $2 }
 {
 
 returnM :: a -> Err a

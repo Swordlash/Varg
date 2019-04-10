@@ -222,42 +222,43 @@ sToken p s = PT p (TS s i)
       "=>" -> 15
       ">" -> 16
       ">=" -> 17
-      "[" -> 18
-      "\\" -> 19
-      "]" -> 20
-      "^" -> 21
-      "_" -> 22
-      "abstract" -> 23
-      "as" -> 24
-      "class" -> 25
-      "define" -> 26
-      "deriving" -> 27
-      "else" -> 28
-      "final | unique" -> 29
-      "function" -> 30
-      "has" -> 31
-      "if" -> 32
-      "implement" -> 33
-      "implementing" -> 34
-      "import" -> 35
-      "in" -> 36
-      "interface" -> 37
-      "internal" -> 38
-      "internal | unique" -> 39
-      "match" -> 40
-      "module" -> 41
-      "public" -> 42
-      "sealed" -> 43
-      "static" -> 44
-      "struct" -> 45
-      "super" -> 46
-      "template" -> 47
-      "then" -> 48
-      "this" -> 49
-      "where" -> 50
-      "with" -> 51
-      "{" -> 52
-      "}" -> 53
+      "?" -> 18
+      "[" -> 19
+      "\\" -> 20
+      "]" -> 21
+      "^" -> 22
+      "_" -> 23
+      "abstract" -> 24
+      "as" -> 25
+      "class" -> 26
+      "define" -> 27
+      "deriving" -> 28
+      "else" -> 29
+      "final | unique" -> 30
+      "function" -> 31
+      "has" -> 32
+      "if" -> 33
+      "implement" -> 34
+      "implementing" -> 35
+      "import" -> 36
+      "in" -> 37
+      "interface" -> 38
+      "internal" -> 39
+      "internal | unique" -> 40
+      "match" -> 41
+      "module" -> 42
+      "public" -> 43
+      "sealed" -> 44
+      "static" -> 45
+      "struct" -> 46
+      "super" -> 47
+      "template" -> 48
+      "then" -> 49
+      "this" -> 50
+      "where" -> 51
+      "with" -> 52
+      "{" -> 53
+      "}" -> 54
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

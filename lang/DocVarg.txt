@@ -48,13 +48,13 @@ The reserved words used in Varg are the following:
   | ``this`` | ``where`` | ``with`` | 
 
 The symbols used in Varg are the following:
-  | ; | [ | ] | (
-  | : | ) | -> | ,
-  | { | } | = | final | unique
-  | internal | unique | \ | => | ==
-  | < | > | <= | >=
-  | + | - | * | /
-  | ^ | _ |  | 
+  | ; | ? | [ | ]
+  | ( | : | ) | ,
+  | -> | { | } | =
+  | final | unique | internal | unique | \ | =>
+  | == | < | > | <=
+  | >= | + | - | *
+  | / | ^ | _ | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #/ and /#.
@@ -73,11 +73,12 @@ All other symbols are terminals.
   |  |  **|**  | //ImportDef// //[ImportDef]// 
   | //TypeParam// | -> | //LIdent// 
   |  |  **|**  | //UIdent// 
+  |  |  **|**  | ``?`` 
   | //[ConstrTypeParam]// | -> | **eps**
   |  |  **|**  | //ConstrTypeParam// //[ConstrTypeParam]// 
   | //ConstrTypeParam// | -> | //TypeParam// 
-  |  |  **|**  | ``[`` //TypeParam// ``super`` //TypeDef// ``]`` 
-  |  |  **|**  | ``[`` //TypeParam// ``deriving`` //TypeDef// ``]`` 
+  |  |  **|**  | ``[`` //TypeParam// ``super`` //[TypeDef]// ``]`` 
+  |  |  **|**  | ``[`` //TypeParam// ``deriving`` //[TypeDef]// ``]`` 
   | //[ArgDef]// | -> | **eps**
   |  |  **|**  | //ArgDef// //[ArgDef]// 
   | //ArgDef// | -> | ``(`` //LIdent// ``:`` //TypeDef// ``)`` 
@@ -87,6 +88,8 @@ All other symbols are terminals.
   | //TypeDef// | -> | //[PrimType]// 
   |  |  **|**  | //TypeDef1// 
   | //TypeDef1// | -> | ``(`` //TypeDef// ``)`` 
+  | //[TypeDef]// | -> | //TypeDef// 
+  |  |  **|**  | //TypeDef// ``,`` //[TypeDef]// 
   | //[PrimType]// | -> | **eps**
   |  |  **|**  | //PrimType// 
   |  |  **|**  | //PrimType// ``->`` //[PrimType]// 
@@ -111,8 +114,12 @@ All other symbols are terminals.
   | //[MemberDef]// | -> | **eps**
   |  |  **|**  | //MemberDef// 
   |  |  **|**  | //MemberDef// ``;`` //[MemberDef]// 
-  | //FunDef// | -> | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// ``:`` //TypeDef// ``=`` //Expr// 
-  |  |  **|**  | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// ``:`` ``abstract`` //TypeDef// 
+  | //FunDef// | -> | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// //RetType// ``=`` //Expr// 
+  |  |  **|**  | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// //AbsRetType// 
+  | //RetType// | -> | ``:`` //TypeDef// 
+  |  |  **|**  | **eps**
+  | //AbsRetType// | -> | ``:`` ``abstract`` //TypeDef// 
+  |  |  **|**  | **eps**
   | //[FunDef]// | -> | **eps**
   |  |  **|**  | //FunDef// 
   |  |  **|**  | //FunDef// ``;`` //[FunDef]// 
@@ -134,6 +141,7 @@ All other symbols are terminals.
   |  |  **|**  | ``match`` //Expr// ``with`` ``{`` //[MatchClause]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
   |  |  **|**  | ``(`` ``\`` //[ArgDef]// ``:`` //TypeDef// ``=>`` //Expr// ``)`` 
+  |  |  **|**  | ``[`` //[ListElem]// ``]`` 
   |  |  **|**  | //Expr1// 
   | //[AsDef]// | -> | **eps**
   |  |  **|**  | //AsDef// 
@@ -153,10 +161,11 @@ All other symbols are terminals.
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// //[Arg]// 
   | //Expr5// | -> | //Functorial// //[Arg]// 
-  |  |  **|**  | //Integer// 
-  |  |  **|**  | //Double// 
-  |  |  **|**  | ``_`` 
   |  |  **|**  | //Expr6// 
+  | //ListElem// | -> | //Expr// 
+  | //[ListElem]// | -> | **eps**
+  |  |  **|**  | //ListElem// 
+  |  |  **|**  | //ListElem// ``,`` //[ListElem]// 
   | //Expr1// | -> | //Expr1// ``==`` //Expr2// 
   |  |  **|**  | //Expr2// ``<`` //Expr2// 
   |  |  **|**  | //Expr2// ``>`` //Expr2// 
@@ -171,6 +180,9 @@ All other symbols are terminals.
   |  |  **|**  | //Expr4// 
   | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
   |  |  **|**  | //Expr5// 
-  | //Expr6// | -> | ``(`` //Expr// ``)`` 
+  | //Expr6// | -> | //Integer// 
+  |  |  **|**  | //Double// 
+  |  |  **|**  | ``_`` 
+  |  |  **|**  | ``(`` //Expr// ``)`` 
 
 

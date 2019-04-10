@@ -17,13 +17,15 @@ data ImportDef = Import UIdent
   deriving (Eq, Ord, Show, Read)
 
 data TypeParam
-    = InferredTypeParam LIdent | ConcreteTypeParam UIdent
+    = InferredTypeParam LIdent
+    | ConcreteTypeParam UIdent
+    | WildcardTypeParam
   deriving (Eq, Ord, Show, Read)
 
 data ConstrTypeParam
     = UnconstrainedTypeParam TypeParam
-    | SuperConstrainedTypeParam TypeParam TypeDef
-    | DerivingConstrainedTypeParam TypeParam TypeDef
+    | SuperConstrainedTypeParam TypeParam [TypeDef]
+    | DerivingConstrainedTypeParam TypeParam [TypeDef]
   deriving (Eq, Ord, Show, Read)
 
 data ArgDef
@@ -68,8 +70,14 @@ data MemberDef
   deriving (Eq, Ord, Show, Read)
 
 data FunDef
-    = MemberFunctionDefinition [FunctionModifier] LIdent [ArgDef] TypeDef Expr
-    | AbstractFunctionDefinition [FunctionModifier] LIdent [ArgDef] TypeDef
+    = MemberFunctionDefinition [FunctionModifier] LIdent [ArgDef] RetType Expr
+    | AbstractFunctionDefinition [FunctionModifier] LIdent [ArgDef] AbsRetType
+  deriving (Eq, Ord, Show, Read)
+
+data RetType = ReturnType TypeDef | InferredReturnType
+  deriving (Eq, Ord, Show, Read)
+
+data AbsRetType = AbsReturnType TypeDef | AbsInferredReturnType
   deriving (Eq, Ord, Show, Read)
 
 data FunctionModifier
@@ -94,6 +102,7 @@ data Expr
     | EIfThenElse Expr Expr Expr
     | EApply Functorial [Arg]
     | ELambda [ArgDef] TypeDef Expr
+    | EList [ListElem]
     | EEq Expr Expr
     | ELq Expr Expr
     | EGt Expr Expr
@@ -124,5 +133,8 @@ data Functorial
   deriving (Eq, Ord, Show, Read)
 
 data Arg = ArgExpr Expr | ArgFunc Functorial
+  deriving (Eq, Ord, Show, Read)
+
+data ListElem = EListElem Expr
   deriving (Eq, Ord, Show, Read)
 

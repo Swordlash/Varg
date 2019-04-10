@@ -9,83 +9,100 @@ module AbsVarg where
 
 newtype UIdent = UIdent String deriving (Eq, Ord, Show, Read)
 newtype LIdent = LIdent String deriving (Eq, Ord, Show, Read)
-data Program = Prog [Import] [ClassDef]
+newtype MFun = MFun String deriving (Eq, Ord, Show, Read)
+data ProgramDef = Program [ImportDef] [ClassDef]
   deriving (Eq, Ord, Show, Read)
 
-data Import = IImport UIdent
+data ImportDef = Import UIdent
   deriving (Eq, Ord, Show, Read)
 
-data TypeParam = ITemplTypeParam LIdent | IPrimTypeParam UIdent
+data TypeParam
+    = InferredTypeParam LIdent
+    | ConcreteTypeParam UIdent
+    | WildcardTypeParam
   deriving (Eq, Ord, Show, Read)
 
 data ConstrTypeParam
-    = UnconstrTypeParam TypeParam
-    | SupConstrTypeParam TypeParam Type
-    | InfConstrTypeParam TypeParam Type
+    = UnconstrainedTypeParam TypeParam
+    | SuperConstrainedTypeParam TypeParam [TypeDef]
+    | DerivingConstrainedTypeParam TypeParam [TypeDef]
   deriving (Eq, Ord, Show, Read)
 
-data ArgDef = IArgDef LIdent Type
+data ArgDef
+    = ArgumentDefinition LIdent TypeDef | InferredArgumentDef LIdent
   deriving (Eq, Ord, Show, Read)
 
 data PrimType
-    = IPrimType UIdent [ConstrTypeParam]
-    | ITempType LIdent [ConstrTypeParam]
+    = ConcreteType UIdent [ConstrTypeParam]
+    | TemplateType LIdent [ConstrTypeParam]
   deriving (Eq, Ord, Show, Read)
 
-data Type = IType [PrimType]
+data TypeDef = Type [PrimType]
   deriving (Eq, Ord, Show, Read)
 
-data Class = IClass UIdent Type
+data ClassType = Class UIdent TypeDef
   deriving (Eq, Ord, Show, Read)
 
 data ClassDef
-    = StrDef [ClassModif] UIdent [ClassField]
-    | ClsDef [ClassModif] UIdent Implementing Deriving ClassContent
-    | TempDef [ClassModif] UIdent [ConstrTypeParam] Implementing Deriving ClassContent
+    = StructDefinition [ClassModifier] UIdent [ClassField]
+    | ClassDefinition [ClassModifier] UIdent IsImplementing IsDeriving ClassContents
+    | TemplateDefinition [ClassModifier] UIdent [ConstrTypeParam] IsImplementing IsDeriving ClassContents
   deriving (Eq, Ord, Show, Read)
 
-data Implementing = Impl [Class] | NoImpl
+data IsImplementing = Implementing [ClassType] | NotImplementing
   deriving (Eq, Ord, Show, Read)
 
-data Deriving = Deriv Class | NoDeriv
+data IsDeriving = Deriving ClassType | NotDeriving
   deriving (Eq, Ord, Show, Read)
 
-data ClassModif
-    = ClassModif_module | ClassModif_interface | ClassModif_sealed
+data ClassModifier
+    = ClassModifier_module
+    | ClassModifier_interface
+    | ClassModifier_sealed
   deriving (Eq, Ord, Show, Read)
 
-data ClassContent = ClassCont [MemberDef] [FunDef]
+data ClassContents = ClassContent [MemberDef] [FunDef]
   deriving (Eq, Ord, Show, Read)
 
-data MemberDef = EMembDef UIdent | MembDef UIdent [ClassField]
+data MemberDef
+    = EmptyMemberDefinition UIdent
+    | MemberDefinition UIdent [ClassField]
   deriving (Eq, Ord, Show, Read)
 
 data FunDef
-    = RFunDef [FunModif] LIdent [ArgDef] Type Expr
-    | StubDef [FunModif] LIdent [ArgDef] Type
+    = MemberFunctionDefinition [FunctionModifier] LIdent [ArgDef] RetType Expr
+    | AbstractFunctionDefinition [FunctionModifier] LIdent [ArgDef] AbsRetType
   deriving (Eq, Ord, Show, Read)
 
-data FunModif
-    = FunModif_static
-    | FunModif_internal
-    | FunModif_implement
-    | FunModif_final
+data RetType = ReturnType TypeDef | InferredReturnType
+  deriving (Eq, Ord, Show, Read)
+
+data AbsRetType = AbsReturnType TypeDef | AbsInferredReturnType
+  deriving (Eq, Ord, Show, Read)
+
+data FunctionModifier
+    = FunctionModifier_static
+    | FunctionModifier_internal
+    | FunctionModifier_implement
+    | FunctionModifier1
   deriving (Eq, Ord, Show, Read)
 
 data ClassField
-    = ClsFld FieldModif LIdent Type | PClsFld LIdent Type
+    = ModifiedClassField FieldModifier LIdent TypeDef
+    | NormalClassField LIdent TypeDef
   deriving (Eq, Ord, Show, Read)
 
-data FieldModif = FieldModif_public | FieldModif_internal
+data FieldModifier = FieldModifier_public | FieldModifier1
   deriving (Eq, Ord, Show, Read)
 
 data Expr
-    = EDefL [AsDef] Expr
-    | EDef AsDef Expr
+    = EDefinitionsList [AsDef] Expr
+    | EDefinition AsDef Expr
     | EMatch Expr [MatchClause]
-    | EIf Expr Expr Expr
+    | EIfThenElse Expr Expr Expr
     | EApply Functorial [Arg]
-    | ELam [ArgDef] Type Expr
+    | ELambda [ArgDef] TypeDef Expr
+    | EList [ListElem]
     | EEq Expr Expr
     | ELq Expr Expr
     | EGt Expr Expr
@@ -97,28 +114,27 @@ data Expr
     | EDiv Expr Expr
     | EPow Expr Expr
     | EInt Integer
-    | EBool BoolVal
     | EReal Double
     | EWild
-    | EInstance Functorial
   deriving (Eq, Ord, Show, Read)
 
-data AsDef = IDef Expr LIdent
+data AsDef = IDefinition Expr LIdent
   deriving (Eq, Ord, Show, Read)
 
-data MatchClause = IMatchCl Expr Expr
+data MatchClause = IMatchClause Expr Expr
   deriving (Eq, Ord, Show, Read)
 
 data Functorial
-    = ConsFunctor UIdent UIdent
-    | CallMFunctor LIdent LIdent
-    | CallSMFunctor UIdent LIdent
-    | CallFVFunctor LIdent
+    = ThisFunctor
+    | SuperFunctor
+    | TypeFunctor UIdent
+    | InstanceFunctor LIdent
+    | MemberFunctor MFun
   deriving (Eq, Ord, Show, Read)
 
-data Arg = ArgExp Expr
+data Arg = ArgExpr Expr | ArgFunc Functorial
   deriving (Eq, Ord, Show, Read)
 
-data BoolVal = BTrue | BFalse
+data ListElem = EListElem Expr
   deriving (Eq, Ord, Show, Read)
 

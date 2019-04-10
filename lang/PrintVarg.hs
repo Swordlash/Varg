@@ -105,12 +105,13 @@ instance Print TypeParam where
   prt i e = case e of
     InferredTypeParam lident -> prPrec i 0 (concatD [prt 0 lident])
     ConcreteTypeParam uident -> prPrec i 0 (concatD [prt 0 uident])
+    WildcardTypeParam -> prPrec i 0 (concatD [doc (showString "?")])
 
 instance Print ConstrTypeParam where
   prt i e = case e of
     UnconstrainedTypeParam typeparam -> prPrec i 0 (concatD [prt 0 typeparam])
-    SuperConstrainedTypeParam typeparam typedef -> prPrec i 0 (concatD [doc (showString "["), prt 0 typeparam, doc (showString "super"), prt 0 typedef, doc (showString "]")])
-    DerivingConstrainedTypeParam typeparam typedef -> prPrec i 0 (concatD [doc (showString "["), prt 0 typeparam, doc (showString "deriving"), prt 0 typedef, doc (showString "]")])
+    SuperConstrainedTypeParam typeparam typedefs -> prPrec i 0 (concatD [doc (showString "["), prt 0 typeparam, doc (showString "super"), prt 0 typedefs, doc (showString "]")])
+    DerivingConstrainedTypeParam typeparam typedefs -> prPrec i 0 (concatD [doc (showString "["), prt 0 typeparam, doc (showString "deriving"), prt 0 typedefs, doc (showString "]")])
   prtList _ [] = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
 instance Print ArgDef where
@@ -129,7 +130,8 @@ instance Print PrimType where
 instance Print TypeDef where
   prt i e = case e of
     Type primtypes -> prPrec i 0 (concatD [prt 0 primtypes])
-
+  prtList _ [x] = (concatD [prt 0 x])
+  prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
 instance Print ClassType where
   prt i e = case e of
     Class uident typedef -> prPrec i 0 (concatD [prt 0 uident, prt 0 typedef])
@@ -172,11 +174,21 @@ instance Print MemberDef where
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
 instance Print FunDef where
   prt i e = case e of
-    MemberFunctionDefinition functionmodifiers lident argdefs typedef expr -> prPrec i 0 (concatD [prt 0 functionmodifiers, doc (showString "function"), prt 0 lident, prt 0 argdefs, doc (showString ":"), prt 0 typedef, doc (showString "="), prt 0 expr])
-    AbstractFunctionDefinition functionmodifiers lident argdefs typedef -> prPrec i 0 (concatD [prt 0 functionmodifiers, doc (showString "function"), prt 0 lident, prt 0 argdefs, doc (showString ":"), doc (showString "abstract"), prt 0 typedef])
+    MemberFunctionDefinition functionmodifiers lident argdefs rettype expr -> prPrec i 0 (concatD [prt 0 functionmodifiers, doc (showString "function"), prt 0 lident, prt 0 argdefs, prt 0 rettype, doc (showString "="), prt 0 expr])
+    AbstractFunctionDefinition functionmodifiers lident argdefs absrettype -> prPrec i 0 (concatD [prt 0 functionmodifiers, doc (showString "function"), prt 0 lident, prt 0 argdefs, prt 0 absrettype])
   prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
+instance Print RetType where
+  prt i e = case e of
+    ReturnType typedef -> prPrec i 0 (concatD [doc (showString ":"), prt 0 typedef])
+    InferredReturnType -> prPrec i 0 (concatD [])
+
+instance Print AbsRetType where
+  prt i e = case e of
+    AbsReturnType typedef -> prPrec i 0 (concatD [doc (showString ":"), doc (showString "abstract"), prt 0 typedef])
+    AbsInferredReturnType -> prPrec i 0 (concatD [])
+
 instance Print FunctionModifier where
   prt i e = case e of
     FunctionModifier_static -> prPrec i 0 (concatD [doc (showString "static")])
@@ -205,6 +217,7 @@ instance Print Expr where
     EIfThenElse expr1 expr2 expr3 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     EApply functorial args -> prPrec i 5 (concatD [prt 0 functorial, prt 0 args])
     ELambda argdefs typedef expr -> prPrec i 0 (concatD [doc (showString "("), doc (showString "\\"), prt 0 argdefs, doc (showString ":"), prt 0 typedef, doc (showString "=>"), prt 0 expr, doc (showString ")")])
+    EList listelems -> prPrec i 0 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
     EEq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "=="), prt 2 expr2])
     ELq expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "<"), prt 2 expr2])
     EGt expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString ">"), prt 2 expr2])
@@ -215,9 +228,9 @@ instance Print Expr where
     EMul expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "*"), prt 4 expr2])
     EDiv expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "/"), prt 4 expr2])
     EPow expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "^"), prt 4 expr2])
-    EInt n -> prPrec i 5 (concatD [prt 0 n])
-    EReal d -> prPrec i 5 (concatD [prt 0 d])
-    EWild -> prPrec i 5 (concatD [doc (showString "_")])
+    EInt n -> prPrec i 6 (concatD [prt 0 n])
+    EReal d -> prPrec i 6 (concatD [prt 0 d])
+    EWild -> prPrec i 6 (concatD [doc (showString "_")])
 
 instance Print AsDef where
   prt i e = case e of
@@ -245,4 +258,10 @@ instance Print Arg where
     ArgFunc functorial -> prPrec i 0 (concatD [prt 0 functorial])
   prtList _ [] = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
+instance Print ListElem where
+  prt i e = case e of
+    EListElem expr -> prPrec i 0 (concatD [prt 0 expr])
+  prtList _ [] = (concatD [])
+  prtList _ [x] = (concatD [prt 0 x])
+  prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
 

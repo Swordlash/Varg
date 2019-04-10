@@ -8,7 +8,6 @@ import System.Exit ( exitFailure, exitSuccess )
 
 import LexVarg
 import ParVarg
-import SkelVarg
 import PrintVarg
 import AbsVarg
 import LayoutVarg

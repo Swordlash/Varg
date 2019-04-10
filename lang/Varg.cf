@@ -19,11 +19,12 @@ token MFun ('.' (letter | digit)*);
 --terminator TypeParam "";
 InferredTypeParam.   TypeParam ::= LIdent ; -- template (inferred) type param
 ConcreteTypeParam.   TypeParam ::= UIdent ; -- concrete type param
+WildcardTypeParam.   TypeParam ::= "?"    ; -- any type type param
 
 terminator                    ConstrTypeParam "";
 UnconstrainedTypeParam.       ConstrTypeParam ::= TypeParam ;
-SuperConstrainedTypeParam.    ConstrTypeParam ::= "[" TypeParam "super" TypeDef "]" ;
-DerivingConstrainedTypeParam. ConstrTypeParam ::= "[" TypeParam "deriving" TypeDef "]" ;
+SuperConstrainedTypeParam.    ConstrTypeParam ::= "[" TypeParam "super" [TypeDef] "]" ;
+DerivingConstrainedTypeParam. ConstrTypeParam ::= "[" TypeParam "deriving" [TypeDef] "]" ;
 
 terminator           ArgDef "";
 ArgumentDefinition.  ArgDef    ::= "(" LIdent ":" TypeDef ")" ;
@@ -34,13 +35,14 @@ TemplateType.  PrimType ::= LIdent [ConstrTypeParam] ; -- template type with typ
 
 Type.              TypeDef ::= [PrimType] ;
 coercions          TypeDef 1 ;
-separator      PrimType "->";
+separator nonempty TypeDef "," ;
+separator          PrimType "->";
 
 
 Class.             ClassType ::= UIdent TypeDef;
 separator nonempty ClassType ",";
 
-StructDefinition.    ClassDef  ::= [ClassModifier] "struct" UIdent "where" "{" [ClassField] "}" ;                                             -- structure definition
+StructDefinition.    ClassDef  ::= [ClassModifier] "struct" UIdent "where" "{" [ClassField] "}" ;                                                  -- structure definition
 ClassDefinition.     ClassDef  ::= [ClassModifier] "class" UIdent IsImplementing IsDeriving "where" "{" ClassContents "}" ;                        -- class definition
 TemplateDefinition.  ClassDef  ::= [ClassModifier] "template" UIdent [ConstrTypeParam] IsImplementing IsDeriving "where" "{" ClassContents "}" ;   -- template with type parameters
 
@@ -59,8 +61,14 @@ EmptyMemberDefinition. MemberDef ::= UIdent; -- variant type definition, like Ei
 MemberDefinition.      MemberDef ::= UIdent "has" "{" [ClassField] "}" ; -- variant type with own fields 
 separator              MemberDef ";" ;
 
-MemberFunctionDefinition.    FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] ":" TypeDef "=" Expr ;
-AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] ":" "abstract" TypeDef ; -- abstract function, to be implemented in subclasses
+MemberFunctionDefinition.    FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] RetType "=" Expr ;
+ReturnType.         RetType ::= ":" TypeDef ;
+InferredReturnType. RetType ::= ;
+
+AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
+AbsReturnType.         AbsRetType ::= ":" "abstract" TypeDef ;
+AbsInferredReturnType. AbsRetType ::= ;
+
 separator                    FunDef ";";
 
 terminator FunctionModifier "";
@@ -99,6 +107,10 @@ EApply.             Expr5 ::= Functorial [Arg] ;
 
 ELambda.            Expr ::= "(" "\\" [ArgDef] ":" TypeDef "=>" Expr ")" ; -- lambda expr
 
+EList.              Expr ::= "[" [ListElem] "]" ;
+EListElem.          ListElem ::= Expr ;
+separator           ListElem ",";
+
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
 ELq.                Expr1  ::= Expr2 "<"  Expr2 ;
 EGt.                Expr1  ::= Expr2 ">"  Expr2 ;
@@ -110,8 +122,8 @@ EMul.               Expr3 ::= Expr3 "*"  Expr4 ;
 EDiv.               Expr3 ::= Expr3 "/"  Expr4 ;
 EPow.               Expr4 ::= Expr5 "^"  Expr4 ;
 
-EInt.               Expr5 ::= Integer ;
-EReal.              Expr5 ::= Double  ;
-EWild.              Expr5 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
+EInt.               Expr6 ::= Integer ;
+EReal.              Expr6 ::= Double  ;
+EWild.              Expr6 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
 
 coercions           Expr 6 ;

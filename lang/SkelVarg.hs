@@ -28,11 +28,12 @@ transTypeParam :: TypeParam -> Result
 transTypeParam x = case x of
   InferredTypeParam lident -> failure x
   ConcreteTypeParam uident -> failure x
+  WildcardTypeParam -> failure x
 transConstrTypeParam :: ConstrTypeParam -> Result
 transConstrTypeParam x = case x of
   UnconstrainedTypeParam typeparam -> failure x
-  SuperConstrainedTypeParam typeparam typedef -> failure x
-  DerivingConstrainedTypeParam typeparam typedef -> failure x
+  SuperConstrainedTypeParam typeparam typedefs -> failure x
+  DerivingConstrainedTypeParam typeparam typedefs -> failure x
 transArgDef :: ArgDef -> Result
 transArgDef x = case x of
   ArgumentDefinition lident typedef -> failure x
@@ -74,8 +75,16 @@ transMemberDef x = case x of
   MemberDefinition uident classfields -> failure x
 transFunDef :: FunDef -> Result
 transFunDef x = case x of
-  MemberFunctionDefinition functionmodifiers lident argdefs typedef expr -> failure x
-  AbstractFunctionDefinition functionmodifiers lident argdefs typedef -> failure x
+  MemberFunctionDefinition functionmodifiers lident argdefs rettype expr -> failure x
+  AbstractFunctionDefinition functionmodifiers lident argdefs absrettype -> failure x
+transRetType :: RetType -> Result
+transRetType x = case x of
+  ReturnType typedef -> failure x
+  InferredReturnType -> failure x
+transAbsRetType :: AbsRetType -> Result
+transAbsRetType x = case x of
+  AbsReturnType typedef -> failure x
+  AbsInferredReturnType -> failure x
 transFunctionModifier :: FunctionModifier -> Result
 transFunctionModifier x = case x of
   FunctionModifier_static -> failure x
@@ -98,6 +107,7 @@ transExpr x = case x of
   EIfThenElse expr1 expr2 expr3 -> failure x
   EApply functorial args -> failure x
   ELambda argdefs typedef expr -> failure x
+  EList listelems -> failure x
   EEq expr1 expr2 -> failure x
   ELq expr1 expr2 -> failure x
   EGt expr1 expr2 -> failure x
@@ -128,4 +138,7 @@ transArg :: Arg -> Result
 transArg x = case x of
   ArgExpr expr -> failure x
   ArgFunc functorial -> failure x
+transListElem :: ListElem -> Result
+transListElem x = case x of
+  EListElem expr -> failure x
 

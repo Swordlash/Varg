@@ -144,7 +144,7 @@ alex_table = listArray (0 :: Int, 4201)
   , 38
   , 39
   , 38
-  , 0
+  , 40
   , 0
   , 42
   , 42
@@ -4350,7 +4350,7 @@ alex_check = listArray (0 :: Int, 4201)
   , 60
   , 61
   , 62
-  , -1
+  , 63
   , -1
   , 65
   , 66
@@ -8714,7 +8714,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "deriving" 27 (b "==" 14 (b "->" 7 (b "+" 4 (b ")" 2 (b "(" 1 N N) (b "*" 3 N N)) (b "-" 6 (b "," 5 N N) N)) (b "<" 11 (b ":" 9 (b "/" 8 N N) (b ";" 10 N N)) (b "=" 13 (b "<=" 12 N N) N))) (b "^" 21 (b "[" 18 (b ">" 16 (b "=>" 15 N N) (b ">=" 17 N N)) (b "]" 20 (b "\\" 19 N N) N)) (b "as" 24 (b "abstract" 23 (b "_" 22 N N) N) (b "define" 26 (b "class" 25 N N) N)))) (b "module" 41 (b "implementing" 34 (b "has" 31 (b "final | unique" 29 (b "else" 28 N N) (b "function" 30 N N)) (b "implement" 33 (b "if" 32 N N) N)) (b "internal" 38 (b "in" 36 (b "import" 35 N N) (b "interface" 37 N N)) (b "match" 40 (b "internal | unique" 39 N N) N))) (b "then" 48 (b "struct" 45 (b "sealed" 43 (b "public" 42 N N) (b "static" 44 N N)) (b "template" 47 (b "super" 46 N N) N)) (b "with" 51 (b "where" 50 (b "this" 49 N N) N) (b "}" 53 (b "{" 52 N N) N))))
+resWords = b "deriving" 28 (b "==" 14 (b "->" 7 (b "+" 4 (b ")" 2 (b "(" 1 N N) (b "*" 3 N N)) (b "-" 6 (b "," 5 N N) N)) (b "<" 11 (b ":" 9 (b "/" 8 N N) (b ";" 10 N N)) (b "=" 13 (b "<=" 12 N N) N))) (b "]" 21 (b "?" 18 (b ">" 16 (b "=>" 15 N N) (b ">=" 17 N N)) (b "\\" 20 (b "[" 19 N N) N)) (b "as" 25 (b "_" 23 (b "^" 22 N N) (b "abstract" 24 N N)) (b "define" 27 (b "class" 26 N N) N)))) (b "module" 42 (b "implementing" 35 (b "has" 32 (b "final | unique" 30 (b "else" 29 N N) (b "function" 31 N N)) (b "implement" 34 (b "if" 33 N N) N)) (b "internal" 39 (b "in" 37 (b "import" 36 N N) (b "interface" 38 N N)) (b "match" 41 (b "internal | unique" 40 N N) N))) (b "then" 49 (b "struct" 46 (b "sealed" 44 (b "public" 43 N N) (b "static" 45 N N)) (b "template" 48 (b "super" 47 N N) N)) (b "with" 52 (b "where" 51 (b "this" 50 N N) N) (b "}" 54 (b "{" 53 N N) N))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 
