@@ -1,0 +1,3 @@
+class Collections where
+    static function length (c : Collection ?) = c.length
+    static function addAll (dest : Collection [? deriving a]) (src : Collection [? super a]) : abstract Collection a

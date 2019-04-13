@@ -1,16 +1,16 @@
 interface template Functor type where
-    function fmap (f: a -> b) : abstract type b
+    function fmap (f: Function a b) : abstract type b
     
 template Maybe a implementing Functor Maybe where
     Nothing
     Just has
         value : a
     
-    implement function fmap (f: a -> b) : Maybe b = match this with
+    implement function fmap (f: Function a b) : Maybe b = match this with
         Maybe.Nothing -> Maybe.Nothing
         Maybe.Just val -> Maybe.Just (f val)
 
-template List a implementing Functor List deriving Collection a where
+template List a deriving Collection a implementing Functor List where
     Empty
     NotEmpty has
         head : a
@@ -18,10 +18,12 @@ template List a implementing Functor List deriving Collection a where
     
     function maybeHead : Maybe a = if this == List.Empty then Maybe.Nothing else Maybe.Just (this.head)
     
-    implement function fmap (f: a -> b) : List b = 
+    implement function fmap (f: Function a b) : List b = 
         if this == List.Empty then List.Empty else 
             List.NotEmpty (f this.head) (this.fmap f tail)
         
     implement function element (idx : Int) : Maybe a = 
         if this == List.Empty then Nothing else 
             if idx == 0 then head else this.tail.element (idx-1)
+
+    function addAll (col : Collection ?) : List a = List.Empty
