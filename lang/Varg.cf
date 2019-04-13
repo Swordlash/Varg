@@ -16,40 +16,55 @@ token UIdent (upper (letter | digit)*);
 token LIdent (lower (letter | digit)*);
 token MFun ('.' (letter | digit)*);
 
---terminator TypeParam "";
-InferredTypeParam.   TypeParam ::= LIdent ; -- template (inferred) type param
-ConcreteTypeParam.   TypeParam ::= UIdent ; -- concrete type param
-WildcardTypeParam.   TypeParam ::= "?"    ; -- any type type param
+------------------------ ANY Type, Constrained, unconstrained, wildcard -------------------------------
 
-terminator                    ConstrTypeParam "";
-UnconstrainedTypeParam.       ConstrTypeParam ::= TypeParam ;
-SuperConstrainedTypeParam.    ConstrTypeParam ::= "[" TypeParam "super" [TypeDef] "]" ;
-DerivingConstrainedTypeParam. ConstrTypeParam ::= "[" TypeParam "deriving" [TypeDef] "]" ;
+terminator                       ConstrTypeParam "";
+InferredTypeParam.               ConstrTypeParam ::= LIdent ;
+ConcreteTypeParam.               ConstrTypeParam ::= UIdent ;
+WildcardTypeParam.               ConstrTypeParam ::= "?" ; 
+AnotherClassTypeParam.           ConstrTypeParam ::= "(" TypeDef ")" ;
+SuperConstrainedTypeParam.       ConstrTypeParam ::= "[" LIdent "super" [TypeDef] "]" ;
+AnySuperConstrainedTypeParam.    ConstrTypeParam ::= "[" "?" "super" [TypeDef] "]" ;
+DerivingConstrainedTypeParam.    ConstrTypeParam ::= "[" LIdent "deriving" [TypeDef] "]" ;
+AnyDerivingConstrainedTypeParam. ConstrTypeParam ::= "[" "?" "deriving" [TypeDef] "]" ;
+
+ConcreteType.               TypeDef ::= UIdent [ConstrTypeParam];
+InferredType.               TypeDef ::= LIdent [ConstrTypeParam];
+coercions                   TypeDef 1 ;
+separator nonempty          TypeDef "," ;
+
+--------------------------------- FREE type, unconstrained --------------------------------------------
+
+ConcreteTypeFreeType.    PrimFreeType ::= "(" FreeTypeDef ")";
+TemplateFreeType.        PrimFreeType ::= LIdent ;
+ConcreteFreeType.        PrimFreeType ::= UIdent ;
+
+FreeType.           FreeTypeDef ::= UIdent [PrimFreeType] ;
+InferredFreeType.   FreeTypeDef ::= LIdent [PrimFreeType] ;
+coercions           FreeTypeDef 1;
+separator nonempty  FreeTypeDef "," ;
+terminator          PrimFreeType "" ;
+
+
+--------------------------------- Function arg, usually constrained -------------------------------------
 
 terminator           ArgDef "";
 ArgumentDefinition.  ArgDef    ::= "(" LIdent ":" TypeDef ")" ;
 InferredArgumentDef. ArgDef    ::= LIdent ;
 
-ConcreteType.  PrimType ::= UIdent [ConstrTypeParam] ; -- concrete type with type params
-TemplateType.  PrimType ::= LIdent [ConstrTypeParam] ; -- template type with type params
+---------------------------------------------------------------------------------------------------------
 
-Type.              TypeDef ::= [PrimType] ;
-coercions          TypeDef 1 ;
-separator nonempty TypeDef "," ;
-separator          PrimType "->";
-
-
-Class.             ClassType ::= UIdent TypeDef;
-separator nonempty ClassType ",";
+Superclass.             SuperclassType ::= FreeTypeDef;
+separator nonempty      SuperclassType ",";
 
 StructDefinition.    ClassDef  ::= [ClassModifier] "struct" UIdent "where" "{" [ClassField] "}" ;                                                  -- structure definition
-ClassDefinition.     ClassDef  ::= [ClassModifier] "class" UIdent IsImplementing IsDeriving "where" "{" ClassContents "}" ;                        -- class definition
-TemplateDefinition.  ClassDef  ::= [ClassModifier] "template" UIdent [ConstrTypeParam] IsImplementing IsDeriving "where" "{" ClassContents "}" ;   -- template with type parameters
+ClassDefinition.     ClassDef  ::= [ClassModifier] "class" UIdent IsDeriving IsImplementing "where" "{" ClassContents "}" ;                        -- class definition
+TemplateDefinition.  ClassDef  ::= [ClassModifier] "template" UIdent [ConstrTypeParam] IsDeriving IsImplementing "where" "{" ClassContents "}" ;   -- template with type parameters
 
-Implementing.     IsImplementing ::= "implementing" [ClassType] ;
+Implementing.     IsImplementing ::= "implementing" [SuperclassType] ;
 NotImplementing.  IsImplementing ::= ;
 
-Deriving.    IsDeriving ::= "deriving" ClassType ;
+Deriving.    IsDeriving ::= "deriving" SuperclassType ;
 NotDeriving. IsDeriving ::= ;
 
 terminator ClassModifier "";
@@ -62,23 +77,23 @@ MemberDefinition.      MemberDef ::= UIdent "has" "{" [ClassField] "}" ; -- vari
 separator              MemberDef ";" ;
 
 MemberFunctionDefinition.    FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] RetType "=" Expr ;
-ReturnType.         RetType ::= ":" TypeDef ;
-InferredReturnType. RetType ::= ;
+ReturnType.                  RetType ::= ":" FreeTypeDef ;
+InferredReturnType.          RetType ::= ;
 
 AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" LIdent [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
-AbsReturnType.         AbsRetType ::= ":" "abstract" TypeDef ;
-AbsInferredReturnType. AbsRetType ::= ;
+AbsReturnType.               AbsRetType ::= ":" "abstract" FreeTypeDef ;
+AbsInferredReturnType.       AbsRetType ::= ;
 
 separator                    FunDef ";";
 
 terminator FunctionModifier "";
-rules      FunctionModifier ::= "static" | "internal" | "implement" | "final | unique" ; -- like in Java, internal means private
+rules      FunctionModifier ::= "static" | "internal" | "implement" | "final" | "unique" ; -- like in Java, internal means private
 
-ModifiedClassField.   ClassField ::= FieldModifier LIdent ":" TypeDef ;
-NormalClassField.     ClassField ::= LIdent ":" TypeDef ;
+ModifiedClassField.   ClassField ::= FieldModifier LIdent ":" FreeTypeDef ;
+NormalClassField.     ClassField ::= LIdent ":" FreeTypeDef ;
 separator             ClassField ";";
 
-rules FieldModifier ::= "public" | "internal | unique" ;
+rules FieldModifier ::= "internal" | "unique" ;
 
 EDefinitionsList.   Expr   ::= "define" "{" [AsDef] "}" "in" Expr ; -- example: 'define 34 as x in 7*x', with list variant
 EDefinition.        Expr   ::= "define" AsDef "in" Expr           ;

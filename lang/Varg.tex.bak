@@ -60,11 +60,11 @@ The reserved words used in Varg are the following: \\
 The symbols used in Varg are the following: \\
 
 \begin{tabular}{lll}
-{\symb{;}} &{\symb{?}} &{\symb{[}} \\
-{\symb{]}} &{\symb{(}} &{\symb{:}} \\
-{\symb{)}} &{\symb{,}} &{\symb{{$-$}{$>$}}} \\
-{\symb{\{}} &{\symb{\}}} &{\symb{{$=$}}} \\
-{\symb{final {$|$} unique}} &{\symb{internal {$|$} unique}} &{\symb{$\backslash$}} \\
+{\symb{;}} &{\symb{?}} &{\symb{(}} \\
+{\symb{)}} &{\symb{[}} &{\symb{]}} \\
+{\symb{,}} &{\symb{:}} &{\symb{\{}} \\
+{\symb{\}}} &{\symb{{$=$}}} &{\symb{final {$|$} unique}} \\
+{\symb{internal {$|$} unique}} &{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} \\
 {\symb{{$=$}{$>$}}} &{\symb{{$=$}{$=$}}} &{\symb{{$<$}}} \\
 {\symb{{$>$}}} &{\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} \\
 {\symb{{$+$}}} &{\symb{{$-$}}} &{\symb{*}} \\
@@ -99,39 +99,24 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{TypeParam}} & {\arrow}  &{\nonterminal{LIdent}}  \\
- & {\delimit}  &{\nonterminal{UIdent}}  \\
- & {\delimit}  &{\terminal{?}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
 {\nonterminal{ListConstrTypeParam}} & {\arrow}  &{\emptyP} \\
  & {\delimit}  &{\nonterminal{ConstrTypeParam}} {\nonterminal{ListConstrTypeParam}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ConstrTypeParam}} & {\arrow}  &{\nonterminal{TypeParam}}  \\
- & {\delimit}  &{\terminal{[}} {\nonterminal{TypeParam}} {\terminal{super}} {\nonterminal{ListTypeDef}} {\terminal{]}}  \\
- & {\delimit}  &{\terminal{[}} {\nonterminal{TypeParam}} {\terminal{deriving}} {\nonterminal{ListTypeDef}} {\terminal{]}}  \\
+{\nonterminal{ConstrTypeParam}} & {\arrow}  &{\nonterminal{LIdent}}  \\
+ & {\delimit}  &{\nonterminal{UIdent}}  \\
+ & {\delimit}  &{\terminal{?}}  \\
+ & {\delimit}  &{\terminal{(}} {\nonterminal{TypeDef}} {\terminal{)}}  \\
+ & {\delimit}  &{\terminal{[}} {\nonterminal{LIdent}} {\terminal{super}} {\nonterminal{ListTypeDef}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{[}} {\terminal{?}} {\terminal{super}} {\nonterminal{ListTypeDef}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{[}} {\nonterminal{LIdent}} {\terminal{deriving}} {\nonterminal{ListTypeDef}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{[}} {\terminal{?}} {\terminal{deriving}} {\nonterminal{ListTypeDef}} {\terminal{]}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListArgDef}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{ArgDef}} {\nonterminal{ListArgDef}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ArgDef}} & {\arrow}  &{\terminal{(}} {\nonterminal{LIdent}} {\terminal{:}} {\nonterminal{TypeDef}} {\terminal{)}}  \\
- & {\delimit}  &{\nonterminal{LIdent}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{PrimType}} & {\arrow}  &{\nonterminal{UIdent}} {\nonterminal{ListConstrTypeParam}}  \\
+{\nonterminal{TypeDef}} & {\arrow}  &{\nonterminal{UIdent}} {\nonterminal{ListConstrTypeParam}}  \\
  & {\delimit}  &{\nonterminal{LIdent}} {\nonterminal{ListConstrTypeParam}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{TypeDef}} & {\arrow}  &{\nonterminal{ListPrimType}}  \\
  & {\delimit}  &{\nonterminal{TypeDef1}}  \\
 \end{tabular}\\
 
@@ -145,33 +130,63 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListPrimType}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{PrimType}}  \\
- & {\delimit}  &{\nonterminal{PrimType}} {\terminal{{$-$}{$>$}}} {\nonterminal{ListPrimType}}  \\
+{\nonterminal{PrimFreeType}} & {\arrow}  &{\terminal{(}} {\nonterminal{FreeTypeDef}} {\terminal{)}}  \\
+ & {\delimit}  &{\nonterminal{LIdent}}  \\
+ & {\delimit}  &{\nonterminal{UIdent}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ClassType}} & {\arrow}  &{\nonterminal{UIdent}} {\nonterminal{TypeDef}}  \\
+{\nonterminal{FreeTypeDef}} & {\arrow}  &{\nonterminal{UIdent}} {\nonterminal{ListPrimFreeType}}  \\
+ & {\delimit}  &{\nonterminal{LIdent}} {\nonterminal{ListPrimFreeType}}  \\
+ & {\delimit}  &{\nonterminal{FreeTypeDef1}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListClassType}} & {\arrow}  &{\nonterminal{ClassType}}  \\
- & {\delimit}  &{\nonterminal{ClassType}} {\terminal{,}} {\nonterminal{ListClassType}}  \\
+{\nonterminal{FreeTypeDef1}} & {\arrow}  &{\terminal{(}} {\nonterminal{FreeTypeDef}} {\terminal{)}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListFreeTypeDef}} & {\arrow}  &{\nonterminal{FreeTypeDef}}  \\
+ & {\delimit}  &{\nonterminal{FreeTypeDef}} {\terminal{,}} {\nonterminal{ListFreeTypeDef}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListPrimFreeType}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{PrimFreeType}} {\nonterminal{ListPrimFreeType}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListArgDef}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{ArgDef}} {\nonterminal{ListArgDef}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ArgDef}} & {\arrow}  &{\terminal{(}} {\nonterminal{LIdent}} {\terminal{:}} {\nonterminal{TypeDef}} {\terminal{)}}  \\
+ & {\delimit}  &{\nonterminal{LIdent}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{SuperclassType}} & {\arrow}  &{\nonterminal{FreeTypeDef}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListSuperclassType}} & {\arrow}  &{\nonterminal{SuperclassType}}  \\
+ & {\delimit}  &{\nonterminal{SuperclassType}} {\terminal{,}} {\nonterminal{ListSuperclassType}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
 {\nonterminal{ClassDef}} & {\arrow}  &{\nonterminal{ListClassModifier}} {\terminal{struct}} {\nonterminal{UIdent}} {\terminal{where}} {\terminal{\{}} {\nonterminal{ListClassField}} {\terminal{\}}}  \\
- & {\delimit}  &{\nonterminal{ListClassModifier}} {\terminal{class}} {\nonterminal{UIdent}} {\nonterminal{IsImplementing}} {\nonterminal{IsDeriving}} {\terminal{where}} {\terminal{\{}} {\nonterminal{ClassContents}} {\terminal{\}}}  \\
- & {\delimit}  &{\nonterminal{ListClassModifier}} {\terminal{template}} {\nonterminal{UIdent}} {\nonterminal{ListConstrTypeParam}} {\nonterminal{IsImplementing}} {\nonterminal{IsDeriving}} {\terminal{where}} {\terminal{\{}} {\nonterminal{ClassContents}} {\terminal{\}}}  \\
+ & {\delimit}  &{\nonterminal{ListClassModifier}} {\terminal{class}} {\nonterminal{UIdent}} {\nonterminal{IsDeriving}} {\nonterminal{IsImplementing}} {\terminal{where}} {\terminal{\{}} {\nonterminal{ClassContents}} {\terminal{\}}}  \\
+ & {\delimit}  &{\nonterminal{ListClassModifier}} {\terminal{template}} {\nonterminal{UIdent}} {\nonterminal{ListConstrTypeParam}} {\nonterminal{IsDeriving}} {\nonterminal{IsImplementing}} {\terminal{where}} {\terminal{\{}} {\nonterminal{ClassContents}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{IsImplementing}} & {\arrow}  &{\terminal{implementing}} {\nonterminal{ListClassType}}  \\
+{\nonterminal{IsImplementing}} & {\arrow}  &{\terminal{implementing}} {\nonterminal{ListSuperclassType}}  \\
  & {\delimit}  &{\emptyP} \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{IsDeriving}} & {\arrow}  &{\terminal{deriving}} {\nonterminal{ClassType}}  \\
+{\nonterminal{IsDeriving}} & {\arrow}  &{\terminal{deriving}} {\nonterminal{SuperclassType}}  \\
  & {\delimit}  &{\emptyP} \\
 \end{tabular}\\
 
@@ -207,12 +222,12 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{RetType}} & {\arrow}  &{\terminal{:}} {\nonterminal{TypeDef}}  \\
+{\nonterminal{RetType}} & {\arrow}  &{\terminal{:}} {\nonterminal{FreeTypeDef}}  \\
  & {\delimit}  &{\emptyP} \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{AbsRetType}} & {\arrow}  &{\terminal{:}} {\terminal{abstract}} {\nonterminal{TypeDef}}  \\
+{\nonterminal{AbsRetType}} & {\arrow}  &{\terminal{:}} {\terminal{abstract}} {\nonterminal{FreeTypeDef}}  \\
  & {\delimit}  &{\emptyP} \\
 \end{tabular}\\
 
@@ -235,8 +250,8 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ClassField}} & {\arrow}  &{\nonterminal{FieldModifier}} {\nonterminal{LIdent}} {\terminal{:}} {\nonterminal{TypeDef}}  \\
- & {\delimit}  &{\nonterminal{LIdent}} {\terminal{:}} {\nonterminal{TypeDef}}  \\
+{\nonterminal{ClassField}} & {\arrow}  &{\nonterminal{FieldModifier}} {\nonterminal{LIdent}} {\terminal{:}} {\nonterminal{FreeTypeDef}}  \\
+ & {\delimit}  &{\nonterminal{LIdent}} {\terminal{:}} {\nonterminal{FreeTypeDef}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -289,7 +304,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Arg}} & {\arrow}  &{\nonterminal{Expr5}}  \\
+{\nonterminal{Arg}} & {\arrow}  &{\nonterminal{Expr6}}  \\
  & {\delimit}  &{\nonterminal{Functorial}}  \\
 \end{tabular}\\
 
@@ -299,8 +314,8 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr6}} & {\arrow}  &{\nonterminal{Functorial}} {\nonterminal{ListArg}}  \\
- & {\delimit}  &{\terminal{(}} {\nonterminal{Expr}} {\terminal{)}}  \\
+{\nonterminal{Expr5}} & {\arrow}  &{\nonterminal{Functorial}} {\nonterminal{ListArg}}  \\
+ & {\delimit}  &{\nonterminal{Expr6}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -340,10 +355,10 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr5}} & {\arrow}  &{\nonterminal{Integer}}  \\
+{\nonterminal{Expr6}} & {\arrow}  &{\nonterminal{Integer}}  \\
  & {\delimit}  &{\nonterminal{Double}}  \\
  & {\delimit}  &{\terminal{\_}}  \\
- & {\delimit}  &{\nonterminal{Expr6}}  \\
+ & {\delimit}  &{\terminal{(}} {\nonterminal{Expr}} {\terminal{)}}  \\
 \end{tabular}\\
 
 

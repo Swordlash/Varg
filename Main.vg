@@ -1,12 +1,24 @@
+interface template Collection a where
+    function atIndex (i:int) : abstract a
+
+template Set [a deriving Comparable a] implementing Collection a where
+    Id
+    
+template Map [a deriving Comparable a] b implementing Collection a, Collection b where
+    Id
+
+class WTF deriving Function Int (Funtion Int (Function Int (Function Void Void))) where
+    Id
+
 interface template Functor type where
-    function fmap (f : a -> b) : abstract type b
+    function fmap (f : Function a b) : abstract type b
 
 template Either a b implementing Functor (Either a) where
     Left has
-        public value : a
+        value : a
     Right has
-        public value : b
+        value : b
 
-    implement function fmap (f : b -> c) : Either a c = match this with
+    implement function fmap (f : Function b c) : Either a c = match this with
         Either.Left _ -> this
         Either.Right val -> Either.Right (f c)

@@ -42,7 +42,7 @@ import ErrM
   'define' { PT _ (TS _ 27) }
   'deriving' { PT _ (TS _ 28) }
   'else' { PT _ (TS _ 29) }
-  'final | unique' { PT _ (TS _ 30) }
+  'final' { PT _ (TS _ 30) }
   'function' { PT _ (TS _ 31) }
   'has' { PT _ (TS _ 32) }
   'if' { PT _ (TS _ 33) }
@@ -52,21 +52,20 @@ import ErrM
   'in' { PT _ (TS _ 37) }
   'interface' { PT _ (TS _ 38) }
   'internal' { PT _ (TS _ 39) }
-  'internal | unique' { PT _ (TS _ 40) }
-  'match' { PT _ (TS _ 41) }
-  'module' { PT _ (TS _ 42) }
-  'public' { PT _ (TS _ 43) }
-  'sealed' { PT _ (TS _ 44) }
-  'static' { PT _ (TS _ 45) }
-  'struct' { PT _ (TS _ 46) }
-  'super' { PT _ (TS _ 47) }
-  'template' { PT _ (TS _ 48) }
-  'then' { PT _ (TS _ 49) }
-  'this' { PT _ (TS _ 50) }
-  'where' { PT _ (TS _ 51) }
-  'with' { PT _ (TS _ 52) }
-  '{' { PT _ (TS _ 53) }
-  '}' { PT _ (TS _ 54) }
+  'match' { PT _ (TS _ 40) }
+  'module' { PT _ (TS _ 41) }
+  'sealed' { PT _ (TS _ 42) }
+  'static' { PT _ (TS _ 43) }
+  'struct' { PT _ (TS _ 44) }
+  'super' { PT _ (TS _ 45) }
+  'template' { PT _ (TS _ 46) }
+  'then' { PT _ (TS _ 47) }
+  'this' { PT _ (TS _ 48) }
+  'unique' { PT _ (TS _ 49) }
+  'where' { PT _ (TS _ 50) }
+  'with' { PT _ (TS _ 51) }
+  '{' { PT _ (TS _ 52) }
+  '}' { PT _ (TS _ 53) }
 
 L_integ  { PT _ (TI $$) }
 L_doubl  { PT _ (TD $$) }
@@ -93,51 +92,63 @@ ImportDef : 'import' UIdent ';' { AbsVarg.Import $2 }
 ListImportDef :: { [ImportDef] }
 ListImportDef : {- empty -} { [] }
               | ListImportDef ImportDef { flip (:) $1 $2 }
-TypeParam :: { TypeParam }
-TypeParam : LIdent { AbsVarg.InferredTypeParam $1 }
-          | UIdent { AbsVarg.ConcreteTypeParam $1 }
-          | '?' { AbsVarg.WildcardTypeParam }
 ListConstrTypeParam :: { [ConstrTypeParam] }
 ListConstrTypeParam : {- empty -} { [] }
                     | ListConstrTypeParam ConstrTypeParam { flip (:) $1 $2 }
 ConstrTypeParam :: { ConstrTypeParam }
-ConstrTypeParam : TypeParam { AbsVarg.UnconstrainedTypeParam $1 }
-                | '[' TypeParam 'super' ListTypeDef ']' { AbsVarg.SuperConstrainedTypeParam $2 $4 }
-                | '[' TypeParam 'deriving' ListTypeDef ']' { AbsVarg.DerivingConstrainedTypeParam $2 $4 }
+ConstrTypeParam : LIdent { AbsVarg.InferredTypeParam $1 }
+                | UIdent { AbsVarg.ConcreteTypeParam $1 }
+                | '?' { AbsVarg.WildcardTypeParam }
+                | '(' TypeDef ')' { AbsVarg.AnotherClassTypeParam $2 }
+                | '[' LIdent 'super' ListTypeDef ']' { AbsVarg.SuperConstrainedTypeParam $2 $4 }
+                | '[' '?' 'super' ListTypeDef ']' { AbsVarg.AnySuperConstrainedTypeParam $4 }
+                | '[' LIdent 'deriving' ListTypeDef ']' { AbsVarg.DerivingConstrainedTypeParam $2 $4 }
+                | '[' '?' 'deriving' ListTypeDef ']' { AbsVarg.AnyDerivingConstrainedTypeParam $4 }
+TypeDef :: { TypeDef }
+TypeDef : UIdent ListConstrTypeParam { AbsVarg.ConcreteType $1 (reverse $2) }
+        | LIdent ListConstrTypeParam { AbsVarg.InferredType $1 (reverse $2) }
+        | TypeDef1 { $1 }
+TypeDef1 :: { TypeDef }
+TypeDef1 : '(' TypeDef ')' { $2 }
+ListTypeDef :: { [TypeDef] }
+ListTypeDef : TypeDef { (:[]) $1 }
+            | TypeDef ',' ListTypeDef { (:) $1 $3 }
+PrimFreeType :: { PrimFreeType }
+PrimFreeType : '(' FreeTypeDef ')' { AbsVarg.ConcreteTypeFreeType $2 }
+             | LIdent { AbsVarg.TemplateFreeType $1 }
+             | UIdent { AbsVarg.ConcreteFreeType $1 }
+FreeTypeDef :: { FreeTypeDef }
+FreeTypeDef : UIdent ListPrimFreeType { AbsVarg.FreeType $1 (reverse $2) }
+            | LIdent ListPrimFreeType { AbsVarg.InferredFreeType $1 (reverse $2) }
+            | FreeTypeDef1 { $1 }
+FreeTypeDef1 :: { FreeTypeDef }
+FreeTypeDef1 : '(' FreeTypeDef ')' { $2 }
+ListFreeTypeDef :: { [FreeTypeDef] }
+ListFreeTypeDef : FreeTypeDef { (:[]) $1 }
+                | FreeTypeDef ',' ListFreeTypeDef { (:) $1 $3 }
+ListPrimFreeType :: { [PrimFreeType] }
+ListPrimFreeType : {- empty -} { [] }
+                 | ListPrimFreeType PrimFreeType { flip (:) $1 $2 }
 ListArgDef :: { [ArgDef] }
 ListArgDef : {- empty -} { [] }
            | ListArgDef ArgDef { flip (:) $1 $2 }
 ArgDef :: { ArgDef }
 ArgDef : '(' LIdent ':' TypeDef ')' { AbsVarg.ArgumentDefinition $2 $4 }
        | LIdent { AbsVarg.InferredArgumentDef $1 }
-PrimType :: { PrimType }
-PrimType : UIdent ListConstrTypeParam { AbsVarg.ConcreteType $1 (reverse $2) }
-         | LIdent ListConstrTypeParam { AbsVarg.TemplateType $1 (reverse $2) }
-TypeDef :: { TypeDef }
-TypeDef : ListPrimType { AbsVarg.Type $1 } | TypeDef1 { $1 }
-TypeDef1 :: { TypeDef }
-TypeDef1 : '(' TypeDef ')' { $2 }
-ListTypeDef :: { [TypeDef] }
-ListTypeDef : TypeDef { (:[]) $1 }
-            | TypeDef ',' ListTypeDef { (:) $1 $3 }
-ListPrimType :: { [PrimType] }
-ListPrimType : {- empty -} { [] }
-             | PrimType { (:[]) $1 }
-             | PrimType '->' ListPrimType { (:) $1 $3 }
-ClassType :: { ClassType }
-ClassType : UIdent TypeDef { AbsVarg.Class $1 $2 }
-ListClassType :: { [ClassType] }
-ListClassType : ClassType { (:[]) $1 }
-              | ClassType ',' ListClassType { (:) $1 $3 }
+SuperclassType :: { SuperclassType }
+SuperclassType : FreeTypeDef { AbsVarg.Superclass $1 }
+ListSuperclassType :: { [SuperclassType] }
+ListSuperclassType : SuperclassType { (:[]) $1 }
+                   | SuperclassType ',' ListSuperclassType { (:) $1 $3 }
 ClassDef :: { ClassDef }
 ClassDef : ListClassModifier 'struct' UIdent 'where' '{' ListClassField '}' { AbsVarg.StructDefinition (reverse $1) $3 $6 }
-         | ListClassModifier 'class' UIdent IsImplementing IsDeriving 'where' '{' ClassContents '}' { AbsVarg.ClassDefinition (reverse $1) $3 $4 $5 $8 }
-         | ListClassModifier 'template' UIdent ListConstrTypeParam IsImplementing IsDeriving 'where' '{' ClassContents '}' { AbsVarg.TemplateDefinition (reverse $1) $3 (reverse $4) $5 $6 $9 }
+         | ListClassModifier 'class' UIdent IsDeriving IsImplementing 'where' '{' ClassContents '}' { AbsVarg.ClassDefinition (reverse $1) $3 $4 $5 $8 }
+         | ListClassModifier 'template' UIdent ListConstrTypeParam IsDeriving IsImplementing 'where' '{' ClassContents '}' { AbsVarg.TemplateDefinition (reverse $1) $3 (reverse $4) $5 $6 $9 }
 IsImplementing :: { IsImplementing }
-IsImplementing : 'implementing' ListClassType { AbsVarg.Implementing $2 }
+IsImplementing : 'implementing' ListSuperclassType { AbsVarg.Implementing $2 }
                | {- empty -} { AbsVarg.NotImplementing }
 IsDeriving :: { IsDeriving }
-IsDeriving : 'deriving' ClassType { AbsVarg.Deriving $2 }
+IsDeriving : 'deriving' SuperclassType { AbsVarg.Deriving $2 }
            | {- empty -} { AbsVarg.NotDeriving }
 ListClassModifier :: { [ClassModifier] }
 ListClassModifier : {- empty -} { [] }
@@ -159,10 +170,10 @@ FunDef :: { FunDef }
 FunDef : ListFunctionModifier 'function' LIdent ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 (reverse $4) $5 $7 }
        | ListFunctionModifier 'function' LIdent ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 (reverse $4) $5 }
 RetType :: { RetType }
-RetType : ':' TypeDef { AbsVarg.ReturnType $2 }
+RetType : ':' FreeTypeDef { AbsVarg.ReturnType $2 }
         | {- empty -} { AbsVarg.InferredReturnType }
 AbsRetType :: { AbsRetType }
-AbsRetType : ':' 'abstract' TypeDef { AbsVarg.AbsReturnType $3 }
+AbsRetType : ':' 'abstract' FreeTypeDef { AbsVarg.AbsReturnType $3 }
            | {- empty -} { AbsVarg.AbsInferredReturnType }
 ListFunDef :: { [FunDef] }
 ListFunDef : {- empty -} { [] }
@@ -175,17 +186,18 @@ FunctionModifier :: { FunctionModifier }
 FunctionModifier : 'static' { AbsVarg.FunctionModifier_static }
                  | 'internal' { AbsVarg.FunctionModifier_internal }
                  | 'implement' { AbsVarg.FunctionModifier_implement }
-                 | 'final | unique' { AbsVarg.FunctionModifier1 }
+                 | 'final' { AbsVarg.FunctionModifier_final }
+                 | 'unique' { AbsVarg.FunctionModifier_unique }
 ClassField :: { ClassField }
-ClassField : FieldModifier LIdent ':' TypeDef { AbsVarg.ModifiedClassField $1 $2 $4 }
-           | LIdent ':' TypeDef { AbsVarg.NormalClassField $1 $3 }
+ClassField : FieldModifier LIdent ':' FreeTypeDef { AbsVarg.ModifiedClassField $1 $2 $4 }
+           | LIdent ':' FreeTypeDef { AbsVarg.NormalClassField $1 $3 }
 ListClassField :: { [ClassField] }
 ListClassField : {- empty -} { [] }
                | ClassField { (:[]) $1 }
                | ClassField ';' ListClassField { (:) $1 $3 }
 FieldModifier :: { FieldModifier }
-FieldModifier : 'public' { AbsVarg.FieldModifier_public }
-              | 'internal | unique' { AbsVarg.FieldModifier1 }
+FieldModifier : 'internal' { AbsVarg.FieldModifier_internal }
+              | 'unique' { AbsVarg.FieldModifier_unique }
 Expr :: { Expr }
 Expr : 'define' '{' ListAsDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'define' AsDef 'in' Expr { AbsVarg.EDefinition $2 $4 }

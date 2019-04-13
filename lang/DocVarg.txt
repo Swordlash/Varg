@@ -40,21 +40,21 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Varg are the following:
   | ``abstract`` | ``as`` | ``class`` | ``define``
-  | ``deriving`` | ``else`` | ``function`` | ``has``
-  | ``if`` | ``implement`` | ``implementing`` | ``import``
-  | ``in`` | ``interface`` | ``internal`` | ``match``
-  | ``module`` | ``public`` | ``sealed`` | ``static``
+  | ``deriving`` | ``else`` | ``final`` | ``function``
+  | ``has`` | ``if`` | ``implement`` | ``implementing``
+  | ``import`` | ``in`` | ``interface`` | ``internal``
+  | ``match`` | ``module`` | ``sealed`` | ``static``
   | ``struct`` | ``super`` | ``template`` | ``then``
-  | ``this`` | ``where`` | ``with`` | 
+  | ``this`` | ``unique`` | ``where`` | ``with``
 
 The symbols used in Varg are the following:
-  | ; | ? | [ | ]
-  | ( | : | ) | ,
-  | -> | { | } | =
-  | final | unique | internal | unique | \ | =>
-  | == | < | > | <=
-  | >= | + | - | *
-  | / | ^ | _ | 
+  | ; | ? | ( | )
+  | [ | ] | , | :
+  | { | } | = | ->
+  | \ | => | == | <
+  | > | <= | >= | +
+  | - | * | / | ^
+  | _ |  |  | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #/ and /#.
@@ -71,37 +71,46 @@ All other symbols are terminals.
   | //ImportDef// | -> | ``import`` //UIdent// ``;`` 
   | //[ImportDef]// | -> | **eps**
   |  |  **|**  | //ImportDef// //[ImportDef]// 
-  | //TypeParam// | -> | //LIdent// 
-  |  |  **|**  | //UIdent// 
-  |  |  **|**  | ``?`` 
   | //[ConstrTypeParam]// | -> | **eps**
   |  |  **|**  | //ConstrTypeParam// //[ConstrTypeParam]// 
-  | //ConstrTypeParam// | -> | //TypeParam// 
-  |  |  **|**  | ``[`` //TypeParam// ``super`` //[TypeDef]// ``]`` 
-  |  |  **|**  | ``[`` //TypeParam// ``deriving`` //[TypeDef]// ``]`` 
-  | //[ArgDef]// | -> | **eps**
-  |  |  **|**  | //ArgDef// //[ArgDef]// 
-  | //ArgDef// | -> | ``(`` //LIdent// ``:`` //TypeDef// ``)`` 
-  |  |  **|**  | //LIdent// 
-  | //PrimType// | -> | //UIdent// //[ConstrTypeParam]// 
+  | //ConstrTypeParam// | -> | //LIdent// 
+  |  |  **|**  | //UIdent// 
+  |  |  **|**  | ``?`` 
+  |  |  **|**  | ``(`` //TypeDef// ``)`` 
+  |  |  **|**  | ``[`` //LIdent// ``super`` //[TypeDef]// ``]`` 
+  |  |  **|**  | ``[`` ``?`` ``super`` //[TypeDef]// ``]`` 
+  |  |  **|**  | ``[`` //LIdent// ``deriving`` //[TypeDef]// ``]`` 
+  |  |  **|**  | ``[`` ``?`` ``deriving`` //[TypeDef]// ``]`` 
+  | //TypeDef// | -> | //UIdent// //[ConstrTypeParam]// 
   |  |  **|**  | //LIdent// //[ConstrTypeParam]// 
-  | //TypeDef// | -> | //[PrimType]// 
   |  |  **|**  | //TypeDef1// 
   | //TypeDef1// | -> | ``(`` //TypeDef// ``)`` 
   | //[TypeDef]// | -> | //TypeDef// 
   |  |  **|**  | //TypeDef// ``,`` //[TypeDef]// 
-  | //[PrimType]// | -> | **eps**
-  |  |  **|**  | //PrimType// 
-  |  |  **|**  | //PrimType// ``->`` //[PrimType]// 
-  | //ClassType// | -> | //UIdent// //TypeDef// 
-  | //[ClassType]// | -> | //ClassType// 
-  |  |  **|**  | //ClassType// ``,`` //[ClassType]// 
+  | //PrimFreeType// | -> | ``(`` //FreeTypeDef// ``)`` 
+  |  |  **|**  | //LIdent// 
+  |  |  **|**  | //UIdent// 
+  | //FreeTypeDef// | -> | //UIdent// //[PrimFreeType]// 
+  |  |  **|**  | //LIdent// //[PrimFreeType]// 
+  |  |  **|**  | //FreeTypeDef1// 
+  | //FreeTypeDef1// | -> | ``(`` //FreeTypeDef// ``)`` 
+  | //[FreeTypeDef]// | -> | //FreeTypeDef// 
+  |  |  **|**  | //FreeTypeDef// ``,`` //[FreeTypeDef]// 
+  | //[PrimFreeType]// | -> | **eps**
+  |  |  **|**  | //PrimFreeType// //[PrimFreeType]// 
+  | //[ArgDef]// | -> | **eps**
+  |  |  **|**  | //ArgDef// //[ArgDef]// 
+  | //ArgDef// | -> | ``(`` //LIdent// ``:`` //TypeDef// ``)`` 
+  |  |  **|**  | //LIdent// 
+  | //SuperclassType// | -> | //FreeTypeDef// 
+  | //[SuperclassType]// | -> | //SuperclassType// 
+  |  |  **|**  | //SuperclassType// ``,`` //[SuperclassType]// 
   | //ClassDef// | -> | //[ClassModifier]// ``struct`` //UIdent// ``where`` ``{`` //[ClassField]// ``}`` 
-  |  |  **|**  | //[ClassModifier]// ``class`` //UIdent// //IsImplementing// //IsDeriving// ``where`` ``{`` //ClassContents// ``}`` 
-  |  |  **|**  | //[ClassModifier]// ``template`` //UIdent// //[ConstrTypeParam]// //IsImplementing// //IsDeriving// ``where`` ``{`` //ClassContents// ``}`` 
-  | //IsImplementing// | -> | ``implementing`` //[ClassType]// 
+  |  |  **|**  | //[ClassModifier]// ``class`` //UIdent// //IsDeriving// //IsImplementing// ``where`` ``{`` //ClassContents// ``}`` 
+  |  |  **|**  | //[ClassModifier]// ``template`` //UIdent// //[ConstrTypeParam]// //IsDeriving// //IsImplementing// ``where`` ``{`` //ClassContents// ``}`` 
+  | //IsImplementing// | -> | ``implementing`` //[SuperclassType]// 
   |  |  **|**  | **eps**
-  | //IsDeriving// | -> | ``deriving`` //ClassType// 
+  | //IsDeriving// | -> | ``deriving`` //SuperclassType// 
   |  |  **|**  | **eps**
   | //[ClassModifier]// | -> | **eps**
   |  |  **|**  | //ClassModifier// //[ClassModifier]// 
@@ -116,9 +125,9 @@ All other symbols are terminals.
   |  |  **|**  | //MemberDef// ``;`` //[MemberDef]// 
   | //FunDef// | -> | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// //RetType// ``=`` //Expr// 
   |  |  **|**  | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// //AbsRetType// 
-  | //RetType// | -> | ``:`` //TypeDef// 
+  | //RetType// | -> | ``:`` //FreeTypeDef// 
   |  |  **|**  | **eps**
-  | //AbsRetType// | -> | ``:`` ``abstract`` //TypeDef// 
+  | //AbsRetType// | -> | ``:`` ``abstract`` //FreeTypeDef// 
   |  |  **|**  | **eps**
   | //[FunDef]// | -> | **eps**
   |  |  **|**  | //FunDef// 
@@ -128,14 +137,15 @@ All other symbols are terminals.
   | //FunctionModifier// | -> | ``static`` 
   |  |  **|**  | ``internal`` 
   |  |  **|**  | ``implement`` 
-  |  |  **|**  | ``final | unique`` 
-  | //ClassField// | -> | //FieldModifier// //LIdent// ``:`` //TypeDef// 
-  |  |  **|**  | //LIdent// ``:`` //TypeDef// 
+  |  |  **|**  | ``final`` 
+  |  |  **|**  | ``unique`` 
+  | //ClassField// | -> | //FieldModifier// //LIdent// ``:`` //FreeTypeDef// 
+  |  |  **|**  | //LIdent// ``:`` //FreeTypeDef// 
   | //[ClassField]// | -> | **eps**
   |  |  **|**  | //ClassField// 
   |  |  **|**  | //ClassField// ``;`` //[ClassField]// 
-  | //FieldModifier// | -> | ``public`` 
-  |  |  **|**  | ``internal | unique`` 
+  | //FieldModifier// | -> | ``internal`` 
+  |  |  **|**  | ``unique`` 
   | //Expr// | -> | ``define`` ``{`` //[AsDef]// ``}`` ``in`` //Expr// 
   |  |  **|**  | ``define`` //AsDef// ``in`` //Expr// 
   |  |  **|**  | ``match`` //Expr// ``with`` ``{`` //[MatchClause]// ``}`` 
