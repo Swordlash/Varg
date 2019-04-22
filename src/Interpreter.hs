@@ -14,6 +14,6 @@ interpret text = interpreterResult
   where
     Right interpreterResult =
       catchError
-        (do (ParserState _ classes _ _, _) <- runPreprocessing text
-            return $ "[[Definitions]]\n\n" ++ intercalate "\n" (show <$> S.toList classes))
+        (do (classes, logs) <- preprocessClasses text
+            return $ logs ++ "[[Definitions]]\n\n" ++ intercalate "\n" (show <$> S.toList classes))
         (return . show)

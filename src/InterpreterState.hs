@@ -20,45 +20,86 @@ instance Show ParseException where
 
 type ParseMonad = Either ParseException
 
-data ParserState = ParserState
-  { classStubs          :: M.Map String (Int, DerivationKind, [DerivationKind])
-  , classHierarchy      :: S.Set Type
+type Stub = (Int, DerivationKind, [DerivationKind], M.Map String String)
+
+type Stubs = M.Map TypeName Stub
+
+type ClassHierarchy = S.Set Type
+
+type ClassContents = (S.Set Variant, S.Set Function)
+
+data PreprocessState = PreprocessState
+  { classStubs          :: Stubs
   , freshParamIdx       :: Int
   , templateParamSubsts :: M.Map String String
   }
 
-registerStub :: (String, Int, DerivationKind, [DerivationKind]) -> ParserState -> ParserState
-registerStub (name, params, deriv, impls) (ParserState s h i t) =
-  ParserState (M.insert name (params, deriv, impls) s) h 0 M.empty
-
-emptyParserState :: ParserState
-emptyParserState = ParserState M.empty S.empty 0 M.empty
-
-removeParamSubsts :: ParserState -> ParserState
-removeParamSubsts (ParserState s h _ _) = ParserState s h 0 M.empty
-
-registerClass :: Type -> ParserState -> ParserState
-registerClass typ (ParserState s h _ _) = ParserState s (S.insert typ h) 0 M.empty
-
-incrParamIdx :: ParserState -> ParserState
-incrParamIdx (ParserState s h i t) = ParserState s h (i + 1) t
-
-addSubst :: String -> String -> ParserState -> ParserState
-addSubst name alias (ParserState s h i t) = ParserState s h i (M.insert name alias t)
-
-bindName :: String -> ParserState -> ParserState
-bindName name (ParserState s h i t) = ParserState s h (i + 1) (M.insert name ("_t" ++ show i) t)
-
-data ParserRuntime = ParserRuntime
-  { currentParsedTypeName :: TypeName
+data HierarchyState = HierarchyState
+  { preparsedStubs :: Stubs
+  , classHierarchy :: ClassHierarchy
   }
 
-emptyParserRuntime :: ParserRuntime
-emptyParserRuntime = ParserRuntime ""
+registerStub :: (String, Int, DerivationKind, [DerivationKind]) -> PreprocessState -> PreprocessState
+registerStub (name, params, deriv, impls) (PreprocessState s i t) =
+  PreprocessState (M.insert name (params, deriv, impls, t) s) 0 M.empty
 
-setParsedTypeName :: TypeName -> ParserRuntime -> ParserRuntime
-setParsedTypeName name _ = ParserRuntime name
+emptyPreprocessState :: PreprocessState
+emptyPreprocessState = PreprocessState M.empty 0 M.empty
+
+emptyHierarchyState :: HierarchyState
+emptyHierarchyState = HierarchyState M.empty S.empty
+
+removeParamSubsts :: PreprocessState -> PreprocessState
+removeParamSubsts (PreprocessState s h _) = PreprocessState s 0 M.empty
+
+registerClass :: Type -> HierarchyState -> HierarchyState
+registerClass typ (HierarchyState s h) = HierarchyState s (S.insert typ h)
+
+incrParamIdx :: PreprocessState -> PreprocessState
+incrParamIdx (PreprocessState s i t) = PreprocessState s (i + 1) t
+
+addSubst :: String -> String -> PreprocessState -> PreprocessState
+addSubst name alias (PreprocessState s i t) = PreprocessState s i (M.insert name alias t)
+
+bindName :: String -> PreprocessState -> PreprocessState
+bindName name (PreprocessState s i t) = PreprocessState s (i + 1) (M.insert name ("_t" ++ show i) t)
+
+data PreprocessRuntime = PreprocessRuntime
+  { currentPreparsedTypeName :: TypeName
+  }
+
+data HierarchyRuntime = HierarchyRuntime
+  { currentParsedTypeName       :: TypeName
+  , currentParsedTypeConstrName :: String
+  , currentParsedTypeVariant    :: MemberName
+  , currentParsedField          :: MemberName
+  }
+
+emptyPreprocessRuntime :: PreprocessRuntime
+emptyPreprocessRuntime = PreprocessRuntime ""
+
+emptyHierarchyRuntime :: HierarchyRuntime
+emptyHierarchyRuntime = HierarchyRuntime "" "" "" ""
+
+setPreparsedTypeName :: TypeName -> PreprocessRuntime -> PreprocessRuntime
+setPreparsedTypeName name _ = PreprocessRuntime name
+
+setParsedTypeVariant :: MemberName -> HierarchyRuntime -> HierarchyRuntime
+setParsedTypeVariant vname (HierarchyRuntime name constr _ fld) = HierarchyRuntime name constr vname fld
+
+setParsedTypeName :: TypeName -> HierarchyRuntime -> HierarchyRuntime
+setParsedTypeName name (HierarchyRuntime _ c v f) = HierarchyRuntime name c v f
+
+setParsedField :: MemberName -> HierarchyRuntime -> HierarchyRuntime
+setParsedField fld (HierarchyRuntime n c v _) = HierarchyRuntime n c v fld
+
+setParsedTypeConstrName :: String -> HierarchyRuntime -> HierarchyRuntime
+setParsedTypeConstrName name (HierarchyRuntime n _ v f) = HierarchyRuntime n name v f
 
 type ParserLog = String
 
-type ParserT a = ReaderT ParserRuntime (StateT ParserState (WriterT ParserLog (ExceptT ParseException Identity))) a
+type ParserMonad a b c = ReaderT a (StateT b (WriterT ParserLog (ExceptT ParseException Identity))) c
+
+type PreprocessMonad c = ParserMonad PreprocessRuntime PreprocessState c
+
+type HierarchyMonad c = ParserMonad HierarchyRuntime HierarchyState c

@@ -1,11 +1,14 @@
 interface template Collection a where
     function atIndex (i:int) : abstract a
 
-template Set [a deriving Comparable a] implementing Collection a where
+template Set [a deriving Comparable [? super a]] implementing Collection a where
     Id
     
-template Map [a deriving Comparable a] b implementing Collection a, Collection b where
-    Id
+template Map [a deriving Collection ?] b implementing Collection a, Collection b where
+    Id has
+        size : Int
+        pointers : List (Map a b)
+        
 
 class WTF deriving Function Int (Funtion Int (Function Int (Function Void Void))) where
     Id
