@@ -3,25 +3,79 @@ module Types where
 import qualified AbsVarg   as AV
 import           Data.List (intercalate)
 import qualified Data.Set  as S
+import           PrintVarg
 
 type TypeName = String
 
 type MemberName = String
 
+data Expr
+  = Unparsed AV.Expr
+  | ELambda String
+            TypeDef
+            Expr
+  | EMember String
+            String
+  | ELet String
+         Expr
+         Expr
+  | EApply Expr
+           Expr
+  | EVar String
+  | EIfThenElse Expr
+                Expr
+                Expr
+  | EMatch Expr
+           [(Expr, Expr)]
+  | EBool Bool
+  | EInt Int
+  | EChar Char
+  | EDouble Double
+  | EWild
+  | ENative
+  | EAbstract
+  | EConst
+  deriving (Eq)
+
+instance Show Expr where
+  show (Unparsed expr) = printTree expr
+  show (ELambda name tdef expr) = "(\\" ++ name ++ " : " ++ show tdef ++ " -> " ++ show expr ++ ")"
+  show (EMember obj func) = obj ++ "." ++ func
+  show (ELet label val expr) = "let " ++ label ++ " = " ++ show val ++ " in " ++ show expr
+  show (EApply f x) = show f ++ "(" ++ show x ++ ")"
+  show (EVar name) = name
+  show (EIfThenElse ife thene elsee) = "if " ++ show ife ++ " then " ++ show thene ++ " else " ++ show elsee
+  show (EMatch val table) = "match " ++ show val ++ "with " ++ conds ++ "\n"
+    where
+      conds = concatMap (\(e, v) -> show e ++ " -> " ++ show v ++ "\n") table
+  show (EBool val) = show val
+  show (EInt val) = show val
+  show (EChar val) = show val
+  show (EDouble val) = show val
+  show EWild = "_"
+  show ENative = "native"
+  show EAbstract = "abstract"
+  show EConst = "const"
+
 data TypeDef
   = AnyType
   | InferredType String
                  [TypeParamConstraint]
+                 [TypeParamConstraint]
   | ConcreteType TypeName
                  [TypeParamConstraint]
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 instance Show TypeDef where
   show AnyType = "AnyType"
-  show (InferredType str constrs) =
-    if null constrs
-      then str
-      else "[" ++ str ++ " " ++ intercalate "," (map show constrs) ++ "]"
+  show (InferredType str mainconstrs constrs)
+    | null constrs =
+      if null mainconstrs
+        then str
+        else str ++ " " ++ intercalate "," (map show mainconstrs)
+    | null mainconstrs = "[" ++ str ++ " " ++ intercalate "," (map show constrs) ++ "]"
+    | otherwise =
+      "[(" ++ str ++ " " ++ intercalate "," (map show mainconstrs) ++ ") " ++ intercalate "," (map show constrs) ++ "]"
   show (ConcreteType str constrs) =
     if null constrs
       then str
@@ -32,7 +86,7 @@ data TypeParamConstraint
   | Exact TypeDef
   | Super TypeDef
   | Deriving TypeDef
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 instance Show TypeParamConstraint where
   show Any                = "?"
@@ -44,6 +98,14 @@ data TypeModifier
   = ModuleType
   | InterfaceType
   | SealedType
+  | NativeType
+  deriving (Eq)
+
+instance Show TypeModifier where
+  show ModuleType    = "module"
+  show InterfaceType = "interface"
+  show SealedType    = "sealed"
+  show NativeType    = "native"
 
 data MethodModifier
   = StaticMethod
@@ -51,28 +113,55 @@ data MethodModifier
   | ImplementMethod
   | FinalMethod
   | UniqueMethod
+  | NativeMethod
+  deriving (Eq)
+
+instance Show MethodModifier where
+  show StaticMethod    = "static"
+  show InternalMethod  = "internal"
+  show ImplementMethod = "implement"
+  show FinalMethod     = "final"
+  show UniqueMethod    = "unique"
+  show NativeMethod    = "native"
 
 data FieldModifier
   = InternalField
   | UniqueField
-
-data FunctionBody
-  = Const
-  | Body AV.Expr
   deriving (Eq)
 
+instance Show FieldModifier where
+  show InternalField = "internal"
+  show UniqueField   = "unique"
+
+data MemberModifier
+  = MethodModifier
+  | TypeModifier
+  deriving (Eq, Show)
+
 data Function = Function
-  { qualifiedFunName   :: MemberName
+  { functionModifiers  :: [MemberModifier]
+  , qualifiedFunName   :: MemberName
   , functionInputType  :: TypeDef
   , functionOutputType :: TypeDef
-  , functionBody       :: FunctionBody
-  } deriving (Eq)
+  , functionBody       :: Expr
+  }
+
+functionToTypedef :: Function -> TypeDef
+functionToTypedef (Function _ _ int outt _) = ConcreteType "Function" [Exact int, Exact outt]
+
+instance Eq Function where
+  f1 == f2 =
+    (qualifiedFunName f1 == qualifiedFunName f2) &&
+    (functionInputType f1 == functionInputType f2) && (functionOutputType f1 == functionOutputType f2)
 
 instance Show Function where
-  show (Function name int outt _) = "function " ++ name ++ " : " ++ show int ++ " -> " ++ show outt
+  show (Function modifs name int outt b) =
+    unwords (map show modifs) ++ "function " ++ name ++ " : " ++ show int ++ " -> " ++ show outt ++ " = " ++ show b
 
 instance Ord Function where
-  f1 <= f2 = qualifiedFunName f1 <= qualifiedFunName f2
+  f1 <= f2 =
+    (qualifiedFunName f1 <= qualifiedFunName f2) &&
+    (functionInputType f1 <= functionInputType f2) && (functionOutputType f1 <= functionOutputType f2)
 
 data DerivationKind
   = Unbound String
@@ -124,13 +213,6 @@ data Type
          , typeMembers          :: S.Set Function }
   deriving (Eq)
 
-data Instance
-  = PrimInstance { instanceName :: String
-                 , instanceType :: Type }
-  | Instance { instanceName       :: String
-             , instanceType       :: Type
-             , instanceParameters :: [TypeName] }
-
 genParams :: Int -> [String]
 genParams n = map (\n -> "_t" ++ show n) [0 .. (n - 1)]
 
@@ -141,7 +223,10 @@ instance Show Type where
     qualifiedTypeName t ++
     " " ++
     intercalate ", " (zipWith showParam params (typeParamConstraints t)) ++
-    deriv ++ impl ++ intercalate "\n" (map show (S.toList $ typeVariants t)) ++ "\n"
+    deriv ++
+    impl ++
+    intercalate "\n" (map show (S.toList $ typeVariants t)) ++
+    "\n\n    " ++ intercalate "\n    " (map show (S.toList $ typeMembers t)) ++ "\n"
     where
       deriv = " deriving " ++ show (supertype t)
       impl = " implementing " ++ intercalate ", " (show <$> implementing t)

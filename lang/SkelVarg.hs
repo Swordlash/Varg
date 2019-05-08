@@ -40,7 +40,6 @@ transConstrTypeParam x =
     InferredTypeParam lident                     -> failure x
     ConcreteTypeParam uident                     -> failure x
     WildcardTypeParam                            -> failure x
-    AnotherClassTypeParam typedef                -> failure x
     SuperConstrainedTypeParam lident typedefs    -> failure x
     AnySuperConstrainedTypeParam typedefs        -> failure x
     DerivingConstrainedTypeParam lident typedefs -> failure x
@@ -68,8 +67,8 @@ transFreeTypeDef x =
 transArgDef :: ArgDef -> Result
 transArgDef x =
   case x of
-    ArgumentDefinition lident typedef -> failure x
-    InferredArgumentDef lident        -> failure x
+    ArgumentDefinition lident freetypedef -> failure x
+    InferredArgumentDef lident            -> failure x
 
 transSuperclassType :: SuperclassType -> Result
 transSuperclassType x =
@@ -101,6 +100,7 @@ transClassModifier x =
     ClassModifier_module    -> failure x
     ClassModifier_interface -> failure x
     ClassModifier_sealed    -> failure x
+    ClassModifier_native    -> failure x
 
 transClassContents :: ClassContents -> Result
 transClassContents x =
@@ -116,8 +116,8 @@ transMemberDef x =
 transFunDef :: FunDef -> Result
 transFunDef x =
   case x of
-    MemberFunctionDefinition functionmodifiers lident argdefs rettype expr -> failure x
-    AbstractFunctionDefinition functionmodifiers lident argdefs absrettype -> failure x
+    MemberFunctionDefinition functionmodifiers functionname funtemplateparams argdefs rettype expr -> failure x
+    AbstractFunctionDefinition functionmodifiers functionname funtemplateparams argdefs absrettype -> failure x
 
 transRetType :: RetType -> Result
 transRetType x =
@@ -125,11 +125,42 @@ transRetType x =
     ReturnType freetypedef -> failure x
     InferredReturnType     -> failure x
 
+transFunctionName :: FunctionName -> Result
+transFunctionName x =
+  case x of
+    FFunction lident   -> failure x
+    FOperator operator -> failure x
+
+transOperator :: Operator -> Result
+transOperator x =
+  case x of
+    Operator1  -> failure x
+    Operator2  -> failure x
+    Operator3  -> failure x
+    Operator4  -> failure x
+    Operator5  -> failure x
+    Operator6  -> failure x
+    Operator7  -> failure x
+    Operator8  -> failure x
+    Operator9  -> failure x
+    Operator10 -> failure x
+
 transAbsRetType :: AbsRetType -> Result
 transAbsRetType x =
   case x of
     AbsReturnType freetypedef -> failure x
     AbsInferredReturnType     -> failure x
+
+transFunTemplateParams :: FunTemplateParams -> Result
+transFunTemplateParams x =
+  case x of
+    NoFunctionTemplateParameter               -> failure x
+    FunctionTemplateParameters templateparams -> failure x
+
+transTemplateParam :: TemplateParam -> Result
+transTemplateParam x =
+  case x of
+    TemplateParameter constrtypeparam -> failure x
 
 transFunctionModifier :: FunctionModifier -> Result
 transFunctionModifier x =
@@ -139,6 +170,7 @@ transFunctionModifier x =
     FunctionModifier_implement -> failure x
     FunctionModifier_final     -> failure x
     FunctionModifier_unique    -> failure x
+    FunctionModifier_native    -> failure x
 
 transClassField :: ClassField -> Result
 transClassField x =
@@ -172,8 +204,11 @@ transExpr x =
     EMul expr1 expr2              -> failure x
     EDiv expr1 expr2              -> failure x
     EPow expr1 expr2              -> failure x
+    EBoolean boolean              -> failure x
     EInt integer                  -> failure x
     EReal double                  -> failure x
+    EChar char                    -> failure x
+    EString string                -> failure x
     EWild                         -> failure x
 
 transAsDef :: AsDef -> Result
@@ -189,11 +224,12 @@ transMatchClause x =
 transFunctorial :: Functorial -> Result
 transFunctorial x =
   case x of
-    ThisFunctor            -> failure x
-    SuperFunctor           -> failure x
-    TypeFunctor uident     -> failure x
-    InstanceFunctor lident -> failure x
-    MemberFunctor mfun     -> failure x
+    ThisFunctor              -> failure x
+    SuperFunctor             -> failure x
+    TypeFunctor uident       -> failure x
+    InstanceFunctor lident   -> failure x
+    MemberFunctor mfun       -> failure x
+    OperatorFunctor operator -> failure x
 
 transArg :: Arg -> Result
 transArg x =
@@ -205,3 +241,9 @@ transListElem :: ListElem -> Result
 transListElem x =
   case x of
     EListElem expr -> failure x
+
+transBoolean :: Boolean -> Result
+transBoolean x =
+  case x of
+    ETrue  -> failure x
+    EFalse -> failure x

@@ -26,7 +26,6 @@ data ConstrTypeParam
   = InferredTypeParam LIdent
   | ConcreteTypeParam UIdent
   | WildcardTypeParam
-  | AnotherClassTypeParam TypeDef
   | SuperConstrainedTypeParam LIdent
                               [TypeDef]
   | AnySuperConstrainedTypeParam [TypeDef]
@@ -57,7 +56,7 @@ data FreeTypeDef
 
 data ArgDef
   = ArgumentDefinition LIdent
-                       TypeDef
+                       FreeTypeDef
   | InferredArgumentDef LIdent
   deriving (Eq, Ord, Show, Read)
 
@@ -96,6 +95,7 @@ data ClassModifier
   = ClassModifier_module
   | ClassModifier_interface
   | ClassModifier_sealed
+  | ClassModifier_native
   deriving (Eq, Ord, Show, Read)
 
 data ClassContents =
@@ -111,12 +111,14 @@ data MemberDef
 
 data FunDef
   = MemberFunctionDefinition [FunctionModifier]
-                             LIdent
+                             FunctionName
+                             FunTemplateParams
                              [ArgDef]
                              RetType
                              Expr
   | AbstractFunctionDefinition [FunctionModifier]
-                               LIdent
+                               FunctionName
+                               FunTemplateParams
                                [ArgDef]
                                AbsRetType
   deriving (Eq, Ord, Show, Read)
@@ -126,9 +128,36 @@ data RetType
   | InferredReturnType
   deriving (Eq, Ord, Show, Read)
 
+data FunctionName
+  = FFunction LIdent
+  | FOperator Operator
+  deriving (Eq, Ord, Show, Read)
+
+data Operator
+  = Operator1
+  | Operator2
+  | Operator3
+  | Operator4
+  | Operator5
+  | Operator6
+  | Operator7
+  | Operator8
+  | Operator9
+  | Operator10
+  deriving (Eq, Ord, Show, Read)
+
 data AbsRetType
   = AbsReturnType FreeTypeDef
   | AbsInferredReturnType
+  deriving (Eq, Ord, Show, Read)
+
+data FunTemplateParams
+  = NoFunctionTemplateParameter
+  | FunctionTemplateParameters [TemplateParam]
+  deriving (Eq, Ord, Show, Read)
+
+data TemplateParam =
+  TemplateParameter ConstrTypeParam
   deriving (Eq, Ord, Show, Read)
 
 data FunctionModifier
@@ -137,6 +166,7 @@ data FunctionModifier
   | FunctionModifier_implement
   | FunctionModifier_final
   | FunctionModifier_unique
+  | FunctionModifier_native
   deriving (Eq, Ord, Show, Read)
 
 data ClassField
@@ -188,8 +218,11 @@ data Expr
          Expr
   | EPow Expr
          Expr
+  | EBoolean Boolean
   | EInt Integer
   | EReal Double
+  | EChar Char
+  | EString String
   | EWild
   deriving (Eq, Ord, Show, Read)
 
@@ -209,6 +242,7 @@ data Functorial
   | TypeFunctor UIdent
   | InstanceFunctor LIdent
   | MemberFunctor MFun
+  | OperatorFunctor Operator
   deriving (Eq, Ord, Show, Read)
 
 data Arg
@@ -218,4 +252,9 @@ data Arg
 
 data ListElem =
   EListElem Expr
+  deriving (Eq, Ord, Show, Read)
+
+data Boolean
+  = ETrue
+  | EFalse
   deriving (Eq, Ord, Show, Read)

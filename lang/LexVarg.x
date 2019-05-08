@@ -21,7 +21,7 @@ $i = [$l $d _ ']          -- identifier character
 $u = [\0-\255]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \; | \? | \( | \) | \[ | \] | \, | \: | \{ | \} | \= | \- \> | \\ | \= \> | \= \= | \< | \> | \< \= | \> \= | \+ | \- | \* | \/ | \^ | \_
+   \; | \? | \[ | \] | \( | \) | \, | \: | \{ | \} | \= | \+ | \- | \* | \/ | \^ | \< | \> | \< \= | \> \= | \= \= | \- \> | \\ | \= \> | \' | \" | \_
 
 :-
 "#" [.]* ; -- Toss single line comments
@@ -34,8 +34,8 @@ $s ($l | $d)* { tok (\p s -> PT p (eitherResIdent (T_LIdent . share) s)) }
 \. ($l | $d)* { tok (\p s -> PT p (eitherResIdent (T_MFun . share) s)) }
 
 $l $i*   { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
-
-
+\" ([$u # [\" \\ \n]] | (\\ (\" | \\ | \' | n | t)))* \"{ tok (\p s -> PT p (TL $ share $ unescapeInitTail s)) }
+\' ($u # [\' \\] | \\ [\\ \' n t]) \'  { tok (\p s -> PT p (TC $ share s))  }
 $d+      { tok (\p s -> PT p (TI $ share s))    }
 $d+ \. $d+ (e (\-)? $d+)? { tok (\p s -> PT p (TD $ share s)) }
 
@@ -107,7 +107,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "define" 27 (b "==" 14 (b "->" 7 (b "+" 4 (b ")" 2 (b "(" 1 N N) (b "*" 3 N N)) (b "-" 6 (b "," 5 N N) N)) (b "<" 11 (b ":" 9 (b "/" 8 N N) (b ";" 10 N N)) (b "=" 13 (b "<=" 12 N N) N))) (b "]" 21 (b "?" 18 (b ">" 16 (b "=>" 15 N N) (b ">=" 17 N N)) (b "\\" 20 (b "[" 19 N N) N)) (b "abstract" 24 (b "_" 23 (b "^" 22 N N) N) (b "class" 26 (b "as" 25 N N) N)))) (b "module" 41 (b "implement" 34 (b "function" 31 (b "else" 29 (b "deriving" 28 N N) (b "final" 30 N N)) (b "if" 33 (b "has" 32 N N) N)) (b "interface" 38 (b "import" 36 (b "implementing" 35 N N) (b "in" 37 N N)) (b "match" 40 (b "internal" 39 N N) N))) (b "this" 48 (b "super" 45 (b "static" 43 (b "sealed" 42 N N) (b "struct" 44 N N)) (b "then" 47 (b "template" 46 N N) N)) (b "with" 51 (b "where" 50 (b "unique" 49 N N) N) (b "}" 53 (b "{" 52 N N) N))))
+resWords = b "deriving" 30 (b "=" 15 (b "-" 8 (b ")" 4 (b "'" 2 (b "\"" 1 N N) (b "(" 3 N N)) (b "+" 6 (b "*" 5 N N) (b "," 7 N N))) (b ";" 12 (b "/" 10 (b "->" 9 N N) (b ":" 11 N N)) (b "<=" 14 (b "<" 13 N N) N))) (b "]" 23 (b ">=" 19 (b "=>" 17 (b "==" 16 N N) (b ">" 18 N N)) (b "[" 21 (b "?" 20 N N) (b "\\" 22 N N))) (b "as" 27 (b "_" 25 (b "^" 24 N N) (b "abstract" 26 N N)) (b "define" 29 (b "class" 28 N N) N)))) (b "native" 45 (b "implementing" 38 (b "function" 34 (b "false" 32 (b "else" 31 N N) (b "final" 33 N N)) (b "if" 36 (b "has" 35 N N) (b "implement" 37 N N))) (b "internal" 42 (b "in" 40 (b "import" 39 N N) (b "interface" 41 N N)) (b "module" 44 (b "match" 43 N N) N))) (b "this" 52 (b "super" 49 (b "static" 47 (b "sealed" 46 N N) (b "struct" 48 N N)) (b "then" 51 (b "template" 50 N N) N)) (b "with" 56 (b "unique" 54 (b "true" 53 N N) (b "where" 55 N N)) (b "}" 58 (b "{" 57 N N) N))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

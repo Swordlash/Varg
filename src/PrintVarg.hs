@@ -113,7 +113,6 @@ instance Print ConstrTypeParam where
       InferredTypeParam lident -> prPrec i 0 (concatD [prt 0 lident])
       ConcreteTypeParam uident -> prPrec i 0 (concatD [prt 0 uident])
       WildcardTypeParam -> prPrec i 0 (concatD [doc (showString "?")])
-      AnotherClassTypeParam typedef -> prPrec i 0 (concatD [doc (showString "("), prt 0 typedef, doc (showString ")")])
       SuperConstrainedTypeParam lident typedefs ->
         prPrec
           i
@@ -173,17 +172,15 @@ instance Print FreeTypeDef where
     case e of
       FreeType uident primfreetypes -> prPrec i 0 (concatD [prt 0 uident, prt 0 primfreetypes])
       InferredFreeType lident primfreetypes -> prPrec i 0 (concatD [prt 0 lident, prt 0 primfreetypes])
-  prtList _ [x]    = (concatD [prt 0 x])
-  prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
 
 instance Print ArgDef where
   prt i e =
     case e of
-      ArgumentDefinition lident typedef ->
+      ArgumentDefinition lident freetypedef ->
         prPrec
           i
           0
-          (concatD [doc (showString "("), prt 0 lident, doc (showString ":"), prt 0 typedef, doc (showString ")")])
+          (concatD [doc (showString "("), prt 0 lident, doc (showString ":"), prt 0 freetypedef, doc (showString ")")])
       InferredArgumentDef lident -> prPrec i 0 (concatD [prt 0 lident])
   prtList _ []     = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
@@ -263,6 +260,7 @@ instance Print ClassModifier where
       ClassModifier_module -> prPrec i 0 (concatD [doc (showString "module")])
       ClassModifier_interface -> prPrec i 0 (concatD [doc (showString "interface")])
       ClassModifier_sealed -> prPrec i 0 (concatD [doc (showString "sealed")])
+      ClassModifier_native -> prPrec i 0 (concatD [doc (showString "native")])
   prtList _ []     = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
 
@@ -287,24 +285,32 @@ instance Print MemberDef where
 instance Print FunDef where
   prt i e =
     case e of
-      MemberFunctionDefinition functionmodifiers lident argdefs rettype expr ->
+      MemberFunctionDefinition functionmodifiers functionname funtemplateparams argdefs rettype expr ->
         prPrec
           i
           0
           (concatD
              [ prt 0 functionmodifiers
              , doc (showString "function")
-             , prt 0 lident
+             , prt 0 functionname
+             , prt 0 funtemplateparams
              , prt 0 argdefs
              , prt 0 rettype
              , doc (showString "=")
              , prt 0 expr
              ])
-      AbstractFunctionDefinition functionmodifiers lident argdefs absrettype ->
+      AbstractFunctionDefinition functionmodifiers functionname funtemplateparams argdefs absrettype ->
         prPrec
           i
           0
-          (concatD [prt 0 functionmodifiers, doc (showString "function"), prt 0 lident, prt 0 argdefs, prt 0 absrettype])
+          (concatD
+             [ prt 0 functionmodifiers
+             , doc (showString "function")
+             , prt 0 functionname
+             , prt 0 funtemplateparams
+             , prt 0 argdefs
+             , prt 0 absrettype
+             ])
   prtList _ []     = (concatD [])
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
@@ -315,12 +321,46 @@ instance Print RetType where
       ReturnType freetypedef -> prPrec i 0 (concatD [doc (showString ":"), prt 0 freetypedef])
       InferredReturnType -> prPrec i 0 (concatD [])
 
+instance Print FunctionName where
+  prt i e =
+    case e of
+      FFunction lident -> prPrec i 0 (concatD [prt 0 lident])
+      FOperator operator -> prPrec i 0 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
+
+instance Print Operator where
+  prt i e =
+    case e of
+      Operator1  -> prPrec i 0 (concatD [doc (showString "+")])
+      Operator2  -> prPrec i 0 (concatD [doc (showString "-")])
+      Operator3  -> prPrec i 0 (concatD [doc (showString "*")])
+      Operator4  -> prPrec i 0 (concatD [doc (showString "/")])
+      Operator5  -> prPrec i 0 (concatD [doc (showString "^")])
+      Operator6  -> prPrec i 0 (concatD [doc (showString "<")])
+      Operator7  -> prPrec i 0 (concatD [doc (showString ">")])
+      Operator8  -> prPrec i 0 (concatD [doc (showString "<=")])
+      Operator9  -> prPrec i 0 (concatD [doc (showString ">=")])
+      Operator10 -> prPrec i 0 (concatD [doc (showString "==")])
+
 instance Print AbsRetType where
   prt i e =
     case e of
       AbsReturnType freetypedef ->
         prPrec i 0 (concatD [doc (showString ":"), doc (showString "abstract"), prt 0 freetypedef])
       AbsInferredReturnType -> prPrec i 0 (concatD [])
+
+instance Print FunTemplateParams where
+  prt i e =
+    case e of
+      NoFunctionTemplateParameter -> prPrec i 0 (concatD [])
+      FunctionTemplateParameters templateparams ->
+        prPrec i 0 (concatD [doc (showString "<"), prt 0 templateparams, doc (showString ">")])
+
+instance Print TemplateParam where
+  prt i e =
+    case e of
+      TemplateParameter constrtypeparam -> prPrec i 0 (concatD [prt 0 constrtypeparam])
+  prtList _ [x]    = (concatD [prt 0 x])
+  prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
 
 instance Print FunctionModifier where
   prt i e =
@@ -330,6 +370,7 @@ instance Print FunctionModifier where
       FunctionModifier_implement -> prPrec i 0 (concatD [doc (showString "implement")])
       FunctionModifier_final -> prPrec i 0 (concatD [doc (showString "final")])
       FunctionModifier_unique -> prPrec i 0 (concatD [doc (showString "unique")])
+      FunctionModifier_native -> prPrec i 0 (concatD [doc (showString "native")])
   prtList _ []     = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
 
@@ -417,8 +458,11 @@ instance Print Expr where
       EMul expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "*"), prt 4 expr2])
       EDiv expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "/"), prt 4 expr2])
       EPow expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "^"), prt 4 expr2])
+      EBoolean boolean -> prPrec i 6 (concatD [prt 0 boolean])
       EInt n -> prPrec i 6 (concatD [prt 0 n])
       EReal d -> prPrec i 6 (concatD [prt 0 d])
+      EChar c -> prPrec i 6 (concatD [doc (showString "'"), prt 0 c, doc (showString "'")])
+      EString str -> prPrec i 6 (concatD [doc (showString "\""), prt 0 str, doc (showString "\"")])
       EWild -> prPrec i 6 (concatD [doc (showString "_")])
 
 instance Print AsDef where
@@ -433,7 +477,6 @@ instance Print MatchClause where
   prt i e =
     case e of
       IMatchClause expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "->"), prt 0 expr2])
-  prtList _ []     = (concatD [])
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
 
@@ -445,6 +488,7 @@ instance Print Functorial where
       TypeFunctor uident -> prPrec i 0 (concatD [prt 0 uident])
       InstanceFunctor lident -> prPrec i 0 (concatD [prt 0 lident])
       MemberFunctor mfun -> prPrec i 0 (concatD [prt 0 mfun])
+      OperatorFunctor operator -> prPrec i 0 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
 
 instance Print Arg where
   prt i e =
@@ -461,3 +505,9 @@ instance Print ListElem where
   prtList _ []     = (concatD [])
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
+
+instance Print Boolean where
+  prt i e =
+    case e of
+      ETrue  -> prPrec i 0 (concatD [doc (showString "true")])
+      EFalse -> prPrec i 0 (concatD [doc (showString "false")])

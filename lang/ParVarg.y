@@ -13,62 +13,69 @@ import ErrM
 %monad { Err } { thenM } { returnM }
 %tokentype {Token}
 %token
-  '(' { PT _ (TS _ 1) }
-  ')' { PT _ (TS _ 2) }
-  '*' { PT _ (TS _ 3) }
-  '+' { PT _ (TS _ 4) }
-  ',' { PT _ (TS _ 5) }
-  '-' { PT _ (TS _ 6) }
-  '->' { PT _ (TS _ 7) }
-  '/' { PT _ (TS _ 8) }
-  ':' { PT _ (TS _ 9) }
-  ';' { PT _ (TS _ 10) }
-  '<' { PT _ (TS _ 11) }
-  '<=' { PT _ (TS _ 12) }
-  '=' { PT _ (TS _ 13) }
-  '==' { PT _ (TS _ 14) }
-  '=>' { PT _ (TS _ 15) }
-  '>' { PT _ (TS _ 16) }
-  '>=' { PT _ (TS _ 17) }
-  '?' { PT _ (TS _ 18) }
-  '[' { PT _ (TS _ 19) }
-  '\\' { PT _ (TS _ 20) }
-  ']' { PT _ (TS _ 21) }
-  '^' { PT _ (TS _ 22) }
-  '_' { PT _ (TS _ 23) }
-  'abstract' { PT _ (TS _ 24) }
-  'as' { PT _ (TS _ 25) }
-  'class' { PT _ (TS _ 26) }
-  'define' { PT _ (TS _ 27) }
-  'deriving' { PT _ (TS _ 28) }
-  'else' { PT _ (TS _ 29) }
-  'final' { PT _ (TS _ 30) }
-  'function' { PT _ (TS _ 31) }
-  'has' { PT _ (TS _ 32) }
-  'if' { PT _ (TS _ 33) }
-  'implement' { PT _ (TS _ 34) }
-  'implementing' { PT _ (TS _ 35) }
-  'import' { PT _ (TS _ 36) }
-  'in' { PT _ (TS _ 37) }
-  'interface' { PT _ (TS _ 38) }
-  'internal' { PT _ (TS _ 39) }
-  'match' { PT _ (TS _ 40) }
-  'module' { PT _ (TS _ 41) }
-  'sealed' { PT _ (TS _ 42) }
-  'static' { PT _ (TS _ 43) }
-  'struct' { PT _ (TS _ 44) }
-  'super' { PT _ (TS _ 45) }
-  'template' { PT _ (TS _ 46) }
-  'then' { PT _ (TS _ 47) }
-  'this' { PT _ (TS _ 48) }
-  'unique' { PT _ (TS _ 49) }
-  'where' { PT _ (TS _ 50) }
-  'with' { PT _ (TS _ 51) }
-  '{' { PT _ (TS _ 52) }
-  '}' { PT _ (TS _ 53) }
+  '\"' { PT _ (TS _ 1) }
+  '\'' { PT _ (TS _ 2) }
+  '(' { PT _ (TS _ 3) }
+  ')' { PT _ (TS _ 4) }
+  '*' { PT _ (TS _ 5) }
+  '+' { PT _ (TS _ 6) }
+  ',' { PT _ (TS _ 7) }
+  '-' { PT _ (TS _ 8) }
+  '->' { PT _ (TS _ 9) }
+  '/' { PT _ (TS _ 10) }
+  ':' { PT _ (TS _ 11) }
+  ';' { PT _ (TS _ 12) }
+  '<' { PT _ (TS _ 13) }
+  '<=' { PT _ (TS _ 14) }
+  '=' { PT _ (TS _ 15) }
+  '==' { PT _ (TS _ 16) }
+  '=>' { PT _ (TS _ 17) }
+  '>' { PT _ (TS _ 18) }
+  '>=' { PT _ (TS _ 19) }
+  '?' { PT _ (TS _ 20) }
+  '[' { PT _ (TS _ 21) }
+  '\\' { PT _ (TS _ 22) }
+  ']' { PT _ (TS _ 23) }
+  '^' { PT _ (TS _ 24) }
+  '_' { PT _ (TS _ 25) }
+  'abstract' { PT _ (TS _ 26) }
+  'as' { PT _ (TS _ 27) }
+  'class' { PT _ (TS _ 28) }
+  'define' { PT _ (TS _ 29) }
+  'deriving' { PT _ (TS _ 30) }
+  'else' { PT _ (TS _ 31) }
+  'false' { PT _ (TS _ 32) }
+  'final' { PT _ (TS _ 33) }
+  'function' { PT _ (TS _ 34) }
+  'has' { PT _ (TS _ 35) }
+  'if' { PT _ (TS _ 36) }
+  'implement' { PT _ (TS _ 37) }
+  'implementing' { PT _ (TS _ 38) }
+  'import' { PT _ (TS _ 39) }
+  'in' { PT _ (TS _ 40) }
+  'interface' { PT _ (TS _ 41) }
+  'internal' { PT _ (TS _ 42) }
+  'match' { PT _ (TS _ 43) }
+  'module' { PT _ (TS _ 44) }
+  'native' { PT _ (TS _ 45) }
+  'sealed' { PT _ (TS _ 46) }
+  'static' { PT _ (TS _ 47) }
+  'struct' { PT _ (TS _ 48) }
+  'super' { PT _ (TS _ 49) }
+  'template' { PT _ (TS _ 50) }
+  'then' { PT _ (TS _ 51) }
+  'this' { PT _ (TS _ 52) }
+  'true' { PT _ (TS _ 53) }
+  'unique' { PT _ (TS _ 54) }
+  'where' { PT _ (TS _ 55) }
+  'with' { PT _ (TS _ 56) }
+  '{' { PT _ (TS _ 57) }
+  '}' { PT _ (TS _ 58) }
 
 L_integ  { PT _ (TI $$) }
 L_doubl  { PT _ (TD $$) }
+L_charac { PT _ (TC $$) }
+L_quoted { PT _ (TL $$) }
 L_UIdent { PT _ (T_UIdent $$) }
 L_LIdent { PT _ (T_LIdent $$) }
 L_MFun { PT _ (T_MFun $$) }
@@ -78,6 +85,8 @@ L_MFun { PT _ (T_MFun $$) }
 
 Integer :: { Integer } : L_integ  { (read ( $1)) :: Integer }
 Double  :: { Double }  : L_doubl  { (read ( $1)) :: Double }
+Char    :: { Char }    : L_charac { (read ( $1)) :: Char }
+String  :: { String }  : L_quoted {  $1 }
 UIdent    :: { UIdent} : L_UIdent { UIdent ($1)}
 LIdent    :: { LIdent} : L_LIdent { LIdent ($1)}
 MFun    :: { MFun} : L_MFun { MFun ($1)}
@@ -99,7 +108,6 @@ ConstrTypeParam :: { ConstrTypeParam }
 ConstrTypeParam : LIdent { AbsVarg.InferredTypeParam $1 }
                 | UIdent { AbsVarg.ConcreteTypeParam $1 }
                 | '?' { AbsVarg.WildcardTypeParam }
-                | '(' TypeDef ')' { AbsVarg.AnotherClassTypeParam $2 }
                 | '[' LIdent 'super' ListTypeDef ']' { AbsVarg.SuperConstrainedTypeParam $2 $4 }
                 | '[' '?' 'super' ListTypeDef ']' { AbsVarg.AnySuperConstrainedTypeParam $4 }
                 | '[' LIdent 'deriving' ListTypeDef ']' { AbsVarg.DerivingConstrainedTypeParam $2 $4 }
@@ -123,9 +131,6 @@ FreeTypeDef : UIdent ListPrimFreeType { AbsVarg.FreeType $1 (reverse $2) }
             | FreeTypeDef1 { $1 }
 FreeTypeDef1 :: { FreeTypeDef }
 FreeTypeDef1 : '(' FreeTypeDef ')' { $2 }
-ListFreeTypeDef :: { [FreeTypeDef] }
-ListFreeTypeDef : FreeTypeDef { (:[]) $1 }
-                | FreeTypeDef ',' ListFreeTypeDef { (:) $1 $3 }
 ListPrimFreeType :: { [PrimFreeType] }
 ListPrimFreeType : {- empty -} { [] }
                  | ListPrimFreeType PrimFreeType { flip (:) $1 $2 }
@@ -133,7 +138,7 @@ ListArgDef :: { [ArgDef] }
 ListArgDef : {- empty -} { [] }
            | ListArgDef ArgDef { flip (:) $1 $2 }
 ArgDef :: { ArgDef }
-ArgDef : '(' LIdent ':' TypeDef ')' { AbsVarg.ArgumentDefinition $2 $4 }
+ArgDef : '(' LIdent ':' FreeTypeDef ')' { AbsVarg.ArgumentDefinition $2 $4 }
        | LIdent { AbsVarg.InferredArgumentDef $1 }
 SuperclassType :: { SuperclassType }
 SuperclassType : FreeTypeDef { AbsVarg.Superclass $1 }
@@ -157,6 +162,7 @@ ClassModifier :: { ClassModifier }
 ClassModifier : 'module' { AbsVarg.ClassModifier_module }
               | 'interface' { AbsVarg.ClassModifier_interface }
               | 'sealed' { AbsVarg.ClassModifier_sealed }
+              | 'native' { AbsVarg.ClassModifier_native }
 ClassContents :: { ClassContents }
 ClassContents : ListMemberDef ListFunDef { AbsVarg.ClassContent $1 $2 }
 MemberDef :: { MemberDef }
@@ -167,14 +173,36 @@ ListMemberDef : {- empty -} { [] }
               | MemberDef { (:[]) $1 }
               | MemberDef ';' ListMemberDef { (:) $1 $3 }
 FunDef :: { FunDef }
-FunDef : ListFunctionModifier 'function' LIdent ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 (reverse $4) $5 $7 }
-       | ListFunctionModifier 'function' LIdent ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 (reverse $4) $5 }
+FunDef : ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 $4 (reverse $5) $6 $8 }
+       | ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 $4 (reverse $5) $6 }
 RetType :: { RetType }
 RetType : ':' FreeTypeDef { AbsVarg.ReturnType $2 }
         | {- empty -} { AbsVarg.InferredReturnType }
+FunctionName :: { FunctionName }
+FunctionName : LIdent { AbsVarg.FFunction $1 }
+             | '(' Operator ')' { AbsVarg.FOperator $2 }
+Operator :: { Operator }
+Operator : '+' { AbsVarg.Operator1 }
+         | '-' { AbsVarg.Operator2 }
+         | '*' { AbsVarg.Operator3 }
+         | '/' { AbsVarg.Operator4 }
+         | '^' { AbsVarg.Operator5 }
+         | '<' { AbsVarg.Operator6 }
+         | '>' { AbsVarg.Operator7 }
+         | '<=' { AbsVarg.Operator8 }
+         | '>=' { AbsVarg.Operator9 }
+         | '==' { AbsVarg.Operator10 }
 AbsRetType :: { AbsRetType }
 AbsRetType : ':' 'abstract' FreeTypeDef { AbsVarg.AbsReturnType $3 }
            | {- empty -} { AbsVarg.AbsInferredReturnType }
+FunTemplateParams :: { FunTemplateParams }
+FunTemplateParams : {- empty -} { AbsVarg.NoFunctionTemplateParameter }
+                  | '<' ListTemplateParam '>' { AbsVarg.FunctionTemplateParameters $2 }
+TemplateParam :: { TemplateParam }
+TemplateParam : ConstrTypeParam { AbsVarg.TemplateParameter $1 }
+ListTemplateParam :: { [TemplateParam] }
+ListTemplateParam : TemplateParam { (:[]) $1 }
+                  | TemplateParam ',' ListTemplateParam { (:) $1 $3 }
 ListFunDef :: { [FunDef] }
 ListFunDef : {- empty -} { [] }
            | FunDef { (:[]) $1 }
@@ -188,6 +216,7 @@ FunctionModifier : 'static' { AbsVarg.FunctionModifier_static }
                  | 'implement' { AbsVarg.FunctionModifier_implement }
                  | 'final' { AbsVarg.FunctionModifier_final }
                  | 'unique' { AbsVarg.FunctionModifier_unique }
+                 | 'native' { AbsVarg.FunctionModifier_native }
 ClassField :: { ClassField }
 ClassField : FieldModifier LIdent ':' FreeTypeDef { AbsVarg.ModifiedClassField $1 $2 $4 }
            | LIdent ':' FreeTypeDef { AbsVarg.NormalClassField $1 $3 }
@@ -213,8 +242,7 @@ ListAsDef : {- empty -} { [] }
 AsDef :: { AsDef }
 AsDef : Expr 'as' LIdent { AbsVarg.IDefinition $1 $3 }
 ListMatchClause :: { [MatchClause] }
-ListMatchClause : {- empty -} { [] }
-                | MatchClause { (:[]) $1 }
+ListMatchClause : MatchClause { (:[]) $1 }
                 | MatchClause ';' ListMatchClause { (:) $1 $3 }
 MatchClause :: { MatchClause }
 MatchClause : Expr '->' Expr { AbsVarg.IMatchClause $1 $3 }
@@ -224,6 +252,7 @@ Functorial : 'this' { AbsVarg.ThisFunctor }
            | UIdent { AbsVarg.TypeFunctor $1 }
            | LIdent { AbsVarg.InstanceFunctor $1 }
            | MFun { AbsVarg.MemberFunctor $1 }
+           | '(' Operator ')' { AbsVarg.OperatorFunctor $2 }
 Arg :: { Arg }
 Arg : Expr6 { AbsVarg.ArgExpr $1 }
     | Functorial { AbsVarg.ArgFunc $1 }
@@ -256,10 +285,15 @@ Expr3 : Expr3 '*' Expr4 { AbsVarg.EMul $1 $3 }
 Expr4 :: { Expr }
 Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 } | Expr5 { $1 }
 Expr6 :: { Expr }
-Expr6 : Integer { AbsVarg.EInt $1 }
+Expr6 : Boolean { AbsVarg.EBoolean $1 }
+      | Integer { AbsVarg.EInt $1 }
       | Double { AbsVarg.EReal $1 }
+      | '\'' Char '\'' { AbsVarg.EChar $2 }
+      | '\"' String '\"' { AbsVarg.EString $2 }
       | '_' { AbsVarg.EWild }
       | '(' Expr ')' { $2 }
+Boolean :: { Boolean }
+Boolean : 'true' { AbsVarg.ETrue } | 'false' { AbsVarg.EFalse }
 {
 
 returnM :: a -> Err a

@@ -21,6 +21,15 @@ two sequences of digits separated by a decimal point, optionally
 followed by an unsigned or negative exponent.
 
 
+Character literals //Char// have the form
+``'``//c//``'``, where //c// is any single character.
+
+
+String literals //String// have the form
+``"``//x//``"``}, where //x// is any sequence of any characters
+except ``"`` unless preceded by ``\``.
+
+
 
 
 
@@ -40,21 +49,22 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Varg are the following:
   | ``abstract`` | ``as`` | ``class`` | ``define``
-  | ``deriving`` | ``else`` | ``final`` | ``function``
-  | ``has`` | ``if`` | ``implement`` | ``implementing``
-  | ``import`` | ``in`` | ``interface`` | ``internal``
-  | ``match`` | ``module`` | ``sealed`` | ``static``
-  | ``struct`` | ``super`` | ``template`` | ``then``
-  | ``this`` | ``unique`` | ``where`` | ``with``
+  | ``deriving`` | ``else`` | ``false`` | ``final``
+  | ``function`` | ``has`` | ``if`` | ``implement``
+  | ``implementing`` | ``import`` | ``in`` | ``interface``
+  | ``internal`` | ``match`` | ``module`` | ``native``
+  | ``sealed`` | ``static`` | ``struct`` | ``super``
+  | ``template`` | ``then`` | ``this`` | ``true``
+  | ``unique`` | ``where`` | ``with`` | 
 
 The symbols used in Varg are the following:
-  | ; | ? | ( | )
-  | [ | ] | , | :
-  | { | } | = | ->
-  | \ | => | == | <
-  | > | <= | >= | +
+  | ; | ? | [ | ]
+  | ( | ) | , | :
+  | { | } | = | +
   | - | * | / | ^
-  | _ |  |  | 
+  | < | > | <= | >=
+  | == | -> | \ | =>
+  | ' | " | _ | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #/ and /#.
@@ -76,7 +86,6 @@ All other symbols are terminals.
   | //ConstrTypeParam// | -> | //LIdent// 
   |  |  **|**  | //UIdent// 
   |  |  **|**  | ``?`` 
-  |  |  **|**  | ``(`` //TypeDef// ``)`` 
   |  |  **|**  | ``[`` //LIdent// ``super`` //[TypeDef]// ``]`` 
   |  |  **|**  | ``[`` ``?`` ``super`` //[TypeDef]// ``]`` 
   |  |  **|**  | ``[`` //LIdent// ``deriving`` //[TypeDef]// ``]`` 
@@ -94,13 +103,11 @@ All other symbols are terminals.
   |  |  **|**  | //LIdent// //[PrimFreeType]// 
   |  |  **|**  | //FreeTypeDef1// 
   | //FreeTypeDef1// | -> | ``(`` //FreeTypeDef// ``)`` 
-  | //[FreeTypeDef]// | -> | //FreeTypeDef// 
-  |  |  **|**  | //FreeTypeDef// ``,`` //[FreeTypeDef]// 
   | //[PrimFreeType]// | -> | **eps**
   |  |  **|**  | //PrimFreeType// //[PrimFreeType]// 
   | //[ArgDef]// | -> | **eps**
   |  |  **|**  | //ArgDef// //[ArgDef]// 
-  | //ArgDef// | -> | ``(`` //LIdent// ``:`` //TypeDef// ``)`` 
+  | //ArgDef// | -> | ``(`` //LIdent// ``:`` //FreeTypeDef// ``)`` 
   |  |  **|**  | //LIdent// 
   | //SuperclassType// | -> | //FreeTypeDef// 
   | //[SuperclassType]// | -> | //SuperclassType// 
@@ -117,18 +124,36 @@ All other symbols are terminals.
   | //ClassModifier// | -> | ``module`` 
   |  |  **|**  | ``interface`` 
   |  |  **|**  | ``sealed`` 
+  |  |  **|**  | ``native`` 
   | //ClassContents// | -> | //[MemberDef]// //[FunDef]// 
   | //MemberDef// | -> | //UIdent// 
   |  |  **|**  | //UIdent// ``has`` ``{`` //[ClassField]// ``}`` 
   | //[MemberDef]// | -> | **eps**
   |  |  **|**  | //MemberDef// 
   |  |  **|**  | //MemberDef// ``;`` //[MemberDef]// 
-  | //FunDef// | -> | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// //RetType// ``=`` //Expr// 
-  |  |  **|**  | //[FunctionModifier]// ``function`` //LIdent// //[ArgDef]// //AbsRetType// 
+  | //FunDef// | -> | //[FunctionModifier]// ``function`` //FunctionName// //FunTemplateParams// //[ArgDef]// //RetType// ``=`` //Expr// 
+  |  |  **|**  | //[FunctionModifier]// ``function`` //FunctionName// //FunTemplateParams// //[ArgDef]// //AbsRetType// 
   | //RetType// | -> | ``:`` //FreeTypeDef// 
   |  |  **|**  | **eps**
+  | //FunctionName// | -> | //LIdent// 
+  |  |  **|**  | ``(`` //Operator// ``)`` 
+  | //Operator// | -> | ``+`` 
+  |  |  **|**  | ``-`` 
+  |  |  **|**  | ``*`` 
+  |  |  **|**  | ``/`` 
+  |  |  **|**  | ``^`` 
+  |  |  **|**  | ``<`` 
+  |  |  **|**  | ``>`` 
+  |  |  **|**  | ``<=`` 
+  |  |  **|**  | ``>=`` 
+  |  |  **|**  | ``==`` 
   | //AbsRetType// | -> | ``:`` ``abstract`` //FreeTypeDef// 
   |  |  **|**  | **eps**
+  | //FunTemplateParams// | -> | **eps**
+  |  |  **|**  | ``<`` //[TemplateParam]// ``>`` 
+  | //TemplateParam// | -> | //ConstrTypeParam// 
+  | //[TemplateParam]// | -> | //TemplateParam// 
+  |  |  **|**  | //TemplateParam// ``,`` //[TemplateParam]// 
   | //[FunDef]// | -> | **eps**
   |  |  **|**  | //FunDef// 
   |  |  **|**  | //FunDef// ``;`` //[FunDef]// 
@@ -139,6 +164,7 @@ All other symbols are terminals.
   |  |  **|**  | ``implement`` 
   |  |  **|**  | ``final`` 
   |  |  **|**  | ``unique`` 
+  |  |  **|**  | ``native`` 
   | //ClassField// | -> | //FieldModifier// //LIdent// ``:`` //FreeTypeDef// 
   |  |  **|**  | //LIdent// ``:`` //FreeTypeDef// 
   | //[ClassField]// | -> | **eps**
@@ -157,8 +183,7 @@ All other symbols are terminals.
   |  |  **|**  | //AsDef// 
   |  |  **|**  | //AsDef// ``;`` //[AsDef]// 
   | //AsDef// | -> | //Expr// ``as`` //LIdent// 
-  | //[MatchClause]// | -> | **eps**
-  |  |  **|**  | //MatchClause// 
+  | //[MatchClause]// | -> | //MatchClause// 
   |  |  **|**  | //MatchClause// ``;`` //[MatchClause]// 
   | //MatchClause// | -> | //Expr// ``->`` //Expr// 
   | //Functorial// | -> | ``this`` 
@@ -166,6 +191,7 @@ All other symbols are terminals.
   |  |  **|**  | //UIdent// 
   |  |  **|**  | //LIdent// 
   |  |  **|**  | //MFun// 
+  |  |  **|**  | ``(`` //Operator// ``)`` 
   | //Arg// | -> | //Expr6// 
   |  |  **|**  | //Functorial// 
   | //[Arg]// | -> | **eps**
@@ -190,9 +216,14 @@ All other symbols are terminals.
   |  |  **|**  | //Expr4// 
   | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
   |  |  **|**  | //Expr5// 
-  | //Expr6// | -> | //Integer// 
+  | //Expr6// | -> | //Boolean// 
+  |  |  **|**  | //Integer// 
   |  |  **|**  | //Double// 
+  |  |  **|**  | ``'`` //Char// ``'`` 
+  |  |  **|**  | ``"`` //String// ``"`` 
   |  |  **|**  | ``_`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
+  | //Boolean// | -> | ``true`` 
+  |  |  **|**  | ``false`` 
 
 
