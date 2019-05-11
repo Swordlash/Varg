@@ -105,7 +105,7 @@ All other symbols are terminals.
   | //FreeTypeDef1// | -> | ``(`` //FreeTypeDef// ``)`` 
   | //[PrimFreeType]// | -> | **eps**
   |  |  **|**  | //PrimFreeType// //[PrimFreeType]// 
-  | //[ArgDef]// | -> | **eps**
+  | //[ArgDef]// | -> | //ArgDef// 
   |  |  **|**  | //ArgDef// //[ArgDef]// 
   | //ArgDef// | -> | ``(`` //LIdent// ``:`` //FreeTypeDef// ``)`` 
   |  |  **|**  | //LIdent// 
@@ -192,6 +192,7 @@ All other symbols are terminals.
   |  |  **|**  | //LIdent// 
   |  |  **|**  | //MFun// 
   |  |  **|**  | ``(`` //Operator// ``)`` 
+  |  |  **|**  | ``(`` //Expr6// ``)`` 
   | //Arg// | -> | //Expr6// 
   |  |  **|**  | //Functorial// 
   | //[Arg]// | -> | **eps**

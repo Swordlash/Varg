@@ -13,8 +13,9 @@ data Expr
   = Unparsed AV.Expr
   | ELambda String
             TypeDef
+            TypeDef
             Expr
-  | EMember String
+  | EMember Expr
             String
   | ELet String
          Expr
@@ -22,25 +23,32 @@ data Expr
   | EApply Expr
            Expr
   | EVar String
+  | EFunctor String
   | EIfThenElse Expr
                 Expr
                 Expr
   | EMatch Expr
            [(Expr, Expr)]
+  | EClass String
   | EBool Bool
-  | EInt Int
+  | EInt Integer
   | EChar Char
   | EDouble Double
+  | EOperator AV.Operator
   | EWild
   | ENative
   | EAbstract
   | EConst
+  | EThis
+  | ESuper
+  | EEmpty
   deriving (Eq)
 
 instance Show Expr where
   show (Unparsed expr) = printTree expr
-  show (ELambda name tdef expr) = "(\\" ++ name ++ " : " ++ show tdef ++ " -> " ++ show expr ++ ")"
-  show (EMember obj func) = obj ++ "." ++ func
+  show (ELambda name tdef retdef expr) =
+    "(\\(" ++ name ++ " : " ++ show tdef ++ ") : " ++ show retdef ++ " -> " ++ show expr ++ ")"
+  show (EMember obj func) = show obj ++ "." ++ func
   show (ELet label val expr) = "let " ++ label ++ " = " ++ show val ++ " in " ++ show expr
   show (EApply f x) = show f ++ "(" ++ show x ++ ")"
   show (EVar name) = name
@@ -52,10 +60,15 @@ instance Show Expr where
   show (EInt val) = show val
   show (EChar val) = show val
   show (EDouble val) = show val
+  show (EFunctor val) = "@" ++ show val
   show EWild = "_"
+  show (EClass name) = "class " ++ name
   show ENative = "native"
   show EAbstract = "abstract"
   show EConst = "const"
+  show EThis = "this"
+  show ESuper = "super"
+  show EEmpty = "EMPTY"
 
 data TypeDef
   = AnyType

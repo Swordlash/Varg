@@ -48,7 +48,7 @@ terminator          PrimFreeType "" ;
 
 --------------------------------- Function arg, usually constrained -------------------------------------
 
-terminator           ArgDef "";
+terminator nonempty  ArgDef "";
 ArgumentDefinition.  ArgDef    ::= "(" LIdent ":" FreeTypeDef ")" ;
 InferredArgumentDef. ArgDef    ::= LIdent ;
 
@@ -82,7 +82,17 @@ InferredReturnType.          RetType ::= ;
 
 FFunction.   FunctionName ::= LIdent ;
 FOperator.   FunctionName ::= "(" Operator ")" ;
-rules Operator  ::= "+" | "-" | "*" | "/" | "^" | "<" | ">" | "<=" | ">=" | "==";
+
+Op_plus.  Operator ::= "+" ;
+Op_minus. Operator ::= "-" ;
+Op_mul.   Operator ::= "*" ;
+Op_div.   Operator ::= "/" ;
+Op_pow.   Operator ::= "^" ;
+Op_less.  Operator ::= "<" ;
+Op_gr.    Operator ::= ">" ;
+Op_leq.   Operator ::= "<=";
+Op_geq.   Operator ::= ">=";
+Op_eq.    Operator ::= "==";
 
 AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" FunctionName FunTemplateParams [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
 AbsReturnType.               AbsRetType ::= ":" "abstract" FreeTypeDef ;
@@ -123,6 +133,7 @@ TypeFunctor.     Functorial ::= UIdent ;
 InstanceFunctor. Functorial ::= LIdent ;
 MemberFunctor.   Functorial ::= MFun ;
 OperatorFunctor. Functorial ::= "(" Operator ")" ;
+ExprFunctor.     Functorial ::= "(" Expr6 ")" ;
 
 ArgExpr.            Arg ::= Expr6 ;
 ArgFunc.            Arg ::= Functorial ; 
@@ -137,7 +148,7 @@ EListElem.          ListElem ::= Expr ;
 separator           ListElem ",";
 
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
-ELq.                Expr1  ::= Expr2 "<"  Expr2 ;
+ELe.                Expr1  ::= Expr2 "<"  Expr2 ;
 EGt.                Expr1  ::= Expr2 ">"  Expr2 ;
 ELeq.               Expr1  ::= Expr2 "<=" Expr2 ;
 EGeq.               Expr1  ::= Expr2 ">=" Expr2 ;

@@ -154,7 +154,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListArgDef}} & {\arrow}  &{\emptyP} \\
+{\nonterminal{ListArgDef}} & {\arrow}  &{\nonterminal{ArgDef}}  \\
  & {\delimit}  &{\nonterminal{ArgDef}} {\nonterminal{ListArgDef}}  \\
 \end{tabular}\\
 
@@ -334,6 +334,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\nonterminal{LIdent}}  \\
  & {\delimit}  &{\nonterminal{MFun}}  \\
  & {\delimit}  &{\terminal{(}} {\nonterminal{Operator}} {\terminal{)}}  \\
+ & {\delimit}  &{\terminal{(}} {\nonterminal{Expr6}} {\terminal{)}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}

@@ -21,13 +21,20 @@ createFunctionHierarchy [] _ _ = do
 createFunctionHierarchy [h] rettype expr = do
   mname <- asks currentParsedMember
   depth <- asks currentCurryingDepth
-  pure [Function [] ("_" ++ mname ++ show depth) h rettype (ELambda (argGen !! depth) h expr)]
+  pure [Function [] ("_" ++ mname ++ show depth) h rettype (ELambda (argGen !! depth) h rettype expr)]
 createFunctionHierarchy (h:t) rettype expr = do
   mname <- asks currentParsedMember
   depth <- asks currentCurryingDepth
   rest <- local incrCurrentCurryingDepth (createFunctionHierarchy t rettype expr)
   let f@(Function _ name intype outtype exp) = head rest
-  return $ Function [] ("_" ++ mname ++ show depth) h (functionToTypedef f) (ELambda (argGen !! depth) h exp) : rest
+  return $
+    Function
+      []
+      ("_" ++ mname ++ show depth)
+      h
+      (functionToTypedef f)
+      (ELambda (argGen !! depth) h (functionToTypedef f) exp) :
+    rest
 
 parseFunction' ::
      String
@@ -48,17 +55,6 @@ parseFunction' name templateParams argdefs retfun bodyfun = do
   rettype <- retfun lookupFun
   expr <- local localFun (bodyfun lookupFun)
   local (setCurrentFunArgSubsts substs . setParsedMember name) (createFunctionHierarchy pargdefs rettype expr)
-
-nshow Abs.Operator1  = "+"
-nshow Abs.Operator2  = "-"
-nshow Abs.Operator3  = "*"
-nshow Abs.Operator4  = "/"
-nshow Abs.Operator5  = "^"
-nshow Abs.Operator6  = "<"
-nshow Abs.Operator7  = ">"
-nshow Abs.Operator8  = "<="
-nshow Abs.Operator9  = ">="
-nshow Abs.Operator10 = "=="
 
 parseFunction :: Abs.FunDef -> HierarchyMonad [Function]
 parseFunction fundef = do

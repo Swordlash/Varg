@@ -134,16 +134,16 @@ transFunctionName x =
 transOperator :: Operator -> Result
 transOperator x =
   case x of
-    Operator1  -> failure x
-    Operator2  -> failure x
-    Operator3  -> failure x
-    Operator4  -> failure x
-    Operator5  -> failure x
-    Operator6  -> failure x
-    Operator7  -> failure x
-    Operator8  -> failure x
-    Operator9  -> failure x
-    Operator10 -> failure x
+    Op_plus  -> failure x
+    Op_minus -> failure x
+    Op_mul   -> failure x
+    Op_div   -> failure x
+    Op_pow   -> failure x
+    Op_less  -> failure x
+    Op_gr    -> failure x
+    Op_leq   -> failure x
+    Op_geq   -> failure x
+    Op_eq    -> failure x
 
 transAbsRetType :: AbsRetType -> Result
 transAbsRetType x =
@@ -195,7 +195,7 @@ transExpr x =
     ELambda argdefs typedef expr  -> failure x
     EList listelems               -> failure x
     EEq expr1 expr2               -> failure x
-    ELq expr1 expr2               -> failure x
+    ELe expr1 expr2               -> failure x
     EGt expr1 expr2               -> failure x
     ELeq expr1 expr2              -> failure x
     EGeq expr1 expr2              -> failure x
@@ -230,6 +230,7 @@ transFunctorial x =
     InstanceFunctor lident   -> failure x
     MemberFunctor mfun       -> failure x
     OperatorFunctor operator -> failure x
+    ExprFunctor expr         -> failure x
 
 transArg :: Arg -> Result
 transArg x =

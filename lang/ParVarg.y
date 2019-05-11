@@ -135,8 +135,7 @@ ListPrimFreeType :: { [PrimFreeType] }
 ListPrimFreeType : {- empty -} { [] }
                  | ListPrimFreeType PrimFreeType { flip (:) $1 $2 }
 ListArgDef :: { [ArgDef] }
-ListArgDef : {- empty -} { [] }
-           | ListArgDef ArgDef { flip (:) $1 $2 }
+ListArgDef : ArgDef { (:[]) $1 } | ArgDef ListArgDef { (:) $1 $2 }
 ArgDef :: { ArgDef }
 ArgDef : '(' LIdent ':' FreeTypeDef ')' { AbsVarg.ArgumentDefinition $2 $4 }
        | LIdent { AbsVarg.InferredArgumentDef $1 }
@@ -173,8 +172,8 @@ ListMemberDef : {- empty -} { [] }
               | MemberDef { (:[]) $1 }
               | MemberDef ';' ListMemberDef { (:) $1 $3 }
 FunDef :: { FunDef }
-FunDef : ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 $4 (reverse $5) $6 $8 }
-       | ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 $4 (reverse $5) $6 }
+FunDef : ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 $4 $5 $6 $8 }
+       | ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 $4 $5 $6 }
 RetType :: { RetType }
 RetType : ':' FreeTypeDef { AbsVarg.ReturnType $2 }
         | {- empty -} { AbsVarg.InferredReturnType }
@@ -182,16 +181,16 @@ FunctionName :: { FunctionName }
 FunctionName : LIdent { AbsVarg.FFunction $1 }
              | '(' Operator ')' { AbsVarg.FOperator $2 }
 Operator :: { Operator }
-Operator : '+' { AbsVarg.Operator1 }
-         | '-' { AbsVarg.Operator2 }
-         | '*' { AbsVarg.Operator3 }
-         | '/' { AbsVarg.Operator4 }
-         | '^' { AbsVarg.Operator5 }
-         | '<' { AbsVarg.Operator6 }
-         | '>' { AbsVarg.Operator7 }
-         | '<=' { AbsVarg.Operator8 }
-         | '>=' { AbsVarg.Operator9 }
-         | '==' { AbsVarg.Operator10 }
+Operator : '+' { AbsVarg.Op_plus }
+         | '-' { AbsVarg.Op_minus }
+         | '*' { AbsVarg.Op_mul }
+         | '/' { AbsVarg.Op_div }
+         | '^' { AbsVarg.Op_pow }
+         | '<' { AbsVarg.Op_less }
+         | '>' { AbsVarg.Op_gr }
+         | '<=' { AbsVarg.Op_leq }
+         | '>=' { AbsVarg.Op_geq }
+         | '==' { AbsVarg.Op_eq }
 AbsRetType :: { AbsRetType }
 AbsRetType : ':' 'abstract' FreeTypeDef { AbsVarg.AbsReturnType $3 }
            | {- empty -} { AbsVarg.AbsInferredReturnType }
@@ -232,7 +231,7 @@ Expr : 'define' '{' ListAsDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'define' AsDef 'in' Expr { AbsVarg.EDefinition $2 $4 }
      | 'match' Expr 'with' '{' ListMatchClause '}' { AbsVarg.EMatch $2 $5 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
-     | '(' '\\' ListArgDef ':' TypeDef '=>' Expr ')' { AbsVarg.ELambda (reverse $3) $5 $7 }
+     | '(' '\\' ListArgDef ':' TypeDef '=>' Expr ')' { AbsVarg.ELambda $3 $5 $7 }
      | '[' ListListElem ']' { AbsVarg.EList $2 }
      | Expr1 { $1 }
 ListAsDef :: { [AsDef] }
@@ -253,6 +252,7 @@ Functorial : 'this' { AbsVarg.ThisFunctor }
            | LIdent { AbsVarg.InstanceFunctor $1 }
            | MFun { AbsVarg.MemberFunctor $1 }
            | '(' Operator ')' { AbsVarg.OperatorFunctor $2 }
+           | '(' Expr6 ')' { AbsVarg.ExprFunctor $2 }
 Arg :: { Arg }
 Arg : Expr6 { AbsVarg.ArgExpr $1 }
     | Functorial { AbsVarg.ArgFunc $1 }
@@ -269,7 +269,7 @@ ListListElem : {- empty -} { [] }
              | ListElem ',' ListListElem { (:) $1 $3 }
 Expr1 :: { Expr }
 Expr1 : Expr1 '==' Expr2 { AbsVarg.EEq $1 $3 }
-      | Expr2 '<' Expr2 { AbsVarg.ELq $1 $3 }
+      | Expr2 '<' Expr2 { AbsVarg.ELe $1 $3 }
       | Expr2 '>' Expr2 { AbsVarg.EGt $1 $3 }
       | Expr2 '<=' Expr2 { AbsVarg.ELeq $1 $3 }
       | Expr2 '>=' Expr2 { AbsVarg.EGeq $1 $3 }

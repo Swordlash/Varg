@@ -134,16 +134,16 @@ data FunctionName
   deriving (Eq, Ord, Show, Read)
 
 data Operator
-  = Operator1
-  | Operator2
-  | Operator3
-  | Operator4
-  | Operator5
-  | Operator6
-  | Operator7
-  | Operator8
-  | Operator9
-  | Operator10
+  = Op_plus
+  | Op_minus
+  | Op_mul
+  | Op_div
+  | Op_pow
+  | Op_less
+  | Op_gr
+  | Op_leq
+  | Op_geq
+  | Op_eq
   deriving (Eq, Ord, Show, Read)
 
 data AbsRetType
@@ -200,7 +200,7 @@ data Expr
   | EList [ListElem]
   | EEq Expr
         Expr
-  | ELq Expr
+  | ELe Expr
         Expr
   | EGt Expr
         Expr
@@ -243,6 +243,7 @@ data Functorial
   | InstanceFunctor LIdent
   | MemberFunctor MFun
   | OperatorFunctor Operator
+  | ExprFunctor Expr
   deriving (Eq, Ord, Show, Read)
 
 data Arg

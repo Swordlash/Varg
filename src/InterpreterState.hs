@@ -64,7 +64,7 @@ data HierarchyState = HierarchyState
   }
 
 registerStub :: Updater (String, Int, DerivationKind, [DerivationKind]) PreprocessState
-registerStub (name, params, deriv, impls) (PreprocessState s i t) =
+registerStub (name, params, deriv, impls) (PreprocessState s _ t) =
   PreprocessState (M.insert name (params, deriv, impls, t) s) 0 M.empty
 
 emptyPreprocessState :: PreprocessState
@@ -80,10 +80,10 @@ registerClass :: Updater Type HierarchyState
 registerClass typ (HierarchyState s h _ _) = HierarchyState s (S.insert typ h) M.empty M.empty
 
 incrParamIdx :: Notifier PreprocessState
-incrParamIdx (PreprocessState s i t) = PreprocessState s (i + 1) t
+incrParamIdx state = state {freshParamIdx = freshParamIdx state + 1}
 
 addSubst :: Updater (String, String) PreprocessState
-addSubst (name, alias) (PreprocessState s i t) = PreprocessState s i (M.insert name alias t)
+addSubst (name, alias) state = state {templateParamSubsts = M.insert name alias $ templateParamSubsts state}
 
 bindName :: Updater String PreprocessState
 bindName name (PreprocessState s i t) = PreprocessState s (i + 1) (M.insert name ("_t" ++ show i) t)
@@ -94,14 +94,15 @@ registerTemplateFunctionSubst name state =
    in registerTemplateFunctionSubst1 (name, alias) state
 
 registerTemplateFunctionSubst1 :: Updater (String, String) HierarchyState
-registerTemplateFunctionSubst1 (name, alias) (HierarchyState s h st c) = HierarchyState s h (M.insert name alias st) c
+registerTemplateFunctionSubst1 (name, alias) state =
+  state {templateFunctionSubsts = M.insert name alias $ templateFunctionSubsts state}
 
 removeTemplateFunctionSubsts :: Notifier HierarchyState
-removeTemplateFunctionSubsts (HierarchyState s h _ c) = HierarchyState s h M.empty c
+removeTemplateFunctionSubsts state = state {templateFunctionSubsts = M.empty}
 
 registerTemplateParamConstraints :: Updater (String, [TypeParamConstraint]) HierarchyState
-registerTemplateParamConstraints (alias, consts) (HierarchyState s h st c) =
-  HierarchyState s h st (M.insert alias consts c)
+registerTemplateParamConstraints (alias, consts) state =
+  state {templateParamConstrains = M.insert alias consts $ templateParamConstrains state}
 
 newtype PreprocessRuntime = PreprocessRuntime
   { currentPreparsedTypeName :: TypeName
@@ -129,22 +130,22 @@ setPreparsedTypeName :: Updater TypeName PreprocessRuntime
 setPreparsedTypeName name _ = PreprocessRuntime name
 
 setParsedTypeVariant :: Updater MemberName HierarchyRuntime
-setParsedTypeVariant vname (HierarchyRuntime name constr _ fld d s) = HierarchyRuntime name constr vname fld d s
+setParsedTypeVariant vname state = state {currentParsedTypeVariant = vname}
 
 setParsedTypeName :: Updater TypeName HierarchyRuntime
-setParsedTypeName name (HierarchyRuntime _ c v f d s) = HierarchyRuntime name c v f d s
+setParsedTypeName name state = state {currentParsedTypeName = name}
 
 setParsedMember :: Updater MemberName HierarchyRuntime
-setParsedMember fld (HierarchyRuntime n c v _ d s) = HierarchyRuntime n c v fld d s
+setParsedMember fld state = state {currentParsedMember = fld}
 
 setParsedTypeConstrName :: Updater String HierarchyRuntime
-setParsedTypeConstrName name (HierarchyRuntime n _ v f d s) = HierarchyRuntime n name v f d s
+setParsedTypeConstrName name state = state {currentParsedTypeConstrName = name}
 
 incrCurrentCurryingDepth :: Notifier HierarchyRuntime
-incrCurrentCurryingDepth (HierarchyRuntime n c v f d s) = HierarchyRuntime n c v f (d + 1) s
+incrCurrentCurryingDepth r = r {currentCurryingDepth = currentCurryingDepth r + 1}
 
 setCurrentFunArgSubsts :: Updater Substitutions HierarchyRuntime
-setCurrentFunArgSubsts s (HierarchyRuntime n c v f d _) = HierarchyRuntime n c v f d s
+setCurrentFunArgSubsts s r = r {currentFunArgsSubsts = s}
 
 type ParserLog = String
 
