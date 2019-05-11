@@ -114,7 +114,6 @@ data HierarchyRuntime = HierarchyRuntime
   , currentParsedTypeVariant    :: MemberName
   , currentParsedMember         :: MemberName
   , currentCurryingDepth        :: Int
-  , currentFunArgsSubsts        :: Substitutions
   }
 
 getLastTypeParam :: PreprocessState -> String
@@ -124,7 +123,7 @@ emptyPreprocessRuntime :: PreprocessRuntime
 emptyPreprocessRuntime = PreprocessRuntime ""
 
 emptyHierarchyRuntime :: HierarchyRuntime
-emptyHierarchyRuntime = HierarchyRuntime "" "" "" "" 0 M.empty
+emptyHierarchyRuntime = HierarchyRuntime "" "" "" "" 0
 
 setPreparsedTypeName :: Updater TypeName PreprocessRuntime
 setPreparsedTypeName name _ = PreprocessRuntime name
@@ -143,9 +142,6 @@ setParsedTypeConstrName name state = state {currentParsedTypeConstrName = name}
 
 incrCurrentCurryingDepth :: Notifier HierarchyRuntime
 incrCurrentCurryingDepth r = r {currentCurryingDepth = currentCurryingDepth r + 1}
-
-setCurrentFunArgSubsts :: Updater Substitutions HierarchyRuntime
-setCurrentFunArgSubsts s r = r {currentFunArgsSubsts = s}
 
 type ParserLog = String
 

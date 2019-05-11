@@ -53,7 +53,7 @@ instance Show Expr where
   show (EApply f x) = show f ++ "(" ++ show x ++ ")"
   show (EVar name) = name
   show (EIfThenElse ife thene elsee) = "if " ++ show ife ++ " then " ++ show thene ++ " else " ++ show elsee
-  show (EMatch val table) = "match " ++ show val ++ "with " ++ conds ++ "\n"
+  show (EMatch val table) = "match " ++ show val ++ " with \n" ++ conds ++ "\n"
     where
       conds = concatMap (\(e, v) -> show e ++ " -> " ++ show v ++ "\n") table
   show (EBool val) = show val
@@ -62,7 +62,7 @@ instance Show Expr where
   show (EDouble val) = show val
   show (EFunctor val) = "@" ++ show val
   show EWild = "_"
-  show (EClass name) = "class " ++ name
+  show (EClass name) = name
   show ENative = "native"
   show EAbstract = "abstract"
   show EConst = "const"

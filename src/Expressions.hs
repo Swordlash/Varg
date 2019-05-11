@@ -39,7 +39,7 @@ accumulateApplication lookupFun expr (Abs.ArgFunc funct) =
     Abs.SuperFunctor -> throwError $ ParseException "Cannot pass super as function argument"
     Abs.InstanceFunctor (Abs.LIdent var) -> pure $ EApply expr $ EVar var
     Abs.TypeFunctor (Abs.UIdent _class) -> pure $ EApply expr $ EClass _class --TODO: is EClass a function?
-    Abs.MemberFunctor (Abs.MFun name) -> pure $ EMember expr name
+    Abs.MemberFunctor (Abs.MFun name) -> pure $ EMember expr (drop 1 name)
     Abs.ExprFunctor fexpr -> do
       pexpr <- parseExpression lookupFun fexpr
       return $ EApply expr pexpr
@@ -88,6 +88,24 @@ parseExpression lookupFun expr =
     Abs.EList lelems -> do
       let elems = reverse $ map (\(Abs.EListElem expr) -> expr) lelems
       foldM (makeList lookupFun) (EClass "List.Empty") elems
+    Abs.EIfThenElse expr1 expr2 expr3 -> do
+      pe1 <- parseExpression lookupFun expr1
+      pe2 <- parseExpression lookupFun expr2
+      pe3 <- parseExpression lookupFun expr3
+      return $ EIfThenElse pe1 pe2 pe3
+    Abs.EString str ->
+      let chars = map (Abs.EListElem . Abs.EChar) str
+       in parseExpression lookupFun $ Abs.EList chars
+    Abs.EMatch mexpr matchclauses -> do
+      pm <- parseExpression lookupFun mexpr
+      pclauses <-
+        mapM
+          (\(Abs.IMatchClause e1 e2) -> do
+             pe1 <- parseExpression lookupFun e1
+             pe2 <- parseExpression lookupFun e2
+             return (pe1, pe2))
+          matchclauses
+      return $ EMatch pm pclauses
     --arithmetic exprs
     Abs.EAdd expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1

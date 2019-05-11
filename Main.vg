@@ -19,8 +19,8 @@ template Either a b implementing Functor (Either a) where
         value : b
 
     implement function fmap <c> (f : Function b c) : Either a c = match this with
-        Left _ -> this
-        Right val -> Right (f c)
+        Either.Left _ -> this
+        Either.Right val -> Either.Right (f c)
 
 native class Integer deriving Numeric where
     native function (+) (y : Integer) : abstract Integer
