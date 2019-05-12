@@ -1,26 +1,25 @@
-interface template Collection a where
-    function atIndex (i:Int) : abstract a
+class Void where
+    unique function toString : abstract String
 
-template Set [a deriving Comparable [? super a]] implementing Collection a where
-    Set
-    
-template Map [a deriving Comparable [? super a]] b implementing Collection a, Collection b where
-    Map has
-        size : Int
-        pointers : List (Map a b)
+interface template Function a b where
+    unique function call <a, b> (x: a) : abstract b
 
 interface template Functor type where
-    function fmap <a, b> (f : Function a b) : abstract type b
+    unique function fmap <a, b> (f: Function a b) : abstract type b
 
-template Either a b implementing Functor (Either a) where
-    Left has
-        value : a
-    Right has
-        value : b
+interface template Collection a implementing Functor Collection where
+    unique function elemAt (i:Int) : abstract a
+    unique function length : abstract Int
+    unique function map <b> (f: Function a b) : abstract Collection a
+    implement function fmap <b> : Function (Function a b) (Collection b) = This.map
 
-    implement function fmap <c> (f : Function b c) : Either a c = match this with
-        Either.Left _ -> this
-        Either.Right val -> Either.Right (f c)
+template List a implementing Collection a where
+    Empty        
+    Cons  has
+        head : a
+        tail : List a
 
-native class Integer deriving Numeric where
-    native function (+) (y : Integer) : abstract Integer
+    implement function elemAt (i:Int) : a = if i == 0 then This.head else This.tail.elemAt (i-1)
+
+class Main where
+    unique function main (args: List String) : Void = define 2.0 as x in if x*x == 4.0 then x^3.0 else 5

@@ -200,7 +200,14 @@ data Expr
   | EList [ListElem]
   | EEq Expr
         Expr
-  | ELe Expr
+  | EMod Expr
+         Expr
+  | ENot Expr
+  | EOr Expr
+        Expr
+  | EAnd Expr
+         Expr
+  | ELt Expr
         Expr
   | EGt Expr
         Expr

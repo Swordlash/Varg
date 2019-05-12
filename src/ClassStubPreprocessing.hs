@@ -1,11 +1,11 @@
 module ClassStubPreprocessing where
 
-import           InterpreterState
+import           PreprocessingState
 import           PrintVarg
 
-import qualified AbsVarg          as Abs
-import qualified Data.Map         as M
-import qualified Data.Set         as S
+import qualified AbsVarg            as Abs
+import qualified Data.Map           as M
+import qualified Data.Set           as S
 
 readPrimFreeType :: Abs.PrimFreeType -> PreprocessMonad DerivationKind
 readPrimFreeType primType =
@@ -16,7 +16,7 @@ readPrimFreeType primType =
       case M.lookup name substs of
         Nothing -> do
           parsed <- asks currentPreparsedTypeName
-          throwError $ ParseException $ "In declaration of " ++ parsed ++ ": unknown template parameter " ++ name
+          throwError $ VargException $ "In declaration of " ++ parsed ++ ": unknown template parameter " ++ name
         Just subst -> pure $ Unbound subst
     Abs.ConcreteFreeType (Abs.UIdent name) -> pure $ Concrete name []
 
@@ -55,7 +55,7 @@ preparseStubTypeParam param =
     _ -> do
       parsed <- asks currentPreparsedTypeName
       throwError $
-        ParseException $
+        VargException $
         "In declaration of " ++ parsed ++ ": illegal definition of template parameter " ++ printTree param
 
 readClassHeaders :: [Abs.ClassDef] -> PreprocessMonad ()
@@ -64,7 +64,7 @@ readClassHeaders (cl:t) = do
   stubs <- gets classStubs
   (name, paramCount, deriv, impls) <- readStubs cl
   if M.member name stubs
-    then throwError $ ParseException $ "Multiple definition of class " ++ name
+    then throwError $ VargException $ "Multiple definition of class " ++ name
     else do
       modify (registerStub (name, paramCount, deriv, impls))
       readClassHeaders t
@@ -89,7 +89,7 @@ readClassHeaders (cl:t) = do
                 superifaces <- readImplementing isimplementing
                 return (sname, length typeParams, superclasses, superifaces))
 
-runReadClassHeaders :: [Abs.ClassDef] -> ParseMonad (PreprocessState, ParserLog)
+runReadClassHeaders :: [Abs.ClassDef] -> VargExceptionMonad (PreprocessState, Log)
 runReadClassHeaders cldefs =
   runIdentity $
   runExceptT $

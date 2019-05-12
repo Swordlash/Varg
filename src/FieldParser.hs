@@ -1,9 +1,9 @@
 module FieldParser where
 
-import           InterpreterState
+import           PreprocessingState
 
-import qualified AbsVarg          as Abs
-import qualified Data.Set         as S
+import qualified AbsVarg            as Abs
+import qualified Data.Set           as S
 
 import           TypeDefParser
 
@@ -25,7 +25,7 @@ parseFields (field:t) = do
       typename <- asks currentParsedTypeName
       variant <- asks currentParsedTypeVariant
       throwError $
-        ParseException $
+        VargException $
         "In definition of " ++
         typename ++ "." ++ variant ++ ": multiple definition of field " ++ qualifiedFunName parsed
     else return $ S.insert parsed parsedTail

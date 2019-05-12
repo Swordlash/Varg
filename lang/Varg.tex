@@ -54,11 +54,11 @@ The reserved words used in Varg are the following: \\
 {\reserved{has}} &{\reserved{if}} &{\reserved{implement}} \\
 {\reserved{implementing}} &{\reserved{import}} &{\reserved{in}} \\
 {\reserved{interface}} &{\reserved{internal}} &{\reserved{match}} \\
-{\reserved{module}} &{\reserved{native}} &{\reserved{sealed}} \\
-{\reserved{static}} &{\reserved{struct}} &{\reserved{super}} \\
-{\reserved{template}} &{\reserved{then}} &{\reserved{this}} \\
-{\reserved{true}} &{\reserved{unique}} &{\reserved{where}} \\
-{\reserved{with}} & & \\
+{\reserved{mod}} &{\reserved{module}} &{\reserved{native}} \\
+{\reserved{not}} &{\reserved{sealed}} &{\reserved{static}} \\
+{\reserved{struct}} &{\reserved{super}} &{\reserved{template}} \\
+{\reserved{then}} &{\reserved{this}} &{\reserved{true}} \\
+{\reserved{unique}} &{\reserved{where}} &{\reserved{with}} \\
 \end{tabular}\\
 
 The symbols used in Varg are the following: \\
@@ -72,7 +72,8 @@ The symbols used in Varg are the following: \\
 {\symb{{\textasciicircum}}} &{\symb{{$<$}}} &{\symb{{$>$}}} \\
 {\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
 {\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} &{\symb{{$=$}{$>$}}} \\
-{\symb{'}} &{\symb{"}} &{\symb{\_}} \\
+{\symb{{$|$}{$|$}}} &{\symb{\&\&}} &{\symb{'}} \\
+{\symb{"}} &{\symb{\_}} & \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -154,7 +155,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListArgDef}} & {\arrow}  &{\nonterminal{ArgDef}}  \\
+{\nonterminal{ListArgDef}} & {\arrow}  &{\emptyP} \\
  & {\delimit}  &{\nonterminal{ArgDef}} {\nonterminal{ListArgDef}}  \\
 \end{tabular}\\
 
@@ -364,6 +365,10 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Expr1}} & {\arrow}  &{\nonterminal{Expr1}} {\terminal{{$=$}{$=$}}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr2}} {\terminal{mod}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\terminal{not}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$|$}{$|$}}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr2}} {\terminal{\&\&}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$<$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$>$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$<$}{$=$}}} {\nonterminal{Expr2}}  \\

@@ -3,14 +3,26 @@ module Types where
 import qualified AbsVarg   as AV
 import           Data.List (intercalate)
 import qualified Data.Set  as S
+import           Instances
 import           PrintVarg
 
 type TypeName = String
 
 type MemberName = String
 
+type Instance = Inst Expr Type
+
+typeof :: Instance -> String
+typeof (IntInstance _)             = "Int"
+typeof (DoubleInstance _)          = "Double"
+typeof (BoolInstance _)            = "Bool"
+typeof (CharInstance _)            = "Char"
+typeof (FunctionInstance _)        = "Function"
+typeof TypeInstance {baseType = t} = qualifiedTypeName t
+
 data Expr
   = Unparsed AV.Expr
+  | EInterpreted Instance
   | ELambda String
             TypeDef
             TypeDef
@@ -29,6 +41,33 @@ data Expr
                 Expr
   | EMatch Expr
            [(Expr, Expr)]
+  | EMod Expr
+         Expr
+  | EAdd Expr
+         Expr
+  | ESub Expr
+         Expr
+  | EMul Expr
+         Expr
+  | EDiv Expr
+         Expr
+  | EPow Expr
+         Expr
+  | ELt Expr
+        Expr
+  | EGt Expr
+        Expr
+  | ELeq Expr
+         Expr
+  | EGeq Expr
+         Expr
+  | EEq Expr
+        Expr
+  | ENot Expr
+  | EOr Expr
+        Expr
+  | EAnd Expr
+         Expr
   | EClass String
   | EBool Bool
   | EInt Integer
@@ -42,7 +81,7 @@ data Expr
   | EThis
   | ESuper
   | EEmpty
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 instance Show Expr where
   show (Unparsed expr) = printTree expr
@@ -56,13 +95,27 @@ instance Show Expr where
   show (EMatch val table) = "match " ++ show val ++ " with \n" ++ conds ++ "\n"
     where
       conds = concatMap (\(e, v) -> show e ++ " -> " ++ show v ++ "\n") table
+  show (EMod e1 e2) = show e1 ++ " mod " ++ show e2
+  show (EAdd e1 e2) = show e1 ++ " + " ++ show e2
+  show (ESub e1 e2) = show e1 ++ " - " ++ show e2
+  show (EMul e1 e2) = show e1 ++ " * " ++ show e2
+  show (EDiv e1 e2) = show e1 ++ " / " ++ show e2
+  show (EPow e1 e2) = show e1 ++ " ^ " ++ show e2
+  show (ELt e1 e2) = show e1 ++ " < " ++ show e2
+  show (EGt e1 e2) = show e1 ++ " > " ++ show e2
+  show (ELeq e1 e2) = show e1 ++ " <= " ++ show e2
+  show (EGeq e1 e2) = show e1 ++ " >= " ++ show e2
+  show (EEq e1 e2) = show e1 ++ " == " ++ show e2
+  show (ENot e1) = "not " ++ show e1
+  show (EOr e1 e2) = show e1 ++ " || " ++ show e2
+  show (EAnd e1 e2) = show e1 ++ " && " ++ show e2
+  show (EClass name) = name
   show (EBool val) = show val
   show (EInt val) = show val
   show (EChar val) = show val
   show (EDouble val) = show val
   show (EFunctor val) = "@" ++ show val
   show EWild = "_"
-  show (EClass name) = name
   show ENative = "native"
   show EAbstract = "abstract"
   show EConst = "const"
@@ -78,6 +131,9 @@ data TypeDef
   | ConcreteType TypeName
                  [TypeParamConstraint]
   deriving (Eq, Ord)
+
+voidTypeDef :: TypeDef
+voidTypeDef = ConcreteType "Void" []
 
 instance Show TypeDef where
   show AnyType = "AnyType"
@@ -159,22 +215,26 @@ data Function = Function
   , functionBody       :: Expr
   }
 
+emptyFunction :: MemberName -> Function
+emptyFunction name = Function [] name AnyType AnyType EEmpty
+
 functionToTypedef :: Function -> TypeDef
 functionToTypedef (Function _ _ int outt _) = ConcreteType "Function" [Exact int, Exact outt]
 
 instance Eq Function where
-  f1 == f2 =
-    (qualifiedFunName f1 == qualifiedFunName f2) &&
-    (functionInputType f1 == functionInputType f2) && (functionOutputType f1 == functionOutputType f2)
+  f1 == f2 = qualifiedFunName f1 == qualifiedFunName f2 -- &&
+    --(functionInputType f1 == functionInputType f2) && (functionOutputType f1 == functionOutputType f2)
 
 instance Show Function where
   show (Function modifs name int outt b) =
-    unwords (map show modifs) ++ "function " ++ name ++ " : " ++ show int ++ " -> " ++ show outt ++ " = " ++ show b
+    case show int of
+      "Void" -> unwords (map show modifs) ++ "function " ++ name ++ " : " ++ show outt ++ " = " ++ show b
+      _ ->
+        unwords (map show modifs) ++ "function " ++ name ++ " : " ++ show int ++ " -> " ++ show outt ++ " = " ++ show b
 
 instance Ord Function where
-  f1 <= f2 =
-    (qualifiedFunName f1 <= qualifiedFunName f2) &&
-    (functionInputType f1 <= functionInputType f2) && (functionOutputType f1 <= functionOutputType f2)
+  f1 <= f2 = qualifiedFunName f1 <= qualifiedFunName f2 -- &&
+    -- (functionInputType f1 <= functionInputType f2) && (functionOutputType f1 <= functionOutputType f2)
 
 data DerivationKind
   = Unbound String
@@ -214,7 +274,7 @@ emptyVariant name = Variant name S.empty
 data Type
   = VoidType
   | EmptyType TypeName
-  | IntType Int
+  | IntType Integer
   | RealType Double
   | BoolType Bool
   | Type { qualifiedTypeName    :: TypeName
@@ -224,7 +284,9 @@ data Type
          , typeParamCount       :: Int
          , typeParamConstraints :: [[TypeParamConstraint]]
          , typeMembers          :: S.Set Function }
-  deriving (Eq)
+
+emptyType :: TypeName -> Type
+emptyType name = Type name voidDerivation [] S.empty 0 [] S.empty
 
 genParams :: Int -> [String]
 genParams n = map (\n -> "_t" ++ show n) [0 .. (n - 1)]
@@ -249,6 +311,9 @@ instance Show Type where
         if null constr
           then p
           else "[" ++ p ++ " " ++ showL constr ++ "]"
+
+instance Eq Type where
+  t1 == t2 = qualifiedTypeName t1 == qualifiedTypeName t2
 
 instance Ord Type where
   t1 <= t2 = qualifiedTypeName t1 <= qualifiedTypeName t2

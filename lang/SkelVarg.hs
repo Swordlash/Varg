@@ -195,7 +195,11 @@ transExpr x =
     ELambda argdefs typedef expr  -> failure x
     EList listelems               -> failure x
     EEq expr1 expr2               -> failure x
-    ELe expr1 expr2               -> failure x
+    EMod expr1 expr2              -> failure x
+    ENot expr                     -> failure x
+    EOr expr1 expr2               -> failure x
+    EAnd expr1 expr2              -> failure x
+    ELt expr1 expr2               -> failure x
     EGt expr1 expr2               -> failure x
     ELeq expr1 expr2              -> failure x
     EGeq expr1 expr2              -> failure x

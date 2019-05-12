@@ -48,7 +48,7 @@ terminator          PrimFreeType "" ;
 
 --------------------------------- Function arg, usually constrained -------------------------------------
 
-terminator nonempty  ArgDef "";
+terminator ArgDef "";
 ArgumentDefinition.  ArgDef    ::= "(" LIdent ":" FreeTypeDef ")" ;
 InferredArgumentDef. ArgDef    ::= LIdent ;
 
@@ -148,7 +148,11 @@ EListElem.          ListElem ::= Expr ;
 separator           ListElem ",";
 
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
-ELe.                Expr1  ::= Expr2 "<"  Expr2 ;
+EMod.               Expr1  ::= Expr2 "mod" Expr2;
+ENot.               Expr1  ::= "not" Expr2;
+EOr.                Expr1  ::= Expr2 "||" Expr2;
+EAnd.               Expr1  ::= Expr2 "&&" Expr2;
+ELt.                Expr1  ::= Expr2 "<"  Expr2 ;
 EGt.                Expr1  ::= Expr2 ">"  Expr2 ;
 ELeq.               Expr1  ::= Expr2 "<=" Expr2 ;
 EGeq.               Expr1  ::= Expr2 ">=" Expr2 ;

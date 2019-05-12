@@ -21,7 +21,7 @@ $i = [$l $d _ ']          -- identifier character
 $u = [\0-\255]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \; | \? | \[ | \] | \( | \) | \, | \: | \{ | \} | \= | \+ | \- | \* | \/ | \^ | \< | \> | \< \= | \> \= | \= \= | \- \> | \\ | \= \> | \' | \" | \_
+   \; | \? | \[ | \] | \( | \) | \, | \: | \{ | \} | \= | \+ | \- | \* | \/ | \^ | \< | \> | \< \= | \> \= | \= \= | \- \> | \\ | \= \> | \| \| | \& \& | \' | \" | \_
 
 :-
 "#" [.]* ; -- Toss single line comments
@@ -107,7 +107,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "deriving" 30 (b "=" 15 (b "-" 8 (b ")" 4 (b "'" 2 (b "\"" 1 N N) (b "(" 3 N N)) (b "+" 6 (b "*" 5 N N) (b "," 7 N N))) (b ";" 12 (b "/" 10 (b "->" 9 N N) (b ":" 11 N N)) (b "<=" 14 (b "<" 13 N N) N))) (b "]" 23 (b ">=" 19 (b "=>" 17 (b "==" 16 N N) (b ">" 18 N N)) (b "[" 21 (b "?" 20 N N) (b "\\" 22 N N))) (b "as" 27 (b "_" 25 (b "^" 24 N N) (b "abstract" 26 N N)) (b "define" 29 (b "class" 28 N N) N)))) (b "native" 45 (b "implementing" 38 (b "function" 34 (b "false" 32 (b "else" 31 N N) (b "final" 33 N N)) (b "if" 36 (b "has" 35 N N) (b "implement" 37 N N))) (b "internal" 42 (b "in" 40 (b "import" 39 N N) (b "interface" 41 N N)) (b "module" 44 (b "match" 43 N N) N))) (b "this" 52 (b "super" 49 (b "static" 47 (b "sealed" 46 N N) (b "struct" 48 N N)) (b "then" 51 (b "template" 50 N N) N)) (b "with" 56 (b "unique" 54 (b "true" 53 N N) (b "where" 55 N N)) (b "}" 58 (b "{" 57 N N) N))))
+resWords = b "else" 32 (b "=" 16 (b "," 8 (b "(" 4 (b "&&" 2 (b "\"" 1 N N) (b "'" 3 N N)) (b "*" 6 (b ")" 5 N N) (b "+" 7 N N))) (b ":" 12 (b "->" 10 (b "-" 9 N N) (b "/" 11 N N)) (b "<" 14 (b ";" 13 N N) (b "<=" 15 N N)))) (b "]" 24 (b ">=" 20 (b "=>" 18 (b "==" 17 N N) (b ">" 19 N N)) (b "[" 22 (b "?" 21 N N) (b "\\" 23 N N))) (b "as" 28 (b "_" 26 (b "^" 25 N N) (b "abstract" 27 N N)) (b "define" 30 (b "class" 29 N N) (b "deriving" 31 N N))))) (b "not" 48 (b "import" 40 (b "has" 36 (b "final" 34 (b "false" 33 N N) (b "function" 35 N N)) (b "implement" 38 (b "if" 37 N N) (b "implementing" 39 N N))) (b "match" 44 (b "interface" 42 (b "in" 41 N N) (b "internal" 43 N N)) (b "module" 46 (b "mod" 45 N N) (b "native" 47 N N)))) (b "true" 56 (b "super" 52 (b "static" 50 (b "sealed" 49 N N) (b "struct" 51 N N)) (b "then" 54 (b "template" 53 N N) (b "this" 55 N N))) (b "{" 60 (b "where" 58 (b "unique" 57 N N) (b "with" 59 N N)) (b "}" 62 (b "||" 61 N N) N))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

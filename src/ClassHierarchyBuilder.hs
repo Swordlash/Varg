@@ -1,13 +1,13 @@
 module ClassHierarchyBuilder where
 
-import           InterpreterState
+import           PreprocessingState
 import           Types
 
 import           PrintVarg
 
-import qualified AbsVarg          as Abs
-import qualified Data.Map         as M
-import qualified Data.Set         as S
+import qualified AbsVarg            as Abs
+import qualified Data.Map           as M
+import qualified Data.Set           as S
 
 import           FieldParser
 import           FunctionParser
@@ -24,7 +24,7 @@ parseMember (Abs.MemberDefinition (Abs.UIdent name) fields) =
 parseClassContents :: Abs.ClassContents -> HierarchyMonad ClassContents
 parseClassContents (Abs.ClassContent members fundefs) = do
   pmembers <- mapM parseMember members
-  pfundefs <- concat <$> mapM parseFunction fundefs
+  pfundefs <- mapM parseFunction fundefs
   return (S.fromList pmembers, S.fromList pfundefs)
 
 parseClass :: Abs.ClassDef -> HierarchyMonad Type
@@ -42,8 +42,7 @@ parseClass classDef =
             (do (variants, functions) <- parseClassContents contents
                 return $ Type name deriv impls variants 0 [] functions)
         Nothing ->
-          throwError $
-          ParseException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
+          throwError $ VargException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
     Abs.TemplateDefinition modifs (Abs.UIdent name) typeParams _ _ contents ->
       let paramlen = length typeParams
        in do tell $ "\nParsing template " ++ name ++ "\n"
@@ -59,20 +58,20 @@ parseClass classDef =
                        return $ Type name deriv impls variants paramlen (map snd constrs) functions)
                Nothing ->
                  throwError $
-                 ParseException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
+                 VargException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
 
 buildClassHierarchy :: [Abs.ClassDef] -> HierarchyMonad ()
 buildClassHierarchy [] = pure ()
 buildClassHierarchy (cl:t) = do
   newcl <- parseClass cl
-  hierarchy <- gets classHierarchy
+  hierarchy <- gets preClassHierarchy
   if S.member newcl hierarchy
-    then throwError $ ParseException ("Multiple definition of class " ++ qualifiedTypeName newcl)
+    then throwError $ VargException ("Multiple definition of class " ++ qualifiedTypeName newcl)
     else do
       modify (registerClass newcl)
       buildClassHierarchy t
 
-runBuildClassHierarchy :: Stubs -> [Abs.ClassDef] -> ParseMonad (HierarchyState, ParserLog)
+runBuildClassHierarchy :: Stubs -> [Abs.ClassDef] -> VargExceptionMonad (HierarchyState, Log)
 runBuildClassHierarchy stubs cldefs =
   runIdentity $
   runExceptT $

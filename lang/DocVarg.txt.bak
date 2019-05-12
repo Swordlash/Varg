@@ -52,10 +52,10 @@ The reserved words used in Varg are the following:
   | ``deriving`` | ``else`` | ``false`` | ``final``
   | ``function`` | ``has`` | ``if`` | ``implement``
   | ``implementing`` | ``import`` | ``in`` | ``interface``
-  | ``internal`` | ``match`` | ``module`` | ``native``
-  | ``sealed`` | ``static`` | ``struct`` | ``super``
-  | ``template`` | ``then`` | ``this`` | ``true``
-  | ``unique`` | ``where`` | ``with`` | 
+  | ``internal`` | ``match`` | ``mod`` | ``module``
+  | ``native`` | ``sealed`` | ``static`` | ``struct``
+  | ``super`` | ``template`` | ``then`` | ``this``
+  | ``true`` | ``unique`` | ``where`` | ``with``
 
 The symbols used in Varg are the following:
   | ; | ? | [ | ]
@@ -105,7 +105,7 @@ All other symbols are terminals.
   | //FreeTypeDef1// | -> | ``(`` //FreeTypeDef// ``)`` 
   | //[PrimFreeType]// | -> | **eps**
   |  |  **|**  | //PrimFreeType// //[PrimFreeType]// 
-  | //[ArgDef]// | -> | //ArgDef// 
+  | //[ArgDef]// | -> | **eps**
   |  |  **|**  | //ArgDef// //[ArgDef]// 
   | //ArgDef// | -> | ``(`` //LIdent// ``:`` //FreeTypeDef// ``)`` 
   |  |  **|**  | //LIdent// 
@@ -197,13 +197,14 @@ All other symbols are terminals.
   |  |  **|**  | //Functorial// 
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// //[Arg]// 
-  | //Expr7// | -> | //Functorial// //[Arg]// 
-  |  |  **|**  | ``(`` //Expr// ``)`` 
+  | //Expr5// | -> | //Functorial// //[Arg]// 
+  |  |  **|**  | //Expr6// 
   | //ListElem// | -> | //Expr// 
   | //[ListElem]// | -> | **eps**
   |  |  **|**  | //ListElem// 
   |  |  **|**  | //ListElem// ``,`` //[ListElem]// 
   | //Expr1// | -> | //Expr1// ``==`` //Expr2// 
+  |  |  **|**  | //Expr2// ``mod`` //Expr2// 
   |  |  **|**  | //Expr2// ``<`` //Expr2// 
   |  |  **|**  | //Expr2// ``>`` //Expr2// 
   |  |  **|**  | //Expr2// ``<=`` //Expr2// 
@@ -223,9 +224,8 @@ All other symbols are terminals.
   |  |  **|**  | ``'`` //Char// ``'`` 
   |  |  **|**  | ``"`` //String// ``"`` 
   |  |  **|**  | ``_`` 
-  |  |  **|**  | //Expr7// 
+  |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Boolean// | -> | ``true`` 
   |  |  **|**  | ``false`` 
-  | //Expr5// | -> | //Expr6// 
 
 

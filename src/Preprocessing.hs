@@ -1,6 +1,6 @@
 module Preprocessing where
 
-import           InterpreterState
+import           PreprocessingState
 import           Types
 
 import           ErrM
@@ -23,19 +23,19 @@ runLexer :: String -> PreprocessMonad Abs.ProgramDef
 runLexer s =
   let ts = lexer s
    in case pProgramDef ts of
-        Bad s -> throwError $ ParseException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s
+        Bad s -> throwError $ VargException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s
         Ok tree -> do
           tell $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
           pure tree
   where
     lexer = resolveLayout True . tokens
 
-runLexerState :: String -> ParseMonad (Abs.ProgramDef, ParserLog)
+runLexerState :: String -> VargExceptionMonad (Abs.ProgramDef, Log)
 runLexerState s =
   runIdentity $
   runExceptT $ runWriterT (evalStateT (runReaderT (runLexer s) emptyPreprocessRuntime) emptyPreprocessState)
 
-preprocessClasses :: String -> ParseMonad (ClassHierarchy, ParserLog)
+preprocessClasses :: String -> VargExceptionMonad (ClassHierarchy, Log)
 preprocessClasses programText = do
   (Abs.Program _ cldefs, l1) <- runLexerState programText
   (PreprocessState stubs _ _, l2) <- runReadClassHeaders cldefs

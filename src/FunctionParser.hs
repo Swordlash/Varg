@@ -1,9 +1,9 @@
 module FunctionParser where
 
-import qualified AbsVarg          as Abs
-import qualified Data.Map         as M
+import qualified AbsVarg            as Abs
+import qualified Data.Map           as M
 import           Expressions
-import           InterpreterState
+import           PreprocessingState
 
 import           Data.Maybe
 import           TypeDefParser
@@ -12,23 +12,18 @@ nats = 0 : [n + 1 | n <- nats]
 
 argGen = map (\n -> "_arg" ++ show n) nats
 
-createFunctionHierarchy :: [(String, TypeDef)] -> TypeDef -> Expr -> HierarchyMonad [Function]
-createFunctionHierarchy [] _ _ = do
+--TODO: add function modifiers
+createFunctionHierarchy :: [(String, TypeDef)] -> TypeDef -> Expr -> HierarchyMonad Function
+createFunctionHierarchy [] rettype expr = do
   mname <- asks currentParsedMember
-  cname <- asks currentParsedTypeName
-  throwError $
-    ParseException $ "In definition of " ++ cname ++ "." ++ mname ++ ": empty argument list, use field instead"
+  return $ Function [] mname voidTypeDef rettype expr
 createFunctionHierarchy [(n, h)] rettype expr = do
   mname <- asks currentParsedMember
-  depth <- asks currentCurryingDepth
-  pure [Function [] ("_" ++ mname ++ show depth) h rettype (ELambda n h rettype expr)]
+  return $ Function [] mname h rettype (ELambda n h rettype expr)
 createFunctionHierarchy ((n, h):t) rettype expr = do
-  mname <- asks currentParsedMember
-  depth <- asks currentCurryingDepth
-  rest <- local incrCurrentCurryingDepth (createFunctionHierarchy t rettype expr)
-  let f@(Function _ name intype outtype exp) = head rest
-  return $
-    Function [] ("_" ++ mname ++ show depth) h (functionToTypedef f) (ELambda n h (functionToTypedef f) exp) : rest
+  rest <- createFunctionHierarchy t rettype expr
+  let Function [] mname tdef nrettype body = rest
+  return $ Function [] mname h (ConcreteType "Function" [Exact h, Exact nrettype]) (ELambda n h nrettype body)
 
 parseFunction' ::
      String
@@ -36,7 +31,7 @@ parseFunction' ::
   -> [Abs.ArgDef]
   -> (LookupFunction -> HierarchyMonad TypeDef)
   -> (LookupFunction -> HierarchyMonad Expr)
-  -> HierarchyMonad [Function]
+  -> HierarchyMonad Function
 parseFunction' name templateParams argdefs retfun bodyfun = do
   lookupFun <- readSubstsFromCurrentStub
   constrs <- parseFunctionTemplateParameter templateParams
@@ -48,7 +43,7 @@ parseFunction' name templateParams argdefs retfun bodyfun = do
   expr <- local localFun (bodyfun lookupFun)
   local localFun (createFunctionHierarchy namespargdefs rettype expr)
 
-parseFunction :: Abs.FunDef -> HierarchyMonad [Function]
+parseFunction :: Abs.FunDef -> HierarchyMonad Function
 parseFunction fundef = do
   modify removeTemplateFunctionSubsts --TODO: check if we should clear some type param constraints
   let getname fname =

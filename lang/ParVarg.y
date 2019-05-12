@@ -14,63 +14,67 @@ import ErrM
 %tokentype {Token}
 %token
   '\"' { PT _ (TS _ 1) }
-  '\'' { PT _ (TS _ 2) }
-  '(' { PT _ (TS _ 3) }
-  ')' { PT _ (TS _ 4) }
-  '*' { PT _ (TS _ 5) }
-  '+' { PT _ (TS _ 6) }
-  ',' { PT _ (TS _ 7) }
-  '-' { PT _ (TS _ 8) }
-  '->' { PT _ (TS _ 9) }
-  '/' { PT _ (TS _ 10) }
-  ':' { PT _ (TS _ 11) }
-  ';' { PT _ (TS _ 12) }
-  '<' { PT _ (TS _ 13) }
-  '<=' { PT _ (TS _ 14) }
-  '=' { PT _ (TS _ 15) }
-  '==' { PT _ (TS _ 16) }
-  '=>' { PT _ (TS _ 17) }
-  '>' { PT _ (TS _ 18) }
-  '>=' { PT _ (TS _ 19) }
-  '?' { PT _ (TS _ 20) }
-  '[' { PT _ (TS _ 21) }
-  '\\' { PT _ (TS _ 22) }
-  ']' { PT _ (TS _ 23) }
-  '^' { PT _ (TS _ 24) }
-  '_' { PT _ (TS _ 25) }
-  'abstract' { PT _ (TS _ 26) }
-  'as' { PT _ (TS _ 27) }
-  'class' { PT _ (TS _ 28) }
-  'define' { PT _ (TS _ 29) }
-  'deriving' { PT _ (TS _ 30) }
-  'else' { PT _ (TS _ 31) }
-  'false' { PT _ (TS _ 32) }
-  'final' { PT _ (TS _ 33) }
-  'function' { PT _ (TS _ 34) }
-  'has' { PT _ (TS _ 35) }
-  'if' { PT _ (TS _ 36) }
-  'implement' { PT _ (TS _ 37) }
-  'implementing' { PT _ (TS _ 38) }
-  'import' { PT _ (TS _ 39) }
-  'in' { PT _ (TS _ 40) }
-  'interface' { PT _ (TS _ 41) }
-  'internal' { PT _ (TS _ 42) }
-  'match' { PT _ (TS _ 43) }
-  'module' { PT _ (TS _ 44) }
-  'native' { PT _ (TS _ 45) }
-  'sealed' { PT _ (TS _ 46) }
-  'static' { PT _ (TS _ 47) }
-  'struct' { PT _ (TS _ 48) }
-  'super' { PT _ (TS _ 49) }
-  'template' { PT _ (TS _ 50) }
-  'then' { PT _ (TS _ 51) }
-  'this' { PT _ (TS _ 52) }
-  'true' { PT _ (TS _ 53) }
-  'unique' { PT _ (TS _ 54) }
-  'where' { PT _ (TS _ 55) }
-  'with' { PT _ (TS _ 56) }
-  '{' { PT _ (TS _ 57) }
-  '}' { PT _ (TS _ 58) }
+  '&&' { PT _ (TS _ 2) }
+  '\'' { PT _ (TS _ 3) }
+  '(' { PT _ (TS _ 4) }
+  ')' { PT _ (TS _ 5) }
+  '*' { PT _ (TS _ 6) }
+  '+' { PT _ (TS _ 7) }
+  ',' { PT _ (TS _ 8) }
+  '-' { PT _ (TS _ 9) }
+  '->' { PT _ (TS _ 10) }
+  '/' { PT _ (TS _ 11) }
+  ':' { PT _ (TS _ 12) }
+  ';' { PT _ (TS _ 13) }
+  '<' { PT _ (TS _ 14) }
+  '<=' { PT _ (TS _ 15) }
+  '=' { PT _ (TS _ 16) }
+  '==' { PT _ (TS _ 17) }
+  '=>' { PT _ (TS _ 18) }
+  '>' { PT _ (TS _ 19) }
+  '>=' { PT _ (TS _ 20) }
+  '?' { PT _ (TS _ 21) }
+  '[' { PT _ (TS _ 22) }
+  '\\' { PT _ (TS _ 23) }
+  ']' { PT _ (TS _ 24) }
+  '^' { PT _ (TS _ 25) }
+  '_' { PT _ (TS _ 26) }
+  'abstract' { PT _ (TS _ 27) }
+  'as' { PT _ (TS _ 28) }
+  'class' { PT _ (TS _ 29) }
+  'define' { PT _ (TS _ 30) }
+  'deriving' { PT _ (TS _ 31) }
+  'else' { PT _ (TS _ 32) }
+  'false' { PT _ (TS _ 33) }
+  'final' { PT _ (TS _ 34) }
+  'function' { PT _ (TS _ 35) }
+  'has' { PT _ (TS _ 36) }
+  'if' { PT _ (TS _ 37) }
+  'implement' { PT _ (TS _ 38) }
+  'implementing' { PT _ (TS _ 39) }
+  'import' { PT _ (TS _ 40) }
+  'in' { PT _ (TS _ 41) }
+  'interface' { PT _ (TS _ 42) }
+  'internal' { PT _ (TS _ 43) }
+  'match' { PT _ (TS _ 44) }
+  'mod' { PT _ (TS _ 45) }
+  'module' { PT _ (TS _ 46) }
+  'native' { PT _ (TS _ 47) }
+  'not' { PT _ (TS _ 48) }
+  'sealed' { PT _ (TS _ 49) }
+  'static' { PT _ (TS _ 50) }
+  'struct' { PT _ (TS _ 51) }
+  'super' { PT _ (TS _ 52) }
+  'template' { PT _ (TS _ 53) }
+  'then' { PT _ (TS _ 54) }
+  'this' { PT _ (TS _ 55) }
+  'true' { PT _ (TS _ 56) }
+  'unique' { PT _ (TS _ 57) }
+  'where' { PT _ (TS _ 58) }
+  'with' { PT _ (TS _ 59) }
+  '{' { PT _ (TS _ 60) }
+  '||' { PT _ (TS _ 61) }
+  '}' { PT _ (TS _ 62) }
 
 L_integ  { PT _ (TI $$) }
 L_doubl  { PT _ (TD $$) }
@@ -135,7 +139,8 @@ ListPrimFreeType :: { [PrimFreeType] }
 ListPrimFreeType : {- empty -} { [] }
                  | ListPrimFreeType PrimFreeType { flip (:) $1 $2 }
 ListArgDef :: { [ArgDef] }
-ListArgDef : ArgDef { (:[]) $1 } | ArgDef ListArgDef { (:) $1 $2 }
+ListArgDef : {- empty -} { [] }
+           | ListArgDef ArgDef { flip (:) $1 $2 }
 ArgDef :: { ArgDef }
 ArgDef : '(' LIdent ':' FreeTypeDef ')' { AbsVarg.ArgumentDefinition $2 $4 }
        | LIdent { AbsVarg.InferredArgumentDef $1 }
@@ -172,8 +177,8 @@ ListMemberDef : {- empty -} { [] }
               | MemberDef { (:[]) $1 }
               | MemberDef ';' ListMemberDef { (:) $1 $3 }
 FunDef :: { FunDef }
-FunDef : ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 $4 $5 $6 $8 }
-       | ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 $4 $5 $6 }
+FunDef : ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef RetType '=' Expr { AbsVarg.MemberFunctionDefinition (reverse $1) $3 $4 (reverse $5) $6 $8 }
+       | ListFunctionModifier 'function' FunctionName FunTemplateParams ListArgDef AbsRetType { AbsVarg.AbstractFunctionDefinition (reverse $1) $3 $4 (reverse $5) $6 }
 RetType :: { RetType }
 RetType : ':' FreeTypeDef { AbsVarg.ReturnType $2 }
         | {- empty -} { AbsVarg.InferredReturnType }
@@ -231,7 +236,7 @@ Expr : 'define' '{' ListAsDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'define' AsDef 'in' Expr { AbsVarg.EDefinition $2 $4 }
      | 'match' Expr 'with' '{' ListMatchClause '}' { AbsVarg.EMatch $2 $5 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
-     | '(' '\\' ListArgDef ':' TypeDef '=>' Expr ')' { AbsVarg.ELambda $3 $5 $7 }
+     | '(' '\\' ListArgDef ':' TypeDef '=>' Expr ')' { AbsVarg.ELambda (reverse $3) $5 $7 }
      | '[' ListListElem ']' { AbsVarg.EList $2 }
      | Expr1 { $1 }
 ListAsDef :: { [AsDef] }
@@ -269,7 +274,11 @@ ListListElem : {- empty -} { [] }
              | ListElem ',' ListListElem { (:) $1 $3 }
 Expr1 :: { Expr }
 Expr1 : Expr1 '==' Expr2 { AbsVarg.EEq $1 $3 }
-      | Expr2 '<' Expr2 { AbsVarg.ELe $1 $3 }
+      | Expr2 'mod' Expr2 { AbsVarg.EMod $1 $3 }
+      | 'not' Expr2 { AbsVarg.ENot $2 }
+      | Expr2 '||' Expr2 { AbsVarg.EOr $1 $3 }
+      | Expr2 '&&' Expr2 { AbsVarg.EAnd $1 $3 }
+      | Expr2 '<' Expr2 { AbsVarg.ELt $1 $3 }
       | Expr2 '>' Expr2 { AbsVarg.EGt $1 $3 }
       | Expr2 '<=' Expr2 { AbsVarg.ELeq $1 $3 }
       | Expr2 '>=' Expr2 { AbsVarg.EGeq $1 $3 }

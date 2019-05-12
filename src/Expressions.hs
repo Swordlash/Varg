@@ -1,11 +1,11 @@
 module Expressions where
 
-import           InterpreterState
+import           PreprocessingState
 import           TypeDefParser
 
-import qualified AbsVarg          as Abs
-import qualified Data.Map         as M
-import qualified Data.Set         as S
+import qualified AbsVarg            as Abs
+import qualified Data.Map           as M
+import qualified Data.Set           as S
 
 nshow Abs.Op_plus  = "+"
 nshow Abs.Op_minus = "-"
@@ -25,7 +25,7 @@ parseLeadingFunctorial lookupFun funct =
     Abs.SuperFunctor -> pure ESuper
     Abs.InstanceFunctor (Abs.LIdent var) -> pure $ EVar var
     Abs.TypeFunctor (Abs.UIdent _class) -> pure $ EClass _class
-    Abs.MemberFunctor _ -> throwError $ ParseException "The leading application functor cannot be .ident"
+    Abs.MemberFunctor _ -> throwError $ VargException "The leading application functor cannot be .ident"
     Abs.ExprFunctor expr -> parseExpression lookupFun expr
     Abs.OperatorFunctor op -> pure $ EOperator op
 
@@ -36,7 +36,7 @@ accumulateApplication lookupFun expr (Abs.ArgExpr argexpr) = do
 accumulateApplication lookupFun expr (Abs.ArgFunc funct) =
   case funct of
     Abs.ThisFunctor -> pure $ EApply expr EThis
-    Abs.SuperFunctor -> throwError $ ParseException "Cannot pass super as function argument"
+    Abs.SuperFunctor -> throwError $ VargException "Cannot pass super as function argument"
     Abs.InstanceFunctor (Abs.LIdent var) -> pure $ EApply expr $ EVar var
     Abs.TypeFunctor (Abs.UIdent _class) -> pure $ EApply expr $ EClass _class --TODO: is EClass a function?
     Abs.MemberFunctor (Abs.MFun name) -> pure $ EMember expr (drop 1 name)
@@ -54,6 +54,7 @@ parseExpression :: LookupFunction -> Abs.Expr -> HierarchyMonad Expr
 parseExpression lookupFun expr =
   case expr of
     Abs.EInt val -> pure $ EInt val
+    Abs.EReal val -> pure $ EDouble val
     Abs.EBoolean val ->
       pure $
       if val == Abs.ETrue
@@ -107,43 +108,59 @@ parseExpression lookupFun expr =
           matchclauses
       return $ EMatch pm pclauses
     --arithmetic exprs
+    Abs.ENot expr -> do
+      p <- parseExpression lookupFun expr
+      return $ ENot p
+    Abs.EMod expr1 expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ EMod p1 p2
     Abs.EAdd expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "+") p2
+      return $ EAdd p1 p2
     Abs.ESub expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "-") p2
+      return $ ESub p1 p2
+    Abs.EOr expr1 expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ EOr p1 p2
+    Abs.EAnd expr1 expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ EAnd p1 p2
     Abs.EMul expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "*") p2
+      return $ EMul p1 p2
     Abs.EDiv expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "/") p2
+      return $ EDiv p1 p2
     Abs.EPow expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "^") p2
-    Abs.ELe expr1 expr2 -> do
+      return $ EPow p1 p2
+    Abs.ELt expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "<") p2
+      return $ ELt p1 p2
     Abs.EGt expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 ">") p2
+      return $ EGt p1 p2
     Abs.ELeq expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "<=") p2
+      return $ ELeq p1 p2
     Abs.EGeq expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 ">=") p2
+      return $ EGeq p1 p2
     Abs.EEq expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 "==") p2
+      return $ EEq p1 p2
+    _ -> throwError $ VargException $ "Cannot parse " ++ show expr

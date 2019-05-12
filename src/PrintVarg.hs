@@ -182,7 +182,7 @@ instance Print ArgDef where
           0
           (concatD [doc (showString "("), prt 0 lident, doc (showString ":"), prt 0 freetypedef, doc (showString ")")])
       InferredArgumentDef lident -> prPrec i 0 (concatD [prt 0 lident])
-  prtList _ [x]    = (concatD [prt 0 x])
+  prtList _ []     = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
 
 instance Print SuperclassType where
@@ -449,7 +449,11 @@ instance Print Expr where
              ])
       EList listelems -> prPrec i 0 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
       EEq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "=="), prt 2 expr2])
-      ELe expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "<"), prt 2 expr2])
+      EMod expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "mod"), prt 2 expr2])
+      ENot expr -> prPrec i 1 (concatD [doc (showString "not"), prt 2 expr])
+      EOr expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "||"), prt 2 expr2])
+      EAnd expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "&&"), prt 2 expr2])
+      ELt expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "<"), prt 2 expr2])
       EGt expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString ">"), prt 2 expr2])
       ELeq expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "<="), prt 2 expr2])
       EGeq expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString ">="), prt 2 expr2])
