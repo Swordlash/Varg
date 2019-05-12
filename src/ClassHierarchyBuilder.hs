@@ -25,12 +25,13 @@ parseClassContents :: Abs.ClassContents -> HierarchyMonad ClassContents
 parseClassContents (Abs.ClassContent members fundefs) = do
   pmembers <- mapM parseMember members
   pfundefs <- mapM parseFunction fundefs
-  return (S.fromList pmembers, S.fromList pfundefs)
+  return (S.fromList pmembers, M.fromList pfundefs)
 
 parseClass :: Abs.ClassDef -> HierarchyMonad Type
 parseClass classDef =
-  case classDef of
-    Abs.StructDefinition modifs name fields -> return VoidType
+  case classDef
+    --Abs.StructDefinition modifs name fields -> return VoidType
+        of
     Abs.ClassDefinition modifs (Abs.UIdent name) _ _ contents -> do
       tell $ "\nParsing class " ++ name ++ "\n"
       classModifs <- mapM readModifier modifs

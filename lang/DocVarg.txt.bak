@@ -48,12 +48,12 @@ MFun literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Varg are the following:
-  | ``abstract`` | ``as`` | ``class`` | ``define``
-  | ``deriving`` | ``else`` | ``false`` | ``final``
-  | ``function`` | ``has`` | ``if`` | ``implement``
-  | ``implementing`` | ``import`` | ``in`` | ``interface``
-  | ``internal`` | ``match`` | ``mod`` | ``module``
-  | ``native`` | ``sealed`` | ``static`` | ``struct``
+  | ``abstract`` | ``class`` | ``deriving`` | ``else``
+  | ``false`` | ``final`` | ``function`` | ``has``
+  | ``if`` | ``implement`` | ``implementing`` | ``import``
+  | ``in`` | ``interface`` | ``internal`` | ``let``
+  | ``match`` | ``mod`` | ``module`` | ``native``
+  | ``not`` | ``sealed`` | ``static`` | ``struct``
   | ``super`` | ``template`` | ``then`` | ``this``
   | ``true`` | ``unique`` | ``where`` | ``with``
 
@@ -63,8 +63,9 @@ The symbols used in Varg are the following:
   | { | } | = | +
   | - | * | / | ^
   | < | > | <= | >=
-  | == | -> | \ | =>
-  | ' | " | _ | 
+  | == | -> | \ | []
+  | /= | || | && | '
+  | " | _ |  | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #/ and /#.
@@ -147,6 +148,7 @@ All other symbols are terminals.
   |  |  **|**  | ``<=`` 
   |  |  **|**  | ``>=`` 
   |  |  **|**  | ``==`` 
+  |  |  **|**  | ``:`` 
   | //AbsRetType// | -> | ``:`` ``abstract`` //FreeTypeDef// 
   |  |  **|**  | **eps**
   | //FunTemplateParams// | -> | **eps**
@@ -172,39 +174,43 @@ All other symbols are terminals.
   |  |  **|**  | //ClassField// ``;`` //[ClassField]// 
   | //FieldModifier// | -> | ``internal`` 
   |  |  **|**  | ``unique`` 
-  | //Expr// | -> | ``define`` ``{`` //[AsDef]// ``}`` ``in`` //Expr// 
-  |  |  **|**  | ``define`` //AsDef// ``in`` //Expr// 
+  | //Expr// | -> | ``let`` ``{`` //[LetDef]// ``}`` ``in`` //Expr// 
+  |  |  **|**  | ``let`` //LetDef// ``in`` //Expr// 
   |  |  **|**  | ``match`` //Expr// ``with`` ``{`` //[MatchClause]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
-  |  |  **|**  | ``(`` ``\`` //[ArgDef]// ``:`` //TypeDef// ``=>`` //Expr// ``)`` 
-  |  |  **|**  | ``[`` //[ListElem]// ``]`` 
+  |  |  **|**  | //Expr1// ``:`` //Expr// 
   |  |  **|**  | //Expr1// 
-  | //[AsDef]// | -> | **eps**
-  |  |  **|**  | //AsDef// 
-  |  |  **|**  | //AsDef// ``;`` //[AsDef]// 
-  | //AsDef// | -> | //Expr// ``as`` //LIdent// 
+  | //[LetDef]// | -> | //LetDef// 
+  |  |  **|**  | //LetDef// ``;`` //[LetDef]// 
+  | //LetDef// | -> | //LIdent// //[ArgDef]// ``:`` //FreeTypeDef// ``=`` //Expr// 
   | //[MatchClause]// | -> | //MatchClause// 
   |  |  **|**  | //MatchClause// ``;`` //[MatchClause]// 
   | //MatchClause// | -> | //Expr// ``->`` //Expr// 
-  | //Functorial// | -> | ``this`` 
+  | //Expr6// | -> | ``(`` ``\`` //[ArgDef]// ``:`` //TypeDef// ``->`` //Expr// ``)`` 
+  |  |  **|**  | ``[`` //[ListElem]// ``]`` 
+  |  |  **|**  | ``[]`` 
+  |  |  **|**  | //Boolean// 
+  |  |  **|**  | ``this`` 
   |  |  **|**  | ``super`` 
-  |  |  **|**  | //UIdent// 
   |  |  **|**  | //LIdent// 
+  |  |  **|**  | //UIdent// 
   |  |  **|**  | //MFun// 
   |  |  **|**  | ``(`` //Operator// ``)`` 
-  |  |  **|**  | ``(`` //Expr6// ``)`` 
-  | //Arg// | -> | //Expr6// 
-  |  |  **|**  | //Functorial// 
-  | //[Arg]// | -> | **eps**
-  |  |  **|**  | //Arg// //[Arg]// 
-  | //Expr5// | -> | //Functorial// //[Arg]// 
-  |  |  **|**  | //Expr6// 
+  |  |  **|**  | //Integer// 
+  |  |  **|**  | //Double// 
+  |  |  **|**  | ``'`` //Char// ``'`` 
+  |  |  **|**  | ``"`` //String// ``"`` 
+  |  |  **|**  | ``_`` 
+  |  |  **|**  | ``(`` //Expr// ``)`` 
   | //ListElem// | -> | //Expr// 
-  | //[ListElem]// | -> | **eps**
-  |  |  **|**  | //ListElem// 
+  | //[ListElem]// | -> | //ListElem// 
   |  |  **|**  | //ListElem// ``,`` //[ListElem]// 
   | //Expr1// | -> | //Expr1// ``==`` //Expr2// 
+  |  |  **|**  | //Expr1// ``/=`` //Expr2// 
   |  |  **|**  | //Expr2// ``mod`` //Expr2// 
+  |  |  **|**  | ``not`` //Expr2// 
+  |  |  **|**  | //Expr2// ``||`` //Expr2// 
+  |  |  **|**  | //Expr2// ``&&`` //Expr2// 
   |  |  **|**  | //Expr2// ``<`` //Expr2// 
   |  |  **|**  | //Expr2// ``>`` //Expr2// 
   |  |  **|**  | //Expr2// ``<=`` //Expr2// 
@@ -218,14 +224,9 @@ All other symbols are terminals.
   |  |  **|**  | //Expr4// 
   | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
   |  |  **|**  | //Expr5// 
-  | //Expr6// | -> | //Boolean// 
-  |  |  **|**  | //Integer// 
-  |  |  **|**  | //Double// 
-  |  |  **|**  | ``'`` //Char// ``'`` 
-  |  |  **|**  | ``"`` //String// ``"`` 
-  |  |  **|**  | ``_`` 
-  |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Boolean// | -> | ``true`` 
   |  |  **|**  | ``false`` 
+  | //Expr5// | -> | //Expr5// //Expr6// 
+  |  |  **|**  | //Expr6// 
 
 

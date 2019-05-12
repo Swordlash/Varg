@@ -1,8 +1,13 @@
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+
 module Types where
 
-import qualified AbsVarg   as AV
-import           Data.List (intercalate)
-import qualified Data.Set  as S
+import qualified AbsVarg    as AV
+import           Data.List  (intercalate)
+import qualified Data.Map   as M
+import           Data.Maybe
+import qualified Data.Set   as S
 import           Instances
 import           PrintVarg
 
@@ -10,18 +15,39 @@ type TypeName = String
 
 type MemberName = String
 
-type Instance = Inst Expr Type
+type Instance = Inst Function Type
+
+type Mapping a = M.Map String a
 
 typeof :: Instance -> String
 typeof (IntInstance _)             = "Int"
 typeof (DoubleInstance _)          = "Double"
 typeof (BoolInstance _)            = "Bool"
 typeof (CharInstance _)            = "Char"
-typeof (FunctionInstance _)        = "Function"
+typeof (FunctionInstance f clos)   = show f
 typeof TypeInstance {baseType = t} = qualifiedTypeName t
+
+instance Show Instance where
+  show (IntInstance val) = show val
+  show (DoubleInstance val) = show val
+  show (CharInstance val) = "'" ++ show val ++ "'"
+  show (BoolInstance val) = show val
+  show (FunctionInstance expr clos) = showFunctionHeader expr -- ++ ", closure: " ++ show clos FIXME: show closure?
+  show t@(TypeInstance base var params flds) =
+    if qualifiedTypeName base == "List"
+      then show (instanceListToList t)
+      else "Class " ++
+           show base ++
+           " of variant " ++
+           var ++
+           ", with params " ++
+           unwords (map show params) ++ ").\n" ++ "Fields: " ++ intercalate "\n\t" (map show flds) ++ "\n"
 
 data Expr
   = Unparsed AV.Expr
+  | EConstructor TypeName
+                 String
+                 [Expr]
   | EInterpreted Instance
   | ELambda String
             TypeDef
@@ -31,6 +57,7 @@ data Expr
             String
   | ELet String
          Expr
+         TypeDef
          Expr
   | EApply Expr
            Expr
@@ -41,6 +68,8 @@ data Expr
                 Expr
   | EMatch Expr
            [(Expr, Expr)]
+  | ECons Expr
+          Expr
   | EMod Expr
          Expr
   | EAdd Expr
@@ -63,6 +92,8 @@ data Expr
          Expr
   | EEq Expr
         Expr
+  | ENeq Expr
+         Expr
   | ENot Expr
   | EOr Expr
         Expr
@@ -88,13 +119,14 @@ instance Show Expr where
   show (ELambda name tdef retdef expr) =
     "(\\(" ++ name ++ " : " ++ show tdef ++ ") : " ++ show retdef ++ " -> " ++ show expr ++ ")"
   show (EMember obj func) = show obj ++ "." ++ func
-  show (ELet label val expr) = "let " ++ label ++ " = " ++ show val ++ " in " ++ show expr
+  show (ELet label val typ expr) = "let " ++ label ++ " : " ++ show typ ++ " = " ++ show val ++ " in " ++ show expr
   show (EApply f x) = show f ++ "(" ++ show x ++ ")"
   show (EVar name) = name
   show (EIfThenElse ife thene elsee) = "if " ++ show ife ++ " then " ++ show thene ++ " else " ++ show elsee
   show (EMatch val table) = "match " ++ show val ++ " with \n" ++ conds ++ "\n"
     where
       conds = concatMap (\(e, v) -> show e ++ " -> " ++ show v ++ "\n") table
+  show (ECons e1 e2) = show e1 ++ " : " ++ show e2
   show (EMod e1 e2) = show e1 ++ " mod " ++ show e2
   show (EAdd e1 e2) = show e1 ++ " + " ++ show e2
   show (ESub e1 e2) = show e1 ++ " - " ++ show e2
@@ -106,6 +138,7 @@ instance Show Expr where
   show (ELeq e1 e2) = show e1 ++ " <= " ++ show e2
   show (EGeq e1 e2) = show e1 ++ " >= " ++ show e2
   show (EEq e1 e2) = show e1 ++ " == " ++ show e2
+  show (ENeq e1 e2) = show e1 ++ " /= " ++ show e2
   show (ENot e1) = "not " ++ show e1
   show (EOr e1 e2) = show e1 ++ " || " ++ show e2
   show (EAnd e1 e2) = show e1 ++ " && " ++ show e2
@@ -205,36 +238,29 @@ instance Show FieldModifier where
 data MemberModifier
   = MethodModifier
   | TypeModifier
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 data Function = Function
   { functionModifiers  :: [MemberModifier]
-  , qualifiedFunName   :: MemberName
   , functionInputType  :: TypeDef
   , functionOutputType :: TypeDef
   , functionBody       :: Expr
-  }
+  } deriving (Eq, Ord)
 
-emptyFunction :: MemberName -> Function
-emptyFunction name = Function [] name AnyType AnyType EEmpty
+emptyFunction :: Function
+emptyFunction = Function [] AnyType AnyType EEmpty
 
 functionToTypedef :: Function -> TypeDef
-functionToTypedef (Function _ _ int outt _) = ConcreteType "Function" [Exact int, Exact outt]
+functionToTypedef (Function _ int outt _) = ConcreteType "Function" [Exact int, Exact outt]
 
-instance Eq Function where
-  f1 == f2 = qualifiedFunName f1 == qualifiedFunName f2 -- &&
-    --(functionInputType f1 == functionInputType f2) && (functionOutputType f1 == functionOutputType f2)
+showFunctionHeader :: Function -> String
+showFunctionHeader (Function modifs int outt b) =
+  case show int of
+    "Void" -> unwords (map show modifs) ++ show outt
+    _      -> unwords (map show modifs) ++ show int ++ " -> " ++ show outt
 
 instance Show Function where
-  show (Function modifs name int outt b) =
-    case show int of
-      "Void" -> unwords (map show modifs) ++ "function " ++ name ++ " : " ++ show outt ++ " = " ++ show b
-      _ ->
-        unwords (map show modifs) ++ "function " ++ name ++ " : " ++ show int ++ " -> " ++ show outt ++ " = " ++ show b
-
-instance Ord Function where
-  f1 <= f2 = qualifiedFunName f1 <= qualifiedFunName f2 -- &&
-    -- (functionInputType f1 <= functionInputType f2) && (functionOutputType f1 <= functionOutputType f2)
+  show fn@Function {functionBody = b} = showFunctionHeader fn ++ " = " ++ show b
 
 data DerivationKind
   = Unbound String
@@ -255,7 +281,7 @@ functorialDerivation typename = Concrete "Function" [voidDerivation, Concrete ty
 
 data Variant = Variant
   { variantName   :: TypeName
-  , variantFields :: S.Set Function
+  , variantFields :: [(String, Function)]
   }
 
 instance Eq Variant where
@@ -265,35 +291,28 @@ instance Ord Variant where
   v1 <= v2 = variantName v1 <= variantName v2
 
 instance Show Variant where
-  show (Variant vname fields) =
-    "\n    " ++ vname ++ ":\n        " ++ intercalate "\n        " (map show (S.toList fields))
+  show (Variant vname fields) = "\n    " ++ vname ++ ":\n        " ++ intercalate "\n        " (map show fields)
 
 emptyVariant :: TypeName -> Variant
-emptyVariant name = Variant name S.empty
+emptyVariant name = Variant name []
 
-data Type
-  = VoidType
-  | EmptyType TypeName
-  | IntType Integer
-  | RealType Double
-  | BoolType Bool
-  | Type { qualifiedTypeName    :: TypeName
-         , supertype            :: DerivationKind
-         , implementing         :: [DerivationKind]
-         , typeVariants         :: S.Set Variant
-         , typeParamCount       :: Int
-         , typeParamConstraints :: [[TypeParamConstraint]]
-         , typeMembers          :: S.Set Function }
+data Type = Type
+  { qualifiedTypeName    :: TypeName
+  , supertype            :: DerivationKind
+  , implementing         :: [DerivationKind]
+  , typeVariants         :: S.Set Variant
+  , typeParamCount       :: Int
+  , typeParamConstraints :: [[TypeParamConstraint]]
+  , typeMembers          :: Mapping Function
+  }
 
 emptyType :: TypeName -> Type
-emptyType name = Type name voidDerivation [] S.empty 0 [] S.empty
+emptyType name = Type name voidDerivation [] S.empty 0 [] M.empty
 
 genParams :: Int -> [String]
 genParams n = map (\n -> "_t" ++ show n) [0 .. (n - 1)]
 
 instance Show Type where
-  show VoidType = "Void"
-  show (EmptyType name) = "I" ++ name
   show t =
     qualifiedTypeName t ++
     " " ++
@@ -301,7 +320,7 @@ instance Show Type where
     deriv ++
     impl ++
     intercalate "\n" (map show (S.toList $ typeVariants t)) ++
-    "\n\n    " ++ intercalate "\n    " (map show (S.toList $ typeMembers t)) ++ "\n"
+    "\n\n    " ++ intercalate "\n    " (map show (M.toList $ typeMembers t)) ++ "\n"
     where
       deriv = " deriving " ++ show (supertype t)
       impl = " implementing " ++ intercalate ", " (show <$> implementing t)

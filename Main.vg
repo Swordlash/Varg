@@ -11,7 +11,7 @@ interface template Collection a implementing Functor Collection where
     unique function elemAt (i:Int) : abstract a
     unique function length : abstract Int
     unique function map <b> (f: Function a b) : abstract Collection a
-    implement function fmap <b> : Function (Function a b) (Collection b) = This.map
+    implement function fmap <b> : Function (Function a b) (Collection b) = this.map
 
 template List a implementing Collection a where
     Empty        
@@ -19,7 +19,16 @@ template List a implementing Collection a where
         head : a
         tail : List a
 
-    implement function elemAt (i:Int) : a = if i == 0 then This.head else This.tail.elemAt (i-1)
+    implement function elemAt (i:Int) : a = if i == 0 then this.head else this.tail.elemAt (i-1)
+    function (:) (x:a) : List a = List.Cons x this
+    function empty : Bool = if this == List.Empty then true else false
+    function map <b> (f: Function a b) : List b = if this.empty then [] else f (this.head) : this.tail.map f
+    function take (am : Int) : List a = if this.empty || (am==0) then [] else this.head : this.tail.take (am-1)
+
 
 class Main where
-    unique function main (args: List String) : Void = define 2.0 as x in if x*x == 4.0 then x^3.0 else 5
+    unique function main (args: List (List Char)) : Void = 
+        let func : Function (Function Int Int) (List Int) = [1..20].map 
+            fib (n:Int) : Int = if n <= 1 then 1 else fib (n-1) + fib (n-2) in
+                func fib
+                 

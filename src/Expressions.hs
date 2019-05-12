@@ -17,9 +17,11 @@ nshow Abs.Op_gr    = ">"
 nshow Abs.Op_leq   = "<="
 nshow Abs.Op_geq   = ">="
 nshow Abs.Op_eq    = "=="
+nshow Abs.Op_cons  = ":"
 
-parseLeadingFunctorial :: LookupFunction -> Abs.Functorial -> HierarchyMonad Expr
-parseLeadingFunctorial lookupFun funct =
+{-
+parseFunctorial :: LookupFunction -> Abs.Functorial -> HierarchyMonad Expr
+parseFunctorial lookupFun funct =
   case funct of
     Abs.ThisFunctor -> pure EThis
     Abs.SuperFunctor -> pure ESuper
@@ -28,6 +30,7 @@ parseLeadingFunctorial lookupFun funct =
     Abs.MemberFunctor _ -> throwError $ VargException "The leading application functor cannot be .ident"
     Abs.ExprFunctor expr -> parseExpression lookupFun expr
     Abs.OperatorFunctor op -> pure $ EOperator op
+
 
 accumulateApplication :: LookupFunction -> Expr -> Abs.Arg -> HierarchyMonad Expr
 accumulateApplication lookupFun expr (Abs.ArgExpr argexpr) = do
@@ -43,12 +46,20 @@ accumulateApplication lookupFun expr (Abs.ArgFunc funct) =
     Abs.ExprFunctor fexpr -> do
       pexpr <- parseExpression lookupFun fexpr
       return $ EApply expr pexpr
-    Abs.OperatorFunctor op -> pure $ EApply expr $ EOperator op
-
+    Abs.OperatorFunctor op -> pure $ EApply expr $ EOperator op-}
 makeList :: LookupFunction -> Expr -> Abs.Expr -> HierarchyMonad Expr
 makeList lookupFun head newfirst = do
   pfirst <- parseExpression lookupFun newfirst
-  return $ EApply (EMember head ":") pfirst
+  return $ ECons pfirst head
+
+shiftDefinition :: [(String, TypeDef)] -> TypeDef -> Expr -> HierarchyMonad (TypeDef, Expr)
+shiftDefinition lst rettype body =
+  case lst of
+    [] -> pure (rettype, body)
+    (s, td):t -> do
+      (resttype, restbody) <- shiftDefinition t rettype body
+      let t = ConcreteType "Function" [Exact td, Exact resttype]
+      return (t, ELambda s td t restbody)
 
 parseExpression :: LookupFunction -> Abs.Expr -> HierarchyMonad Expr
 parseExpression lookupFun expr =
@@ -62,15 +73,21 @@ parseExpression lookupFun expr =
         else EBool False
     Abs.EChar val -> pure $ EChar val
     Abs.EWild -> pure EWild
-    Abs.EDefinition (Abs.IDefinition letdef (Abs.LIdent name)) expr -> do
-      letd <- parseExpression lookupFun letdef
-      exprd <- parseExpression lookupFun expr
-      return $ ELet name letd exprd
+    Abs.EThis -> pure EThis
+    Abs.ESuper -> pure ESuper
+    Abs.EVar (Abs.LIdent name) -> pure $ EVar name
+    Abs.EType (Abs.UIdent name) -> pure $ EClass name
+    Abs.EMember (Abs.MFun name) -> pure $ ELambda "x" AnyType AnyType (EMember (EVar "x") (drop 1 name))
+    Abs.EOperator op -> pure $ EOperator op
+    Abs.EDefinition (Abs.IDefinition (Abs.LIdent name) argdefs ftdef expr) inexpr -> do
+      pexpr <- parseExpression lookupFun expr
+      pinexpr <- parseExpression lookupFun inexpr
+      pftdef <- parseFreeTypeDef lookupFun ftdef
+      namespargdefs <- mapM (parseArgDef lookupFun) argdefs
+      (tdef, shifted) <- shiftDefinition namespargdefs pftdef pexpr
+      return $ ELet name shifted tdef pinexpr
     Abs.EDefinitionsList [h] expr -> parseExpression lookupFun $ Abs.EDefinition h expr
-    Abs.EDefinitionsList (Abs.IDefinition letdef (Abs.LIdent name):t) expr -> do
-      rest <- parseExpression lookupFun $ Abs.EDefinitionsList t expr
-      letd <- parseExpression lookupFun letdef
-      return $ ELet name letd rest
+    Abs.EDefinitionsList (h:t) expr -> parseExpression lookupFun (Abs.EDefinition h (Abs.EDefinitionsList t expr))
     Abs.ELambda [argdef] typedef body --TODO: allow inferred typedefs
      -> do
       (name, pargtdef) <- parseArgDef lookupFun argdef
@@ -83,12 +100,18 @@ parseExpression lookupFun expr =
       let (ELambda _ argtype rettype _) = pbody
       let frettype = ConcreteType "Function" [Exact argtype, Exact rettype]
       return $ ELambda name pargtdef frettype pbody
-    Abs.EApply funct args -> do
-      leading <- parseLeadingFunctorial lookupFun funct
-      foldM (accumulateApplication lookupFun) leading args
+    Abs.EApply expr (Abs.EMember (Abs.MFun name)) -> do
+      pexpr <- parseExpression lookupFun expr
+      return $ EMember pexpr (drop 1 name)
+    Abs.EApply func arg -> do
+      pfunc <- parseExpression lookupFun func
+      parg <- parseExpression lookupFun arg
+      return $ EApply pfunc parg
     Abs.EList lelems -> do
       let elems = reverse $ map (\(Abs.EListElem expr) -> expr) lelems
-      foldM (makeList lookupFun) (EClass "List.Empty") elems
+      foldM (makeList lookupFun) (EMember (EClass "List") "Empty") elems
+    Abs.ERange beg end -> parseExpression lookupFun $ Abs.EList $ map (Abs.EListElem . Abs.EInt) [beg .. end]
+    Abs.EEmptyList -> pure $ EMember (EClass "List") "Empty"
     Abs.EIfThenElse expr1 expr2 expr3 -> do
       pe1 <- parseExpression lookupFun expr1
       pe2 <- parseExpression lookupFun expr2
@@ -97,6 +120,10 @@ parseExpression lookupFun expr =
     Abs.EString str ->
       let chars = map (Abs.EListElem . Abs.EChar) str
        in parseExpression lookupFun $ Abs.EList chars
+    Abs.ECons hd tl -> do
+      phd <- parseExpression lookupFun hd
+      ptl <- parseExpression lookupFun tl
+      return $ ECons phd ptl
     Abs.EMatch mexpr matchclauses -> do
       pm <- parseExpression lookupFun mexpr
       pclauses <-
@@ -163,4 +190,8 @@ parseExpression lookupFun expr =
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
       return $ EEq p1 p2
+    Abs.ENeq expr1 expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ ENeq p1 p2
     _ -> throwError $ VargException $ "Cannot parse " ++ show expr

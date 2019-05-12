@@ -340,6 +340,7 @@ instance Print Operator where
       Op_leq   -> prPrec i 0 (concatD [doc (showString "<=")])
       Op_geq   -> prPrec i 0 (concatD [doc (showString ">=")])
       Op_eq    -> prPrec i 0 (concatD [doc (showString "==")])
+      Op_cons  -> prPrec i 0 (concatD [doc (showString ":")])
 
 instance Print AbsRetType where
   prt i e =
@@ -394,20 +395,20 @@ instance Print FieldModifier where
 instance Print Expr where
   prt i e =
     case e of
-      EDefinitionsList asdefs expr ->
+      EDefinitionsList letdefs expr ->
         prPrec
           i
           0
           (concatD
-             [ doc (showString "define")
+             [ doc (showString "let")
              , doc (showString "{")
-             , prt 0 asdefs
+             , prt 0 letdefs
              , doc (showString "}")
              , doc (showString "in")
              , prt 0 expr
              ])
-      EDefinition asdef expr ->
-        prPrec i 0 (concatD [doc (showString "define"), prt 0 asdef, doc (showString "in"), prt 0 expr])
+      EDefinition letdef expr ->
+        prPrec i 0 (concatD [doc (showString "let"), prt 0 letdef, doc (showString "in"), prt 0 expr])
       EMatch expr matchclauses ->
         prPrec
           i
@@ -432,23 +433,27 @@ instance Print Expr where
              , doc (showString "else")
              , prt 0 expr3
              ])
-      EApply functorial args -> prPrec i 5 (concatD [prt 0 functorial, prt 0 args])
       ELambda argdefs typedef expr ->
         prPrec
           i
-          0
+          6
           (concatD
              [ doc (showString "(")
              , doc (showString "\\")
              , prt 0 argdefs
              , doc (showString ":")
              , prt 0 typedef
-             , doc (showString "=>")
+             , doc (showString "->")
              , prt 0 expr
              , doc (showString ")")
              ])
-      EList listelems -> prPrec i 0 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
+      EList listelems -> prPrec i 6 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
+      EEmptyList -> prPrec i 6 (concatD [doc (showString "[]")])
+      ERange n1 n2 ->
+        prPrec i 6 (concatD [doc (showString "["), prt 0 n1, doc (showString ".."), prt 0 n2, doc (showString "]")])
+      ECons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString ":"), prt 0 expr2])
       EEq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "=="), prt 2 expr2])
+      ENeq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "/="), prt 2 expr2])
       EMod expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "mod"), prt 2 expr2])
       ENot expr -> prPrec i 1 (concatD [doc (showString "not"), prt 2 expr])
       EOr expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "||"), prt 2 expr2])
@@ -463,17 +468,28 @@ instance Print Expr where
       EDiv expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "/"), prt 4 expr2])
       EPow expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "^"), prt 4 expr2])
       EBoolean boolean -> prPrec i 6 (concatD [prt 0 boolean])
+      EThis -> prPrec i 6 (concatD [doc (showString "this")])
+      ESuper -> prPrec i 6 (concatD [doc (showString "super")])
+      EVar lident -> prPrec i 6 (concatD [prt 0 lident])
+      EType uident -> prPrec i 6 (concatD [prt 0 uident])
+      EMember mfun -> prPrec i 6 (concatD [prt 0 mfun])
+      EOperator operator -> prPrec i 6 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
       EInt n -> prPrec i 6 (concatD [prt 0 n])
       EReal d -> prPrec i 6 (concatD [prt 0 d])
       EChar c -> prPrec i 6 (concatD [doc (showString "'"), prt 0 c, doc (showString "'")])
       EString str -> prPrec i 6 (concatD [doc (showString "\""), prt 0 str, doc (showString "\"")])
       EWild -> prPrec i 6 (concatD [doc (showString "_")])
+      EApply expr1 expr2 -> prPrec i 5 (concatD [prt 5 expr1, prt 6 expr2])
 
-instance Print AsDef where
+instance Print LetDef where
   prt i e =
     case e of
-      IDefinition expr lident -> prPrec i 0 (concatD [prt 0 expr, doc (showString "as"), prt 0 lident])
-  prtList _ []     = (concatD [])
+      IDefinition lident argdefs freetypedef expr ->
+        prPrec
+          i
+          0
+          (concatD
+             [prt 0 lident, prt 0 argdefs, doc (showString ":"), prt 0 freetypedef, doc (showString "="), prt 0 expr])
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
 
@@ -484,30 +500,10 @@ instance Print MatchClause where
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
 
-instance Print Functorial where
-  prt i e =
-    case e of
-      ThisFunctor -> prPrec i 0 (concatD [doc (showString "this")])
-      SuperFunctor -> prPrec i 0 (concatD [doc (showString "super")])
-      TypeFunctor uident -> prPrec i 0 (concatD [prt 0 uident])
-      InstanceFunctor lident -> prPrec i 0 (concatD [prt 0 lident])
-      MemberFunctor mfun -> prPrec i 0 (concatD [prt 0 mfun])
-      OperatorFunctor operator -> prPrec i 0 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
-      ExprFunctor expr -> prPrec i 0 (concatD [doc (showString "("), prt 6 expr, doc (showString ")")])
-
-instance Print Arg where
-  prt i e =
-    case e of
-      ArgExpr expr       -> prPrec i 0 (concatD [prt 6 expr])
-      ArgFunc functorial -> prPrec i 0 (concatD [prt 0 functorial])
-  prtList _ []     = (concatD [])
-  prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
-
 instance Print ListElem where
   prt i e =
     case e of
       EListElem expr -> prPrec i 0 (concatD [prt 0 expr])
-  prtList _ []     = (concatD [])
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
 

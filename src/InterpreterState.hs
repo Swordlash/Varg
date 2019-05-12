@@ -4,7 +4,7 @@ import           Instances
 import           PreprocessingState
 import           Types
 
-type Closure = Clos Expr Type
+type Closure = Clos Function Type
 
 type Environment = Closure
 
@@ -16,4 +16,4 @@ data InterpreterRuntime = InterpreterRuntime
   { environment :: Environment
   }
 
-type InterpreterMonad a = VargMonad InterpreterRuntime InterpreterState a
+type InterpreterMonad a = VargMonad Environment ClassHierarchy a

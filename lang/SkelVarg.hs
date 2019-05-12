@@ -144,6 +144,7 @@ transOperator x =
     Op_leq   -> failure x
     Op_geq   -> failure x
     Op_eq    -> failure x
+    Op_cons  -> failure x
 
 transAbsRetType :: AbsRetType -> Result
 transAbsRetType x =
@@ -187,14 +188,17 @@ transFieldModifier x =
 transExpr :: Expr -> Result
 transExpr x =
   case x of
-    EDefinitionsList asdefs expr  -> failure x
-    EDefinition asdef expr        -> failure x
+    EDefinitionsList letdefs expr -> failure x
+    EDefinition letdef expr       -> failure x
     EMatch expr matchclauses      -> failure x
     EIfThenElse expr1 expr2 expr3 -> failure x
-    EApply functorial args        -> failure x
     ELambda argdefs typedef expr  -> failure x
     EList listelems               -> failure x
+    EEmptyList                    -> failure x
+    ERange integer1 integer2      -> failure x
+    ECons expr1 expr2             -> failure x
     EEq expr1 expr2               -> failure x
+    ENeq expr1 expr2              -> failure x
     EMod expr1 expr2              -> failure x
     ENot expr                     -> failure x
     EOr expr1 expr2               -> failure x
@@ -209,38 +213,28 @@ transExpr x =
     EDiv expr1 expr2              -> failure x
     EPow expr1 expr2              -> failure x
     EBoolean boolean              -> failure x
+    EThis                         -> failure x
+    ESuper                        -> failure x
+    EVar lident                   -> failure x
+    EType uident                  -> failure x
+    EMember mfun                  -> failure x
+    EOperator operator            -> failure x
     EInt integer                  -> failure x
     EReal double                  -> failure x
     EChar char                    -> failure x
     EString string                -> failure x
     EWild                         -> failure x
+    EApply expr1 expr2            -> failure x
 
-transAsDef :: AsDef -> Result
-transAsDef x =
+transLetDef :: LetDef -> Result
+transLetDef x =
   case x of
-    IDefinition expr lident -> failure x
+    IDefinition lident argdefs freetypedef expr -> failure x
 
 transMatchClause :: MatchClause -> Result
 transMatchClause x =
   case x of
     IMatchClause expr1 expr2 -> failure x
-
-transFunctorial :: Functorial -> Result
-transFunctorial x =
-  case x of
-    ThisFunctor              -> failure x
-    SuperFunctor             -> failure x
-    TypeFunctor uident       -> failure x
-    InstanceFunctor lident   -> failure x
-    MemberFunctor mfun       -> failure x
-    OperatorFunctor operator -> failure x
-    ExprFunctor expr         -> failure x
-
-transArg :: Arg -> Result
-transArg x =
-  case x of
-    ArgExpr expr       -> failure x
-    ArgFunc functorial -> failure x
 
 transListElem :: ListElem -> Result
 transListElem x =

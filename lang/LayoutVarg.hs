@@ -10,7 +10,7 @@ topLayout :: Bool
 topLayout = False
 
 layoutWords, layoutStopWords :: [String]
-layoutWords = ["define", "where", "has", "with"]
+layoutWords = ["let", "where", "has", "with"]
 
 layoutStopWords = ["in"]
 
@@ -225,26 +225,26 @@ sToken p s = PT p (TS s i)
         ","            -> 8
         "-"            -> 9
         "->"           -> 10
-        "/"            -> 11
-        ":"            -> 12
-        ";"            -> 13
-        "<"            -> 14
-        "<="           -> 15
-        "="            -> 16
-        "=="           -> 17
-        "=>"           -> 18
-        ">"            -> 19
-        ">="           -> 20
-        "?"            -> 21
-        "["            -> 22
-        "\\"           -> 23
-        "]"            -> 24
-        "^"            -> 25
-        "_"            -> 26
-        "abstract"     -> 27
-        "as"           -> 28
-        "class"        -> 29
-        "define"       -> 30
+        ".."           -> 11
+        "/"            -> 12
+        "/="           -> 13
+        ":"            -> 14
+        ";"            -> 15
+        "<"            -> 16
+        "<="           -> 17
+        "="            -> 18
+        "=="           -> 19
+        ">"            -> 20
+        ">="           -> 21
+        "?"            -> 22
+        "["            -> 23
+        "[]"           -> 24
+        "\\"           -> 25
+        "]"            -> 26
+        "^"            -> 27
+        "_"            -> 28
+        "abstract"     -> 29
+        "class"        -> 30
         "deriving"     -> 31
         "else"         -> 32
         "false"        -> 33
@@ -258,25 +258,26 @@ sToken p s = PT p (TS s i)
         "in"           -> 41
         "interface"    -> 42
         "internal"     -> 43
-        "match"        -> 44
-        "mod"          -> 45
-        "module"       -> 46
-        "native"       -> 47
-        "not"          -> 48
-        "sealed"       -> 49
-        "static"       -> 50
-        "struct"       -> 51
-        "super"        -> 52
-        "template"     -> 53
-        "then"         -> 54
-        "this"         -> 55
-        "true"         -> 56
-        "unique"       -> 57
-        "where"        -> 58
-        "with"         -> 59
-        "{"            -> 60
-        "||"           -> 61
-        "}"            -> 62
+        "let"          -> 44
+        "match"        -> 45
+        "mod"          -> 46
+        "module"       -> 47
+        "native"       -> 48
+        "not"          -> 49
+        "sealed"       -> 50
+        "static"       -> 51
+        "struct"       -> 52
+        "super"        -> 53
+        "template"     -> 54
+        "then"         -> 55
+        "this"         -> 56
+        "true"         -> 57
+        "unique"       -> 58
+        "where"        -> 59
+        "with"         -> 60
+        "{"            -> 61
+        "||"           -> 62
+        "}"            -> 63
         _              -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

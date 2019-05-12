@@ -1,7 +1,7 @@
 comment "#" ;
 comment "#/" "/#" ;
 
-layout "define", "where", "has", "with";
+layout "let", "where", "has", "with";
 layout stop "in";
 
 entrypoints ProgramDef;
@@ -93,6 +93,7 @@ Op_gr.    Operator ::= ">" ;
 Op_leq.   Operator ::= "<=";
 Op_geq.   Operator ::= ">=";
 Op_eq.    Operator ::= "==";
+Op_cons.  Operator ::= ":" ;
 
 AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" FunctionName FunTemplateParams [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
 AbsReturnType.               AbsRetType ::= ":" "abstract" FreeTypeDef ;
@@ -114,40 +115,30 @@ separator             ClassField ";";
 
 rules FieldModifier ::= "internal" | "unique" ;
 
-EDefinitionsList.   Expr   ::= "define" "{" [AsDef] "}" "in" Expr ; -- example: 'define 34 as x in 7*x', with list variant
-EDefinition.        Expr   ::= "define" AsDef "in" Expr           ;
+EDefinitionsList.   Expr   ::= "let" "{" [LetDef] "}" "in" Expr ; 
+EDefinition.        Expr   ::= "let" LetDef "in" Expr           ;
 
-separator         AsDef ";" ;
-IDefinition.      AsDef ::= Expr "as" LIdent ;
+separator nonempty  LetDef ";" ;
+IDefinition.        LetDef ::= LIdent [ArgDef] ":" FreeTypeDef "=" Expr;
 
-EMatch.             Expr  ::= "match" Expr "with" "{" [MatchClause] "}" ; -- e.g., 'match this with { Either.Left a -> ...; Either.Right a -> ...}'
+EMatch.             Expr  ::= "match" Expr "with" "{" [MatchClause] "}" ;
 
 separator nonempty  MatchClause ";" ;
 IMatchClause.       MatchClause ::= Expr "->" Expr;
 
 EIfThenElse.        Expr  ::= "if" Expr "then" Expr "else" Expr ;
 
-ThisFunctor.     Functorial ::= "this" ;
-SuperFunctor.    Functorial ::= "super";
-TypeFunctor.     Functorial ::= UIdent ;
-InstanceFunctor. Functorial ::= LIdent ;
-MemberFunctor.   Functorial ::= MFun ;
-OperatorFunctor. Functorial ::= "(" Operator ")" ;
-ExprFunctor.     Functorial ::= "(" Expr6 ")" ;
+ELambda.            Expr6 ::= "(" "\\" [ArgDef] ":" TypeDef "->" Expr ")" ; -- lambda expr
 
-ArgExpr.            Arg ::= Expr6 ;
-ArgFunc.            Arg ::= Functorial ; 
-terminator          Arg "";
-
-EApply.             Expr5 ::= Functorial [Arg] ;
-
-ELambda.            Expr ::= "(" "\\" [ArgDef] ":" TypeDef "=>" Expr ")" ; -- lambda expr
-
-EList.              Expr ::= "[" [ListElem] "]" ;
+EList.              Expr6 ::= "[" [ListElem] "]" ;
+EEmptyList.         Expr6 ::= "[]" ;
+ERange.             Expr6 ::= "[" Integer ".." Integer "]" ;
 EListElem.          ListElem ::= Expr ;
-separator           ListElem ",";
+separator nonempty  ListElem ",";
 
+ECons.              Expr  ::= Expr1 ":"   Expr;
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
+ENeq.               Expr1  ::= Expr1  "/=" Expr2 ;
 EMod.               Expr1  ::= Expr2 "mod" Expr2;
 ENot.               Expr1  ::= "not" Expr2;
 EOr.                Expr1  ::= Expr2 "||" Expr2;
@@ -165,11 +156,19 @@ EPow.               Expr4 ::= Expr5 "^"  Expr4 ;
 EBoolean.           Expr6 ::= Boolean ;
 ETrue.              Boolean  ::= "true" ;
 EFalse.             Boolean  ::= "false" ; 
+EThis.              Expr6 ::= "this";
+ESuper.             Expr6 ::= "super";
+EVar.               Expr6 ::= LIdent ;
+EType.              Expr6 ::= UIdent ;
+EMember.            Expr6 ::= MFun ;
+EOperator.          Expr6 ::= "(" Operator ")" ;
 
 EInt.               Expr6 ::= Integer ;
 EReal.              Expr6 ::= Double  ;
 EChar.              Expr6 ::= "'" Char "'" ;
 EString.            Expr6 ::= "\""  String "\""; 
 EWild.              Expr6 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
+
+EApply.             Expr5 ::= Expr5 Expr6 ;
 
 coercions           Expr 6 ;

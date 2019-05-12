@@ -144,6 +144,7 @@ data Operator
   | Op_leq
   | Op_geq
   | Op_eq
+  | Op_cons
   deriving (Eq, Ord, Show, Read)
 
 data AbsRetType
@@ -183,23 +184,28 @@ data FieldModifier
   deriving (Eq, Ord, Show, Read)
 
 data Expr
-  = EDefinitionsList [AsDef]
+  = EDefinitionsList [LetDef]
                      Expr
-  | EDefinition AsDef
+  | EDefinition LetDef
                 Expr
   | EMatch Expr
            [MatchClause]
   | EIfThenElse Expr
                 Expr
                 Expr
-  | EApply Functorial
-           [Arg]
   | ELambda [ArgDef]
             TypeDef
             Expr
   | EList [ListElem]
+  | EEmptyList
+  | ERange Integer
+           Integer
+  | ECons Expr
+          Expr
   | EEq Expr
         Expr
+  | ENeq Expr
+         Expr
   | EMod Expr
          Expr
   | ENot Expr
@@ -226,36 +232,31 @@ data Expr
   | EPow Expr
          Expr
   | EBoolean Boolean
+  | EThis
+  | ESuper
+  | EVar LIdent
+  | EType UIdent
+  | EMember MFun
+  | EOperator Operator
   | EInt Integer
   | EReal Double
   | EChar Char
   | EString String
   | EWild
+  | EApply Expr
+           Expr
   deriving (Eq, Ord, Show, Read)
 
-data AsDef =
-  IDefinition Expr
-              LIdent
+data LetDef =
+  IDefinition LIdent
+              [ArgDef]
+              FreeTypeDef
+              Expr
   deriving (Eq, Ord, Show, Read)
 
 data MatchClause =
   IMatchClause Expr
                Expr
-  deriving (Eq, Ord, Show, Read)
-
-data Functorial
-  = ThisFunctor
-  | SuperFunctor
-  | TypeFunctor UIdent
-  | InstanceFunctor LIdent
-  | MemberFunctor MFun
-  | OperatorFunctor Operator
-  | ExprFunctor Expr
-  deriving (Eq, Ord, Show, Read)
-
-data Arg
-  = ArgExpr Expr
-  | ArgFunc Functorial
   deriving (Eq, Ord, Show, Read)
 
 data ListElem =

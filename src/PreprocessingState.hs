@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module PreprocessingState
   ( module Control.Monad.Except
   , module Control.Monad.Reader
@@ -19,7 +21,7 @@ import           Control.Monad.Writer   hiding (Any)
 import           Types
 
 import           Data.List              (find)
-import           Data.Maybe             (fromJust, isJust)
+import           Data.Maybe             (fromJust, fromMaybe, isJust)
 
 newtype VargException =
   VargException String
@@ -30,9 +32,9 @@ instance Show VargException where
 
 type VargExceptionMonad = Either VargException
 
-type Substitutions = M.Map String String
+type Substitutions = Mapping String
 
-type Constraints = M.Map String [TypeParamConstraint]
+type Constraints = Mapping [TypeParamConstraint]
 
 type Stub = (Int, DerivationKind, [DerivationKind], Substitutions)
 
@@ -40,7 +42,7 @@ type Stubs = M.Map TypeName Stub
 
 type ClassHierarchy = S.Set Type
 
-type ClassContents = (S.Set Variant, S.Set Function)
+type ClassContents = (S.Set Variant, Mapping Function)
 
 type LookupFunction = String -> Maybe String
 
@@ -167,7 +169,14 @@ combineLookups lookups name =
   let results = map ($ name) lookups
    in fromJust <$> find isJust results
 
-lookupTypeFromClassHierarchy :: TypeName -> ClassHierarchy -> VargExceptionMonad Type
+--lookupVariantFromType :: TypeName -> Type -> VargExceptionMonad Variant
+lookupVariantFromType name Type {qualifiedTypeName = n, typeVariants = v} =
+  let cand = emptyVariant name
+   in if S.member cand v
+        then pure $ fromJust $ S.lookupGE cand v
+        else throwError $ VargException $ "Cannot find variant " ++ name ++ " of type " ++ n
+
+--lookupTypeFromClassHierarchy :: TypeName -> ClassHierarchy -> VargExceptionMonad Type
 lookupTypeFromClassHierarchy name hier =
   if S.member (emptyType name) hier
     then pure $ fromJust $ S.lookupGE (emptyType name) hier
@@ -175,8 +184,8 @@ lookupTypeFromClassHierarchy name hier =
          VargException $
          "Cannot find type of name " ++ name ++ ". Registered classes: " ++ show (map qualifiedTypeName $ S.toList hier)
 
-lookupFunctionFromType :: MemberName -> Type -> VargExceptionMonad Function
+--lookupFunctionFromType :: MemberName -> Type -> VargExceptionMonad Function
 lookupFunctionFromType name typ =
-  if S.member (emptyFunction name) (typeMembers typ)
-    then pure $ fromJust $ S.lookupGE (emptyFunction name) (typeMembers typ)
-    else throwError $ VargException $ "Cannot find function " ++ name ++ " of type " ++ qualifiedTypeName typ
+  case M.lookup name (typeMembers typ) of
+    Just elem -> pure elem
+    Nothing -> throwError $ VargException $ "Cannot find method " ++ name ++ " in type " ++ qualifiedTypeName typ
