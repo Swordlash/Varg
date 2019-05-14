@@ -1,5 +1,5 @@
 import "Std.Overture"
 
 class Main where
-    unique function main args = let l = [5.0,4.0,3.0,2.0,1.0,0.0] in l.foldl (+) 0.0
+    unique function main args = [0..20].reverse.map (\(a:Int) : Int -> 1 / a)
                  

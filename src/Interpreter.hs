@@ -18,7 +18,7 @@ import           System.IO.Unsafe       (unsafePerformIO)
 import           Types
 
 import qualified AbsVarg                as Abs
-import qualified Control.Exception.Base as E
+import           Control.Exception.Base (SomeException, evaluate, try)
 
 nats = 0 : [n + 1 | n <- nats]
 
@@ -64,9 +64,6 @@ throw offending message =
   "Interpreter exception: " ++
   message ++ "\nOffending expression: " ++ show offending ++ "\n\n---------- STACK TRACE ---------- \n\n"
 
-handler :: Expr -> E.ArithException -> IO (InterpreterMonad Instance)
-handler expr _ = E.evaluate $ throw expr "ArithmeticException"
-
 interpretBinaryArithmetic ::
      Expr
   -> String
@@ -77,21 +74,36 @@ interpretBinaryArithmetic ::
   -> (Bool -> Bool -> InterpreterMonad Instance)
   -> InterpreterMonad Instance
 interpretBinaryArithmetic whole name expr1 expr2 intfun dblfun boolfun = do
+  env <- asks environment
   p1 <- interpretExpression expr1
   p2 <- interpretExpression expr2
-  case (p1, p2) of
-    (IntInstance v1, IntInstance v2) -> intfun v1 v2
-    (DoubleInstance v1, DoubleInstance v2) -> dblfun v1 v2
-    (BoolInstance v1, BoolInstance v2) -> boolfun v1 v2
-    (TypeInstance {}, _) -> interpretExpression $ EApply (EMember (EInterpreted p1) name) (EInterpreted p2)
-    _ -> throw whole ("You want to " ++ name ++ " numbers " ++ show p1 ++ " and " ++ show p2 ++ ". Are they though?")
+  rethrow
+    (case (p1, p2) of
+       (IntInstance v1, IntInstance v2) -> intfun v1 v2
+       (DoubleInstance v1, DoubleInstance v2) -> dblfun v1 v2
+       (BoolInstance v1, BoolInstance v2) -> boolfun v1 v2
+       (TypeInstance {}, _) -> interpretExpression $ EApply (EMember (EInterpreted p1) name) (EInterpreted p2)
+       _ -> throw whole ("You want to " ++ name ++ " numbers " ++ show p1 ++ " and " ++ show p2 ++ ". Are they though?"))
+    ("Call: " ++ show whole ++ "\nBound variables: " ++ showTr env ++ "\n")
 
 -- auxiliary functions
-ifn f v1 v2 = pure $ IntInstance $ f v1 v2
+ifne e f v1 v2 = do
+  result <- liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Integer))
+  case result of
+    Left expr -> throw e (show expr)
+    Right val -> pure $ IntInstance val
 
-dfn f v1 v2 = pure $ DoubleInstance $ f v1 v2
+dfne e f v1 v2 = do
+  result <- liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Double))
+  case result of
+    Left expr -> throw e (show expr)
+    Right val -> pure $ DoubleInstance val
 
-bfn f b1 b2 = pure $ BoolInstance $ f b1 b2
+bfne e f b1 b2 = do
+  result <- liftIO (try (evaluate $ f b1 b2) :: IO (Either SomeException Bool))
+  case result of
+    Left expr -> throw e (show expr)
+    Right val -> pure $ BoolInstance val
 
 efn str e _ _ = throw e str
 
@@ -124,6 +136,9 @@ interpretExpression :: Expr -> InterpreterMonad Instance
 interpretExpression expr = do
   let throwe = throw expr
       binary = interpretBinaryArithmetic expr
+      ifn = ifne expr
+      dfn = dfne expr
+      bfn = bfne expr
   case expr of
     EAbstract -> throwe "Call to an abstract function"
     EInterpreted inst -> pure inst
