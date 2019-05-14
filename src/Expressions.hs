@@ -79,6 +79,13 @@ parseExpression lookupFun expr =
     Abs.EType (Abs.UIdent name) -> pure $ EClass name
     Abs.EMember (Abs.MFun name) -> pure $ ELambda "x" AnyType AnyType (EMember (EVar "x") (drop 1 name))
     Abs.EOperator op -> pure $ EOperator op
+    Abs.EDefinition (Abs.IInferredDefinition (Abs.LIdent name) argdefs expr) inexpr -> do
+      pexpr <- parseExpression lookupFun expr
+      pinexpr <- parseExpression lookupFun inexpr
+      let pftdef = AnyType
+      namespargdefs <- mapM (parseArgDef lookupFun) argdefs
+      (tdef, shifted) <- shiftDefinition namespargdefs pftdef pexpr
+      return $ ELet name shifted tdef pinexpr
     Abs.EDefinition (Abs.IDefinition (Abs.LIdent name) argdefs ftdef expr) inexpr -> do
       pexpr <- parseExpression lookupFun expr
       pinexpr <- parseExpression lookupFun inexpr
@@ -88,6 +95,11 @@ parseExpression lookupFun expr =
       return $ ELet name shifted tdef pinexpr
     Abs.EDefinitionsList [h] expr -> parseExpression lookupFun $ Abs.EDefinition h expr
     Abs.EDefinitionsList (h:t) expr -> parseExpression lookupFun (Abs.EDefinition h (Abs.EDefinitionsList t expr))
+    Abs.EUnify e1 e2 ine3 -> do
+      p1 <- parseExpression lookupFun e1
+      p2 <- parseExpression lookupFun e2
+      p3 <- parseExpression lookupFun ine3
+      return $ EUnify p1 p2 p3
     Abs.ELambda [argdef] typedef body --TODO: allow inferred typedefs
      -> do
       (name, pargtdef) <- parseArgDef lookupFun argdef
@@ -124,6 +136,10 @@ parseExpression lookupFun expr =
       phd <- parseExpression lookupFun hd
       ptl <- parseExpression lookupFun tl
       return $ ECons phd ptl
+    Abs.EOp expr1 (Abs.Op name) expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ EApply (EMember p1 name) p2
     Abs.EMatch mexpr matchclauses -> do
       pm <- parseExpression lookupFun mexpr
       pclauses <-
@@ -194,4 +210,7 @@ parseExpression lookupFun expr =
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
       return $ ENeq p1 p2
+    Abs.ENeg expr -> do
+      p <- parseExpression lookupFun expr
+      return $ ENeg p
     _ -> throwError $ VargException $ "Cannot parse " ++ show expr

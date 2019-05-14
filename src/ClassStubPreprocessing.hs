@@ -44,7 +44,7 @@ bindAndLogName :: String -> PreprocessMonad ()
 bindAndLogName name = do
   bound <- gets getLastTypeParam
   modify (bindName name)
-  tell $ "TypeParam `" ++ name ++ "` bound to `" ++ bound ++ "`\n"
+  --liftIO $ putStrLn $ "TypeParam `" ++ name ++ "` bound to `" ++ bound
 
 preparseStubTypeParam :: Abs.ConstrTypeParam -> PreprocessMonad ()
 preparseStubTypeParam param =
@@ -76,21 +76,19 @@ readClassHeaders (cl:t) = do
         Abs.ClassDefinition modifs (Abs.UIdent sname) isderiving isimplementing contents ->
           local
             (setPreparsedTypeName sname)
-            (do tell $ "\nReading header of class " ++ sname ++ "\n"
+            (do liftIO $ putStrLn $ "\nReading header of class " ++ sname
                 superclasses <- readDeriving isderiving
                 superifaces <- readImplementing isimplementing
                 return (sname, 0, superclasses, superifaces))
         Abs.TemplateDefinition modifs (Abs.UIdent sname) typeParams isderiving isimplementing contents ->
           local
             (setPreparsedTypeName sname)
-            (do tell $ "\nReading header of template " ++ sname ++ "\n"
+            (do liftIO $ putStrLn $ "\nReading header of template " ++ sname
                 mapM_ preparseStubTypeParam typeParams
                 superclasses <- readDeriving isderiving
                 superifaces <- readImplementing isimplementing
                 return (sname, length typeParams, superclasses, superifaces))
 
-runReadClassHeaders :: [Abs.ClassDef] -> VargExceptionMonad (PreprocessState, Log)
+runReadClassHeaders :: [Abs.ClassDef] -> VargMonad PreprocessState
 runReadClassHeaders cldefs =
-  runIdentity $
-  runExceptT $
-  runWriterT $ execStateT (runReaderT (readClassHeaders cldefs) emptyPreprocessRuntime) emptyPreprocessState
+  execStateT (runReaderT (readClassHeaders cldefs) emptyPreprocessRuntime) emptyPreprocessState

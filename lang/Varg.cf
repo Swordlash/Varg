@@ -1,21 +1,22 @@
 comment "#" ;
-comment "#/" "/#" ;
+comment "#{" "}#" ;
 
 layout "let", "where", "has", "with";
 layout stop "in";
+
+token UIdent (upper (letter | digit)*);
+token LIdent (lower (letter | digit)*);
+
+token MFun ('.' (letter | digit)*);
+token Op ( '!' | '#' | '$' | '%' | '&' | '*' | '+' | '.' | '/' | '<' | '=' | '>' | '?' | '@' | '\\' | '^' | '|' | '-' | '~' )+ ;
 
 entrypoints ProgramDef;
 
 Program. ProgramDef ::= [ImportDef] [ClassDef] ;
 terminator ClassDef "";
 
-Import. ImportDef ::= "import" UIdent ";";
+Import. ImportDef ::= "import" String;
 terminator ImportDef "";
-
-token UIdent (upper (letter | digit)*);
-token LIdent (lower (letter | digit)*);
-
-token MFun ('.' (letter | digit)*);
 
 ------------------------ ANY Type, Constrained, unconstrained, wildcard -------------------------------
 
@@ -80,8 +81,10 @@ MemberFunctionDefinition.    FunDef ::= [FunctionModifier] "function" FunctionNa
 ReturnType.                  RetType ::= ":" FreeTypeDef ;
 InferredReturnType.          RetType ::= ;
 
-FFunction.   FunctionName ::= LIdent ;
-FOperator.   FunctionName ::= "(" Operator ")" ;
+FFunction.    FunctionName ::= LIdent ;
+FOperator.    FunctionName ::= "(" Operator ")" ;
+FOperatorDef. FunctionName ::= "(" Op ")";
+
 
 Op_plus.  Operator ::= "+" ;
 Op_minus. Operator ::= "-" ;
@@ -118,8 +121,9 @@ rules FieldModifier ::= "internal" | "unique" ;
 EDefinitionsList.   Expr   ::= "let" "{" [LetDef] "}" "in" Expr ; 
 EDefinition.        Expr   ::= "let" LetDef "in" Expr           ;
 
-separator nonempty  LetDef ";" ;
-IDefinition.        LetDef ::= LIdent [ArgDef] ":" FreeTypeDef "=" Expr;
+separator nonempty   LetDef ";" ;
+IDefinition.         LetDef ::= LIdent [ArgDef] ":" FreeTypeDef "=" Expr;
+IInferredDefinition. LetDef ::= LIdent [ArgDef] "=" Expr;
 
 EMatch.             Expr  ::= "match" Expr "with" "{" [MatchClause] "}" ;
 
@@ -127,6 +131,7 @@ separator nonempty  MatchClause ";" ;
 IMatchClause.       MatchClause ::= Expr "->" Expr;
 
 EIfThenElse.        Expr  ::= "if" Expr "then" Expr "else" Expr ;
+EUnify.             Expr  ::= "unify" Expr "with" Expr "in" Expr;
 
 ELambda.            Expr6 ::= "(" "\\" [ArgDef] ":" TypeDef "->" Expr ")" ; -- lambda expr
 
@@ -136,7 +141,9 @@ ERange.             Expr6 ::= "[" Integer ".." Integer "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
+ENeg.               Expr5  ::= "-" Expr6 ;
 ECons.              Expr  ::= Expr1 ":"   Expr;
+EOp.                Expr1  ::= Expr1 Op Expr2;
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
 ENeq.               Expr1  ::= Expr1  "/=" Expr2 ;
 EMod.               Expr1  ::= Expr2 "mod" Expr2;
@@ -166,7 +173,7 @@ EOperator.          Expr6 ::= "(" Operator ")" ;
 EInt.               Expr6 ::= Integer ;
 EReal.              Expr6 ::= Double  ;
 EChar.              Expr6 ::= "'" Char "'" ;
-EString.            Expr6 ::= "\""  String "\""; 
+EString.            Expr6 ::= String ;
 EWild.              Expr6 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
 
 EApply.             Expr5 ::= Expr5 Expr6 ;

@@ -23,6 +23,8 @@ data Inst f t
   | BoolInstance Bool
   | FunctionInstance f
                      (Clos f t)
+  | ExceptionInstance String
+  | UnificatorInstance (Clos f t)
   | TypeInstance { baseType        :: t
                  , typeVariantName :: String
                  , instanceParams  :: [TypeParam]

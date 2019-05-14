@@ -13,63 +13,63 @@ import ErrM
 %monad { Err } { thenM } { returnM }
 %tokentype {Token}
 %token
-  '\"' { PT _ (TS _ 1) }
-  '&&' { PT _ (TS _ 2) }
-  '\'' { PT _ (TS _ 3) }
-  '(' { PT _ (TS _ 4) }
-  ')' { PT _ (TS _ 5) }
-  '*' { PT _ (TS _ 6) }
-  '+' { PT _ (TS _ 7) }
-  ',' { PT _ (TS _ 8) }
-  '-' { PT _ (TS _ 9) }
-  '->' { PT _ (TS _ 10) }
-  '..' { PT _ (TS _ 11) }
-  '/' { PT _ (TS _ 12) }
-  '/=' { PT _ (TS _ 13) }
-  ':' { PT _ (TS _ 14) }
-  ';' { PT _ (TS _ 15) }
-  '<' { PT _ (TS _ 16) }
-  '<=' { PT _ (TS _ 17) }
-  '=' { PT _ (TS _ 18) }
-  '==' { PT _ (TS _ 19) }
-  '>' { PT _ (TS _ 20) }
-  '>=' { PT _ (TS _ 21) }
-  '?' { PT _ (TS _ 22) }
-  '[' { PT _ (TS _ 23) }
-  '[]' { PT _ (TS _ 24) }
-  '\\' { PT _ (TS _ 25) }
-  ']' { PT _ (TS _ 26) }
-  '^' { PT _ (TS _ 27) }
-  '_' { PT _ (TS _ 28) }
-  'abstract' { PT _ (TS _ 29) }
-  'class' { PT _ (TS _ 30) }
-  'deriving' { PT _ (TS _ 31) }
-  'else' { PT _ (TS _ 32) }
-  'false' { PT _ (TS _ 33) }
-  'final' { PT _ (TS _ 34) }
-  'function' { PT _ (TS _ 35) }
-  'has' { PT _ (TS _ 36) }
-  'if' { PT _ (TS _ 37) }
-  'implement' { PT _ (TS _ 38) }
-  'implementing' { PT _ (TS _ 39) }
-  'import' { PT _ (TS _ 40) }
-  'in' { PT _ (TS _ 41) }
-  'interface' { PT _ (TS _ 42) }
-  'internal' { PT _ (TS _ 43) }
-  'let' { PT _ (TS _ 44) }
-  'match' { PT _ (TS _ 45) }
-  'mod' { PT _ (TS _ 46) }
-  'module' { PT _ (TS _ 47) }
-  'native' { PT _ (TS _ 48) }
-  'not' { PT _ (TS _ 49) }
-  'sealed' { PT _ (TS _ 50) }
-  'static' { PT _ (TS _ 51) }
-  'struct' { PT _ (TS _ 52) }
-  'super' { PT _ (TS _ 53) }
-  'template' { PT _ (TS _ 54) }
-  'then' { PT _ (TS _ 55) }
-  'this' { PT _ (TS _ 56) }
-  'true' { PT _ (TS _ 57) }
+  '&&' { PT _ (TS _ 1) }
+  '\'' { PT _ (TS _ 2) }
+  '(' { PT _ (TS _ 3) }
+  ')' { PT _ (TS _ 4) }
+  '*' { PT _ (TS _ 5) }
+  '+' { PT _ (TS _ 6) }
+  ',' { PT _ (TS _ 7) }
+  '-' { PT _ (TS _ 8) }
+  '->' { PT _ (TS _ 9) }
+  '..' { PT _ (TS _ 10) }
+  '/' { PT _ (TS _ 11) }
+  '/=' { PT _ (TS _ 12) }
+  ':' { PT _ (TS _ 13) }
+  ';' { PT _ (TS _ 14) }
+  '<' { PT _ (TS _ 15) }
+  '<=' { PT _ (TS _ 16) }
+  '=' { PT _ (TS _ 17) }
+  '==' { PT _ (TS _ 18) }
+  '>' { PT _ (TS _ 19) }
+  '>=' { PT _ (TS _ 20) }
+  '?' { PT _ (TS _ 21) }
+  '[' { PT _ (TS _ 22) }
+  '[]' { PT _ (TS _ 23) }
+  '\\' { PT _ (TS _ 24) }
+  ']' { PT _ (TS _ 25) }
+  '^' { PT _ (TS _ 26) }
+  '_' { PT _ (TS _ 27) }
+  'abstract' { PT _ (TS _ 28) }
+  'class' { PT _ (TS _ 29) }
+  'deriving' { PT _ (TS _ 30) }
+  'else' { PT _ (TS _ 31) }
+  'false' { PT _ (TS _ 32) }
+  'final' { PT _ (TS _ 33) }
+  'function' { PT _ (TS _ 34) }
+  'has' { PT _ (TS _ 35) }
+  'if' { PT _ (TS _ 36) }
+  'implement' { PT _ (TS _ 37) }
+  'implementing' { PT _ (TS _ 38) }
+  'import' { PT _ (TS _ 39) }
+  'in' { PT _ (TS _ 40) }
+  'interface' { PT _ (TS _ 41) }
+  'internal' { PT _ (TS _ 42) }
+  'let' { PT _ (TS _ 43) }
+  'match' { PT _ (TS _ 44) }
+  'mod' { PT _ (TS _ 45) }
+  'module' { PT _ (TS _ 46) }
+  'native' { PT _ (TS _ 47) }
+  'not' { PT _ (TS _ 48) }
+  'sealed' { PT _ (TS _ 49) }
+  'static' { PT _ (TS _ 50) }
+  'struct' { PT _ (TS _ 51) }
+  'super' { PT _ (TS _ 52) }
+  'template' { PT _ (TS _ 53) }
+  'then' { PT _ (TS _ 54) }
+  'this' { PT _ (TS _ 55) }
+  'true' { PT _ (TS _ 56) }
+  'unify' { PT _ (TS _ 57) }
   'unique' { PT _ (TS _ 58) }
   'where' { PT _ (TS _ 59) }
   'with' { PT _ (TS _ 60) }
@@ -77,24 +77,26 @@ import ErrM
   '||' { PT _ (TS _ 62) }
   '}' { PT _ (TS _ 63) }
 
+L_quoted { PT _ (TL $$) }
 L_integ  { PT _ (TI $$) }
 L_doubl  { PT _ (TD $$) }
 L_charac { PT _ (TC $$) }
-L_quoted { PT _ (TL $$) }
 L_UIdent { PT _ (T_UIdent $$) }
 L_LIdent { PT _ (T_LIdent $$) }
 L_MFun { PT _ (T_MFun $$) }
+L_Op { PT _ (T_Op $$) }
 
 
 %%
 
+String  :: { String }  : L_quoted {  $1 }
 Integer :: { Integer } : L_integ  { (read ( $1)) :: Integer }
 Double  :: { Double }  : L_doubl  { (read ( $1)) :: Double }
 Char    :: { Char }    : L_charac { (read ( $1)) :: Char }
-String  :: { String }  : L_quoted {  $1 }
 UIdent    :: { UIdent} : L_UIdent { UIdent ($1)}
 LIdent    :: { LIdent} : L_LIdent { LIdent ($1)}
 MFun    :: { MFun} : L_MFun { MFun ($1)}
+Op    :: { Op} : L_Op { Op ($1)}
 
 ProgramDef :: { ProgramDef }
 ProgramDef : ListImportDef ListClassDef { AbsVarg.Program (reverse $1) (reverse $2) }
@@ -102,7 +104,7 @@ ListClassDef :: { [ClassDef] }
 ListClassDef : {- empty -} { [] }
              | ListClassDef ClassDef { flip (:) $1 $2 }
 ImportDef :: { ImportDef }
-ImportDef : 'import' UIdent ';' { AbsVarg.Import $2 }
+ImportDef : 'import' String { AbsVarg.Import $2 }
 ListImportDef :: { [ImportDef] }
 ListImportDef : {- empty -} { [] }
               | ListImportDef ImportDef { flip (:) $1 $2 }
@@ -186,6 +188,7 @@ RetType : ':' FreeTypeDef { AbsVarg.ReturnType $2 }
 FunctionName :: { FunctionName }
 FunctionName : LIdent { AbsVarg.FFunction $1 }
              | '(' Operator ')' { AbsVarg.FOperator $2 }
+             | '(' Op ')' { AbsVarg.FOperatorDef $2 }
 Operator :: { Operator }
 Operator : '+' { AbsVarg.Op_plus }
          | '-' { AbsVarg.Op_minus }
@@ -238,6 +241,7 @@ Expr : 'let' '{' ListLetDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'let' LetDef 'in' Expr { AbsVarg.EDefinition $2 $4 }
      | 'match' Expr 'with' '{' ListMatchClause '}' { AbsVarg.EMatch $2 $5 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
+     | 'unify' Expr 'with' Expr 'in' Expr { AbsVarg.EUnify $2 $4 $6 }
      | Expr1 ':' Expr { AbsVarg.ECons $1 $3 }
      | Expr1 { $1 }
 ListLetDef :: { [LetDef] }
@@ -245,6 +249,7 @@ ListLetDef : LetDef { (:[]) $1 }
            | LetDef ';' ListLetDef { (:) $1 $3 }
 LetDef :: { LetDef }
 LetDef : LIdent ListArgDef ':' FreeTypeDef '=' Expr { AbsVarg.IDefinition $1 (reverse $2) $4 $6 }
+       | LIdent ListArgDef '=' Expr { AbsVarg.IInferredDefinition $1 (reverse $2) $4 }
 ListMatchClause :: { [MatchClause] }
 ListMatchClause : MatchClause { (:[]) $1 }
                 | MatchClause ';' ListMatchClause { (:) $1 $3 }
@@ -265,7 +270,7 @@ Expr6 : '(' '\\' ListArgDef ':' TypeDef '->' Expr ')' { AbsVarg.ELambda (reverse
       | Integer { AbsVarg.EInt $1 }
       | Double { AbsVarg.EReal $1 }
       | '\'' Char '\'' { AbsVarg.EChar $2 }
-      | '\"' String '\"' { AbsVarg.EString $2 }
+      | String { AbsVarg.EString $1 }
       | '_' { AbsVarg.EWild }
       | '(' Expr ')' { $2 }
 ListElem :: { ListElem }
@@ -273,8 +278,13 @@ ListElem : Expr { AbsVarg.EListElem $1 }
 ListListElem :: { [ListElem] }
 ListListElem : ListElem { (:[]) $1 }
              | ListElem ',' ListListElem { (:) $1 $3 }
+Expr5 :: { Expr }
+Expr5 : '-' Expr6 { AbsVarg.ENeg $2 }
+      | Expr5 Expr6 { AbsVarg.EApply $1 $2 }
+      | Expr6 { $1 }
 Expr1 :: { Expr }
-Expr1 : Expr1 '==' Expr2 { AbsVarg.EEq $1 $3 }
+Expr1 : Expr1 Op Expr2 { AbsVarg.EOp $1 $2 $3 }
+      | Expr1 '==' Expr2 { AbsVarg.EEq $1 $3 }
       | Expr1 '/=' Expr2 { AbsVarg.ENeq $1 $3 }
       | Expr2 'mod' Expr2 { AbsVarg.EMod $1 $3 }
       | 'not' Expr2 { AbsVarg.ENot $2 }
@@ -297,8 +307,6 @@ Expr4 :: { Expr }
 Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 } | Expr5 { $1 }
 Boolean :: { Boolean }
 Boolean : 'true' { AbsVarg.ETrue } | 'false' { AbsVarg.EFalse }
-Expr5 :: { Expr }
-Expr5 : Expr5 Expr6 { AbsVarg.EApply $1 $2 } | Expr6 { $1 }
 {
 
 returnM :: a -> Err a

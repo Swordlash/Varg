@@ -95,6 +95,9 @@ instance Print LIdent where
 instance Print MFun where
   prt _ (MFun i) = doc (showString (i))
 
+instance Print Op where
+  prt _ (Op i) = doc (showString (i))
+
 instance Print ProgramDef where
   prt i e =
     case e of
@@ -103,7 +106,7 @@ instance Print ProgramDef where
 instance Print ImportDef where
   prt i e =
     case e of
-      Import uident -> prPrec i 0 (concatD [doc (showString "import"), prt 0 uident, doc (showString ";")])
+      Import str -> prPrec i 0 (concatD [doc (showString "import"), prt 0 str])
   prtList _ []     = (concatD [])
   prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
 
@@ -326,6 +329,7 @@ instance Print FunctionName where
     case e of
       FFunction lident -> prPrec i 0 (concatD [prt 0 lident])
       FOperator operator -> prPrec i 0 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
+      FOperatorDef op -> prPrec i 0 (concatD [doc (showString "("), prt 0 op, doc (showString ")")])
 
 instance Print Operator where
   prt i e =
@@ -433,6 +437,18 @@ instance Print Expr where
              , doc (showString "else")
              , prt 0 expr3
              ])
+      EUnify expr1 expr2 expr3 ->
+        prPrec
+          i
+          0
+          (concatD
+             [ doc (showString "unify")
+             , prt 0 expr1
+             , doc (showString "with")
+             , prt 0 expr2
+             , doc (showString "in")
+             , prt 0 expr3
+             ])
       ELambda argdefs typedef expr ->
         prPrec
           i
@@ -451,7 +467,9 @@ instance Print Expr where
       EEmptyList -> prPrec i 6 (concatD [doc (showString "[]")])
       ERange n1 n2 ->
         prPrec i 6 (concatD [doc (showString "["), prt 0 n1, doc (showString ".."), prt 0 n2, doc (showString "]")])
+      ENeg expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
       ECons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString ":"), prt 0 expr2])
+      EOp expr1 op expr2 -> prPrec i 1 (concatD [prt 1 expr1, prt 0 op, prt 2 expr2])
       EEq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "=="), prt 2 expr2])
       ENeq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "/="), prt 2 expr2])
       EMod expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "mod"), prt 2 expr2])
@@ -477,7 +495,7 @@ instance Print Expr where
       EInt n -> prPrec i 6 (concatD [prt 0 n])
       EReal d -> prPrec i 6 (concatD [prt 0 d])
       EChar c -> prPrec i 6 (concatD [doc (showString "'"), prt 0 c, doc (showString "'")])
-      EString str -> prPrec i 6 (concatD [doc (showString "\""), prt 0 str, doc (showString "\"")])
+      EString str -> prPrec i 6 (concatD [prt 0 str])
       EWild -> prPrec i 6 (concatD [doc (showString "_")])
       EApply expr1 expr2 -> prPrec i 5 (concatD [prt 5 expr1, prt 6 expr2])
 
@@ -490,6 +508,8 @@ instance Print LetDef where
           0
           (concatD
              [prt 0 lident, prt 0 argdefs, doc (showString ":"), prt 0 freetypedef, doc (showString "="), prt 0 expr])
+      IInferredDefinition lident argdefs expr ->
+        prPrec i 0 (concatD [prt 0 lident, prt 0 argdefs, doc (showString "="), prt 0 expr])
   prtList _ [x]    = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
 

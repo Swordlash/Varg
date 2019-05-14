@@ -33,7 +33,7 @@ parseClass classDef =
     --Abs.StructDefinition modifs name fields -> return VoidType
         of
     Abs.ClassDefinition modifs (Abs.UIdent name) _ _ contents -> do
-      tell $ "\nParsing class " ++ name ++ "\n"
+      liftIO $ putStrLn $ "\nParsing class " ++ name
       classModifs <- mapM readModifier modifs
       stub <- gets (M.lookup name . preparsedStubs)
       case stub of
@@ -46,7 +46,7 @@ parseClass classDef =
           throwError $ VargException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
     Abs.TemplateDefinition modifs (Abs.UIdent name) typeParams _ _ contents ->
       let paramlen = length typeParams
-       in do tell $ "\nParsing template " ++ name ++ "\n"
+       in do liftIO $ putStrLn $ "\nParsing template " ++ name
              classModifs <- mapM readModifier modifs
              stub <- gets (M.lookup name . preparsedStubs)
              case stub of
@@ -72,11 +72,8 @@ buildClassHierarchy (cl:t) = do
       modify (registerClass newcl)
       buildClassHierarchy t
 
-runBuildClassHierarchy :: Stubs -> [Abs.ClassDef] -> VargExceptionMonad (HierarchyState, Log)
+runBuildClassHierarchy :: Stubs -> [Abs.ClassDef] -> VargMonad HierarchyState
 runBuildClassHierarchy stubs cldefs =
-  runIdentity $
-  runExceptT $
-  runWriterT $
   execStateT
     (runReaderT (buildClassHierarchy cldefs) emptyHierarchyRuntime)
     (HierarchyState stubs S.empty M.empty M.empty)

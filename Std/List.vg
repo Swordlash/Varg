@@ -1,0 +1,34 @@
+import "Std.Base"
+import "Std.Functor"
+import "Std.Maybe"
+import "Std.Collections"
+
+template List a implementing Collection a where
+    Empty        
+    Cons  has
+        head : a
+        tail : List a
+
+    implement function elemAt (i:Int) : a = if i == 0 then this.head else this.tail.elemAt (i-1)
+
+    function (:) (x:a) : List a = List.Cons x this
+
+    function empty : Bool = if this == List.Empty then true else false
+
+    function map <b> (f: Function a b) : List b = 
+        if this.empty then [] 
+            else f (this.head) : this.tail.map f
+
+    function take (am : Int) : List a = 
+        if this.empty || (am==0) then [] 
+            else this.head : this.tail.take (am-1)
+
+    function foldl <b> (f: Function a (Function b b)) (acc : b) : b =
+        if this.empty then acc
+            else this.tail.foldl f (f (this.head) acc)
+
+    function reverse : List a = this.foldl (:) []
+
+    function maybeHead : a = if this == List.Empty then Nothing else Maybe.Just (this.head)
+
+    function (++) (l: List a) : List a = if this == List.Empty then l else this.head : this.tail ++ l

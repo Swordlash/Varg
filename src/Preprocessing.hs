@@ -19,25 +19,40 @@ import           ClassHierarchyBuilder
 import           ClassStubPreprocessing
 
 ------------------------------------ running Alex and Happy ----------------------------------------------
-runLexer :: String -> PreprocessMonad Abs.ProgramDef
+runLexer :: String -> StateT (S.Set String) VargMonad Abs.ProgramDef
 runLexer s =
   let ts = lexer s
    in case pProgramDef ts of
         Bad s -> throwError $ VargException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s
         Ok tree -> do
-          tell $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
+          liftIO $ putStr $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
           pure tree
   where
     lexer = resolveLayout True . tokens
 
-runLexerState :: String -> VargExceptionMonad (Abs.ProgramDef, Log)
-runLexerState s =
-  runIdentity $
-  runExceptT $ runWriterT (evalStateT (runReaderT (runLexer s) emptyPreprocessRuntime) emptyPreprocessState)
+repl c =
+  if c == '.'
+    then '/'
+    else c
 
-preprocessClasses :: String -> VargExceptionMonad (ClassHierarchy, Log)
-preprocessClasses programText = do
-  (Abs.Program _ cldefs, l1) <- runLexerState programText
-  (PreprocessState stubs _ _, l2) <- runReadClassHeaders cldefs
-  (HierarchyState _ hier _ _, l3) <- runBuildClassHierarchy stubs cldefs
-  return (hier, l1 ++ l2 ++ l3)
+loadImports :: [Abs.ImportDef] -> StateT (S.Set String) VargMonad [Abs.ClassDef]
+loadImports [] = pure []
+loadImports (Abs.Import modulename:t) = do
+  stat <- get
+  let isloaded = S.member modulename stat
+  if isloaded
+    then loadImports t
+    else do
+      liftIO $ putStrLn $ "-------------------- Reading module " ++ modulename ++ "--------------------"
+      _module <- liftIO $ readFile (map repl modulename ++ ".vg")
+      Abs.Program imports cldefs <- runLexer _module
+      put $ S.insert modulename stat
+      rest <- loadImports (t ++ imports)
+      return $ cldefs ++ rest
+
+preprocessClasses :: String -> VargMonad ClassHierarchy
+preprocessClasses programName = do
+  cldefs <- evalStateT (loadImports [Abs.Import programName]) S.empty
+  PreprocessState stubs _ _ <- runReadClassHeaders cldefs
+  HierarchyState _ hier _ _ <- runBuildClassHierarchy stubs cldefs
+  return hier

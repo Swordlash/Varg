@@ -1,0 +1,9 @@
+import "Std.Base"
+import "Std.Functor"
+
+interface template Collection a implementing Functor Collection where
+    unique function elemAt (i:Int) : abstract a
+    unique function length : abstract Int
+    unique function map <b> (f: Function a b) : abstract Collection a
+    implement function fmap <b> : Function (Function a b) (Collection b) = this.map        
+

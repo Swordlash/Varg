@@ -1,0 +1,13 @@
+import "Std.Base"
+import "Std.Functor"
+
+template Maybe a implementing Functor Maybe where
+    Nothing
+    Just has
+        value : a
+
+    function get : a = this.value
+    
+    implement function fmap <b> (f: Function a b) : Maybe b = 
+        if this == Maybe.Nothing then Maybe.Nothing
+            else Maybe.Just (f (this.value))

@@ -13,13 +13,17 @@ newtype MFun =
   MFun String
   deriving (Eq, Ord, Show, Read)
 
+newtype Op =
+  Op String
+  deriving (Eq, Ord, Show, Read)
+
 data ProgramDef =
   Program [ImportDef]
           [ClassDef]
   deriving (Eq, Ord, Show, Read)
 
 data ImportDef =
-  Import UIdent
+  Import String
   deriving (Eq, Ord, Show, Read)
 
 data ConstrTypeParam
@@ -131,6 +135,7 @@ data RetType
 data FunctionName
   = FFunction LIdent
   | FOperator Operator
+  | FOperatorDef Op
   deriving (Eq, Ord, Show, Read)
 
 data Operator
@@ -193,6 +198,9 @@ data Expr
   | EIfThenElse Expr
                 Expr
                 Expr
+  | EUnify Expr
+           Expr
+           Expr
   | ELambda [ArgDef]
             TypeDef
             Expr
@@ -200,8 +208,12 @@ data Expr
   | EEmptyList
   | ERange Integer
            Integer
+  | ENeg Expr
   | ECons Expr
           Expr
+  | EOp Expr
+        Op
+        Expr
   | EEq Expr
         Expr
   | ENeq Expr
@@ -247,11 +259,14 @@ data Expr
            Expr
   deriving (Eq, Ord, Show, Read)
 
-data LetDef =
-  IDefinition LIdent
-              [ArgDef]
-              FreeTypeDef
-              Expr
+data LetDef
+  = IDefinition LIdent
+                [ArgDef]
+                FreeTypeDef
+                Expr
+  | IInferredDefinition LIdent
+                        [ArgDef]
+                        Expr
   deriving (Eq, Ord, Show, Read)
 
 data MatchClause =

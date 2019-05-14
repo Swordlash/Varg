@@ -1,0 +1,4 @@
+import "Std.Base"
+
+interface template Functor type where
+    unique function fmap <a, b> (f: Function a b) : abstract type b

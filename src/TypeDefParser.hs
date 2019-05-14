@@ -17,6 +17,8 @@ readModifier Abs.ClassModifier_interface = pure InterfaceType
 readModifier Abs.ClassModifier_module    = pure ModuleType
 readModifier Abs.ClassModifier_native    = pure NativeType
 
+{- TODO FIXME LookupFunction passing is redundant, could be included in MonadReader environment
+   TODO it appears here, in FunctionParser and Expressions -}
 registerConstrainedTypeName ::
      LookupFunction
   -> Updater String HierarchyState
@@ -36,7 +38,7 @@ registerConstrainedTypeName lookupFun updater constr = do
       tlookup <- gets (flip M.lookup . templateFunctionSubsts)
       let newlookup = combineLookups [tlookup, lookupFun]
       let subst = fromJust $ newlookup name
-      tell $ "Bound " ++ subst ++ " to " ++ name ++ "\n"
+      --liftIO $ putStrLn $ "Bound " ++ subst ++ " to " ++ name
       return (subst, [])
     Abs.DerivingConstrainedTypeParam (Abs.LIdent name) typedefs -- case newlookup name of
       --Just _ -> throwError $ ParseException $ errMsg ++ "multiple definition of constraint for "++name
@@ -46,7 +48,7 @@ registerConstrainedTypeName lookupFun updater constr = do
       tlookup <- gets (flip M.lookup . templateFunctionSubsts)
       let newlookup = combineLookups [tlookup, lookupFun]
       let subst = fromJust $ newlookup name
-      tell $ "Bound " ++ subst ++ " to " ++ name ++ " in deriving\n"
+      --liftIO $ putStrLn $ "Bound " ++ subst ++ " to " ++ name ++ " in deriving"
       local
         (setParsedTypeConstrName name)
         (do ptypedefs <- mapM (parseTypeDef newlookup) typedefs
@@ -60,7 +62,7 @@ registerConstrainedTypeName lookupFun updater constr = do
       tlookup <- gets (flip M.lookup . templateFunctionSubsts)
       let newlookup = combineLookups [tlookup, lookupFun]
       let subst = fromJust $ newlookup name
-      tell $ "Bound " ++ subst ++ " to " ++ name ++ " in super\n"
+      --liftIO $ putStrLn $ "Bound " ++ subst ++ " to " ++ name ++ " in super"
       local
         (setParsedTypeConstrName name)
         (do ptypedefs <- mapM (parseTypeDef newlookup) typedefs
@@ -152,11 +154,13 @@ parseArgDef lookupFun (Abs.ArgumentDefinition (Abs.LIdent name) tdef) = do
   tlookup <- readFunctionSubsts
   tdef <- parseFreeTypeDef (combineLookups [lookupFun, tlookup]) tdef
   return (name, tdef)
+parseArgDef lookupFun (Abs.InferredArgumentDef (Abs.LIdent name)) = pure (name, AnyType)
 
 parseRetType :: LookupFunction -> Abs.RetType -> HierarchyMonad TypeDef
 parseRetType lookupFun (Abs.ReturnType tdef) = do
   tlookup <- readFunctionSubsts
   parseFreeTypeDef (combineLookups [lookupFun, tlookup]) tdef
+parseRetType _ (Abs.InferredReturnType) = pure AnyType -- TODO: Actually infer them or something
 
 parseAbsRetType :: LookupFunction -> Abs.AbsRetType -> HierarchyMonad TypeDef
 parseAbsRetType lookupFun (Abs.AbsReturnType tdef) = do

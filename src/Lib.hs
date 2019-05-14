@@ -1,12 +1,26 @@
 module Lib where
 
-import System.IO
-import Interpreter
+import           Interpreter
+import           PreprocessingState
+import           System.Environment
+import           System.IO
+
+usage :: String
+usage = "Invalid arguments given. Usage: varg <program>"
+
+runInterpreter' :: String -> IO (Either VargException String)
+runInterpreter' filename = runExceptT $ interpret filename
 
 runInterpreter :: IO ()
 runInterpreter = do
-   prog <- readFile "Main.vg"
-   let result = interpret prog
-   putStrLn result
-
-
+  args <- getArgs
+  contents <- getContents
+  result <-
+    case args of
+      []         -> runInterpreter' "Main"
+      [filename] -> runInterpreter' filename
+      _          -> return $ Right usage
+  putStrLn $
+    case result of
+      Left err  -> show err
+      Right res -> "\n[[Result]]\n\n" ++ res

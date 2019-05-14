@@ -21,17 +21,18 @@ $i = [$l $d _ ']          -- identifier character
 $u = [\0-\255]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \; | \? | \[ | \] | \( | \) | \, | \: | \{ | \} | \= | \+ | \- | \* | \/ | \^ | \< | \> | \< \= | \> \= | \= \= | \- \> | \\ | \[ \] | \. \. | \/ \= | \| \| | \& \& | \' | \" | \_
+   \? | \[ | \] | \( | \) | \, | \: | \{ | \} | \; | \= | \+ | \- | \* | \/ | \^ | \< | \> | \< \= | \> \= | \= \= | \- \> | \\ | \[ \] | \. \. | \/ \= | \| \| | \& \& | \' | \_
 
 :-
 "#" [.]* ; -- Toss single line comments
-"#/" ([$u # \/] | \/+ [$u # [\/ \#]])* ("/")+ "#" ;
+"#{" ([$u # \}] | \}+ [$u # [\} \#]])* ("}")+ "#" ;
 
 $white+ ;
 @rsyms { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 $c ($l | $d)* { tok (\p s -> PT p (eitherResIdent (T_UIdent . share) s)) }
 $s ($l | $d)* { tok (\p s -> PT p (eitherResIdent (T_LIdent . share) s)) }
 \. ($l | $d)* { tok (\p s -> PT p (eitherResIdent (T_MFun . share) s)) }
+(\! | \# | \$ | \% | \& | \* | \+ | \. | \/ | \< | \= | \> | \? | \@ | \\ | \^ | \| | \- | \~)+ { tok (\p s -> PT p (eitherResIdent (T_Op . share) s)) }
 
 $l $i*   { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 \" ([$u # [\" \\ \n]] | (\\ (\" | \\ | \' | n | t)))* \"{ tok (\p s -> PT p (TL $ share $ unescapeInitTail s)) }
@@ -57,6 +58,7 @@ data Tok =
  | T_UIdent !String
  | T_LIdent !String
  | T_MFun !String
+ | T_Op !String
 
  deriving (Eq,Show,Ord)
 
@@ -94,6 +96,7 @@ prToken t = case t of
   PT _ (T_UIdent s) -> s
   PT _ (T_LIdent s) -> s
   PT _ (T_MFun s) -> s
+  PT _ (T_Op s) -> s
 
 
 data BTree = N | B String Tok BTree BTree deriving (Show)
@@ -107,7 +110,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "else" 32 (b "<" 16 (b "," 8 (b "(" 4 (b "&&" 2 (b "\"" 1 N N) (b "'" 3 N N)) (b "*" 6 (b ")" 5 N N) (b "+" 7 N N))) (b "/" 12 (b "->" 10 (b "-" 9 N N) (b ".." 11 N N)) (b ":" 14 (b "/=" 13 N N) (b ";" 15 N N)))) (b "[]" 24 (b ">" 20 (b "=" 18 (b "<=" 17 N N) (b "==" 19 N N)) (b "?" 22 (b ">=" 21 N N) (b "[" 23 N N))) (b "_" 28 (b "]" 26 (b "\\" 25 N N) (b "^" 27 N N)) (b "class" 30 (b "abstract" 29 N N) (b "deriving" 31 N N))))) (b "native" 48 (b "import" 40 (b "has" 36 (b "final" 34 (b "false" 33 N N) (b "function" 35 N N)) (b "implement" 38 (b "if" 37 N N) (b "implementing" 39 N N))) (b "let" 44 (b "interface" 42 (b "in" 41 N N) (b "internal" 43 N N)) (b "mod" 46 (b "match" 45 N N) (b "module" 47 N N)))) (b "this" 56 (b "struct" 52 (b "sealed" 50 (b "not" 49 N N) (b "static" 51 N N)) (b "template" 54 (b "super" 53 N N) (b "then" 55 N N))) (b "with" 60 (b "unique" 58 (b "true" 57 N N) (b "where" 59 N N)) (b "||" 62 (b "{" 61 N N) (b "}" 63 N N)))))
+resWords = b "false" 32 (b "<=" 16 (b "-" 8 (b ")" 4 (b "'" 2 (b "&&" 1 N N) (b "(" 3 N N)) (b "+" 6 (b "*" 5 N N) (b "," 7 N N))) (b "/=" 12 (b ".." 10 (b "->" 9 N N) (b "/" 11 N N)) (b ";" 14 (b ":" 13 N N) (b "<" 15 N N)))) (b "\\" 24 (b ">=" 20 (b "==" 18 (b "=" 17 N N) (b ">" 19 N N)) (b "[" 22 (b "?" 21 N N) (b "[]" 23 N N))) (b "abstract" 28 (b "^" 26 (b "]" 25 N N) (b "_" 27 N N)) (b "deriving" 30 (b "class" 29 N N) (b "else" 31 N N))))) (b "not" 48 (b "in" 40 (b "if" 36 (b "function" 34 (b "final" 33 N N) (b "has" 35 N N)) (b "implementing" 38 (b "implement" 37 N N) (b "import" 39 N N))) (b "match" 44 (b "internal" 42 (b "interface" 41 N N) (b "let" 43 N N)) (b "module" 46 (b "mod" 45 N N) (b "native" 47 N N)))) (b "true" 56 (b "super" 52 (b "static" 50 (b "sealed" 49 N N) (b "struct" 51 N N)) (b "then" 54 (b "template" 53 N N) (b "this" 55 N N))) (b "with" 60 (b "unique" 58 (b "unify" 57 N N) (b "where" 59 N N)) (b "||" 62 (b "{" 61 N N) (b "}" 63 N N)))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

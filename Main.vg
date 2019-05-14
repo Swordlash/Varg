@@ -1,34 +1,5 @@
-class Void where
-    unique function toString : abstract String
-
-interface template Function a b where
-    unique function call <a, b> (x: a) : abstract b
-
-interface template Functor type where
-    unique function fmap <a, b> (f: Function a b) : abstract type b
-
-interface template Collection a implementing Functor Collection where
-    unique function elemAt (i:Int) : abstract a
-    unique function length : abstract Int
-    unique function map <b> (f: Function a b) : abstract Collection a
-    implement function fmap <b> : Function (Function a b) (Collection b) = this.map
-
-template List a implementing Collection a where
-    Empty        
-    Cons  has
-        head : a
-        tail : List a
-
-    implement function elemAt (i:Int) : a = if i == 0 then this.head else this.tail.elemAt (i-1)
-    function (:) (x:a) : List a = List.Cons x this
-    function empty : Bool = if this == List.Empty then true else false
-    function map <b> (f: Function a b) : List b = if this.empty then [] else f (this.head) : this.tail.map f
-    function take (am : Int) : List a = if this.empty || (am==0) then [] else this.head : this.tail.take (am-1)
-
+import "Std.Overture"
 
 class Main where
-    unique function main (args: List (List Char)) : Void = 
-        let func : Function (Function Int Int) (List Int) = [1..20].map 
-            fib (n:Int) : Int = if n <= 1 then 1 else fib (n-1) + fib (n-2) in
-                func fib
+    unique function main args = let l = [5.0,4.0,3.0,2.0,1.0,0.0] in l.foldl (+) 0.0
                  

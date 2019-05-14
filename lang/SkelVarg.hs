@@ -24,6 +24,11 @@ transMFun x =
   case x of
     MFun string -> failure x
 
+transOp :: Op -> Result
+transOp x =
+  case x of
+    Op string -> failure x
+
 transProgramDef :: ProgramDef -> Result
 transProgramDef x =
   case x of
@@ -32,7 +37,7 @@ transProgramDef x =
 transImportDef :: ImportDef -> Result
 transImportDef x =
   case x of
-    Import uident -> failure x
+    Import string -> failure x
 
 transConstrTypeParam :: ConstrTypeParam -> Result
 transConstrTypeParam x =
@@ -130,6 +135,7 @@ transFunctionName x =
   case x of
     FFunction lident   -> failure x
     FOperator operator -> failure x
+    FOperatorDef op    -> failure x
 
 transOperator :: Operator -> Result
 transOperator x =
@@ -192,11 +198,14 @@ transExpr x =
     EDefinition letdef expr       -> failure x
     EMatch expr matchclauses      -> failure x
     EIfThenElse expr1 expr2 expr3 -> failure x
+    EUnify expr1 expr2 expr3      -> failure x
     ELambda argdefs typedef expr  -> failure x
     EList listelems               -> failure x
     EEmptyList                    -> failure x
     ERange integer1 integer2      -> failure x
+    ENeg expr                     -> failure x
     ECons expr1 expr2             -> failure x
+    EOp expr1 op expr2            -> failure x
     EEq expr1 expr2               -> failure x
     ENeq expr1 expr2              -> failure x
     EMod expr1 expr2              -> failure x
@@ -230,6 +239,7 @@ transLetDef :: LetDef -> Result
 transLetDef x =
   case x of
     IDefinition lident argdefs freetypedef expr -> failure x
+    IInferredDefinition lident argdefs expr     -> failure x
 
 transMatchClause :: MatchClause -> Result
 transMatchClause x =

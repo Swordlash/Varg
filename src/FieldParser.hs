@@ -13,8 +13,9 @@ parseField (Abs.NormalClassField (Abs.LIdent fldname) freeTypeDef) =
   local
     (setParsedMember fldname)
     (do lookupFun <- readSubstsFromCurrentStub
+        clname <- asks currentParsedMember
         fieldTypeDef <- parseFreeTypeDef lookupFun freeTypeDef
-        return (fldname, Function [] (ConcreteType "Void" []) fieldTypeDef EConst))
+        return (fldname, Function [] (clname ++ "." ++ fldname) (ConcreteType "Void" []) fieldTypeDef EConst))
 
 parseFields :: [Abs.ClassField] -> HierarchyMonad [(String, Function)]
 parseFields [] = pure []

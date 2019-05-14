@@ -23,12 +23,12 @@ import           Types
 import           Data.List              (find)
 import           Data.Maybe             (fromJust, fromMaybe, isJust)
 
-newtype VargException =
-  VargException String
-  deriving (Eq, Ord)
+data VargException = VargException
+  { reason :: String
+  } deriving (Eq, Ord)
 
 instance Show VargException where
-  show (VargException reason) = "VargException: " ++ reason
+  show v = "VargException: " ++ reason v
 
 type VargExceptionMonad = Either VargException
 
@@ -141,13 +141,13 @@ setParsedMember fld state = state {currentParsedMember = fld}
 setParsedTypeConstrName :: Updater String HierarchyRuntime
 setParsedTypeConstrName name state = state {currentParsedTypeConstrName = name}
 
-type Log = String
+type VargMonad = ExceptT VargException IO
 
-type VargMonad a b c = ReaderT a (StateT b (WriterT Log (ExceptT VargException Identity))) c
+type VargStatefulMonad a b c = ReaderT a (StateT b (ExceptT VargException IO)) c
 
-type PreprocessMonad c = VargMonad PreprocessRuntime PreprocessState c
+type PreprocessMonad c = VargStatefulMonad PreprocessRuntime PreprocessState c
 
-type HierarchyMonad c = VargMonad HierarchyRuntime HierarchyState c
+type HierarchyMonad c = VargStatefulMonad HierarchyRuntime HierarchyState c
 
 readSubstsFromCurrentStub :: HierarchyMonad LookupFunction
 readSubstsFromCurrentStub = do

@@ -1,0 +1,5 @@
+class Void where
+    unique function toString : abstract String
+
+interface template Function a b where
+    unique function call <a, b> (x: a) : abstract b

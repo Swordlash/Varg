@@ -32,16 +32,12 @@ instance Show Instance where
   show (DoubleInstance val) = show val
   show (CharInstance val) = "'" ++ show val ++ "'"
   show (BoolInstance val) = show val
-  show (FunctionInstance expr clos) = showFunctionHeader expr -- ++ ", closure: " ++ show clos FIXME: show closure?
+  show (FunctionInstance expr clos) = show expr -- ++ ", closure: " ++ show clos FIXME: show closure?
   show t@(TypeInstance base var params flds) =
     if qualifiedTypeName base == "List"
       then show (instanceListToList t)
-      else "Class " ++
-           show base ++
-           " of variant " ++
-           var ++
-           ", with params " ++
-           unwords (map show params) ++ ").\n" ++ "Fields: " ++ intercalate "\n\t" (map show flds) ++ "\n"
+      else qualifiedTypeName base ++
+           "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
 
 data Expr
   = Unparsed AV.Expr
@@ -49,6 +45,9 @@ data Expr
                  String
                  [Expr]
   | EInterpreted Instance
+  | EUnify Expr
+           Expr
+           Expr
   | ELambda String
             TypeDef
             TypeDef
@@ -99,6 +98,10 @@ data Expr
         Expr
   | EAnd Expr
          Expr
+  | ENeg Expr
+  | EOp Expr
+        String
+        Expr
   | EClass String
   | EBool Bool
   | EInt Integer
@@ -116,8 +119,11 @@ data Expr
 
 instance Show Expr where
   show (Unparsed expr) = printTree expr
+  show (EConstructor name str exprs) = name ++ "::" ++ str ++ unwords (map show exprs)
   show (ELambda name tdef retdef expr) =
     "(\\(" ++ name ++ " : " ++ show tdef ++ ") : " ++ show retdef ++ " -> " ++ show expr ++ ")"
+  show (EInterpreted inst) = "Interpreted " ++ show inst
+  show (EUnify e1 e2 ine3) = "unify " ++ show e1 ++ " with " ++ show e2 ++ " in " ++ show ine3
   show (EMember obj func) = show obj ++ "." ++ func
   show (ELet label val typ expr) = "let " ++ label ++ " : " ++ show typ ++ " = " ++ show val ++ " in " ++ show expr
   show (EApply f x) = show f ++ "(" ++ show x ++ ")"
@@ -148,6 +154,7 @@ instance Show Expr where
   show (EChar val) = show val
   show (EDouble val) = show val
   show (EFunctor val) = "@" ++ show val
+  show (EOperator av) = "(" ++ show av ++ ")"
   show EWild = "_"
   show ENative = "native"
   show EAbstract = "abstract"
@@ -169,7 +176,7 @@ voidTypeDef :: TypeDef
 voidTypeDef = ConcreteType "Void" []
 
 instance Show TypeDef where
-  show AnyType = "AnyType"
+  show AnyType = "?"
   show (InferredType str mainconstrs constrs)
     | null constrs =
       if null mainconstrs
@@ -209,52 +216,43 @@ instance Show TypeModifier where
   show SealedType    = "sealed"
   show NativeType    = "native"
 
-data MethodModifier
-  = StaticMethod
-  | InternalMethod
-  | ImplementMethod
-  | FinalMethod
-  | UniqueMethod
-  | NativeMethod
-  deriving (Eq)
-
-instance Show MethodModifier where
-  show StaticMethod    = "static"
-  show InternalMethod  = "internal"
-  show ImplementMethod = "implement"
-  show FinalMethod     = "final"
-  show UniqueMethod    = "unique"
-  show NativeMethod    = "native"
-
-data FieldModifier
-  = InternalField
-  | UniqueField
-  deriving (Eq)
-
-instance Show FieldModifier where
-  show InternalField = "internal"
-  show UniqueField   = "unique"
-
 data MemberModifier
-  = MethodModifier
-  | TypeModifier
-  deriving (Eq, Ord, Show)
+  = StaticMember
+  | InternalMember
+  | ImplementMember
+  | FinalMember
+  | UniqueMember
+  | NativeMember
+  | ClassMember
+  deriving (Eq, Ord)
+
+instance Show MemberModifier where
+  show StaticMember    = "static"
+  show InternalMember  = "internal"
+  show ImplementMember = "implement"
+  show FinalMember     = "final"
+  show UniqueMember    = "unique"
+  show NativeMember    = "native"
+  show ClassMember     = "<<class>>"
 
 data Function = Function
   { functionModifiers  :: [MemberModifier]
+  , functionName       :: String
   , functionInputType  :: TypeDef
   , functionOutputType :: TypeDef
   , functionBody       :: Expr
   } deriving (Eq, Ord)
 
 emptyFunction :: Function
-emptyFunction = Function [] AnyType AnyType EEmpty
+emptyFunction = Function [] "" AnyType AnyType EEmpty
 
 functionToTypedef :: Function -> TypeDef
-functionToTypedef (Function _ int outt _) = ConcreteType "Function" [Exact int, Exact outt]
+functionToTypedef (Function _ _ int outt _) = ConcreteType "Function" [Exact int, Exact outt]
 
 showFunctionHeader :: Function -> String
-showFunctionHeader (Function modifs int outt b) =
+showFunctionHeader (Function modifs name int outt b) =
+  name ++
+  " " ++
   case show int of
     "Void" -> unwords (map show modifs) ++ show outt
     _      -> unwords (map show modifs) ++ show int ++ " -> " ++ show outt
@@ -282,6 +280,7 @@ functorialDerivation typename = Concrete "Function" [voidDerivation, Concrete ty
 data Variant = Variant
   { variantName   :: TypeName
   , variantFields :: [(String, Function)]
+    -- TODO: Think about storing only typedef and modifier, they're all Void -> Type
   }
 
 instance Eq Variant where
