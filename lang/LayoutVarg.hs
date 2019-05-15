@@ -277,6 +277,7 @@ sToken p s = PT p (TS s i)
         "{"            -> 60
         "||"           -> 61
         "}"            -> 62
+        "~"            -> 63
         _              -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

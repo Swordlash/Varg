@@ -497,6 +497,7 @@ instance Print Expr where
       EMul expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "*"), prt 4 expr2])
       EDiv expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "/"), prt 4 expr2])
       EPow expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "^"), prt 4 expr2])
+      ECompose expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "~"), prt 4 expr2])
       EBoolean boolean -> prPrec i 6 (concatD [prt 0 boolean])
       EThis -> prPrec i 6 (concatD [doc (showString "this")])
       ESuper -> prPrec i 6 (concatD [doc (showString "super")])

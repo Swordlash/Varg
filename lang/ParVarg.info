@@ -171,9 +171,10 @@ Grammar
 	Expr3 -> Expr3 '/' Expr4                           (162)
 	Expr3 -> Expr4                                     (163)
 	Expr4 -> Expr5 '^' Expr4                           (164)
-	Expr4 -> Expr5                                     (165)
-	Boolean -> 'true'                                  (166)
-	Boolean -> 'false'                                 (167)
+	Expr4 -> Expr5 '~' Expr4                           (165)
+	Expr4 -> Expr5                                     (166)
+	Boolean -> 'true'                                  (167)
+	Boolean -> 'false'                                 (168)
 
 -----------------------------------------------------------------------------
 Terminals
@@ -240,6 +241,7 @@ Terminals
 	'{'            { PT _ (TS _ 60) }
 	'||'           { PT _ (TS _ 61) }
 	'}'            { PT _ (TS _ 62) }
+	'~'            { PT _ (TS _ 63) }
 	L_quoted       { PT _ (TL $$) }
 	L_integ        { PT _ (TI $$) }
 	L_doubl        { PT _ (TD $$) }
@@ -312,8 +314,8 @@ Non-terminals
 	Expr1           rules 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157
 	Expr2           rules 158, 159, 160
 	Expr3           rules 161, 162, 163
-	Expr4           rules 164, 165
-	Boolean         rules 166, 167
+	Expr4           rules 164, 165, 166
+	Boolean         rules 167, 168
 
 -----------------------------------------------------------------------------
 States
@@ -385,6 +387,7 @@ State 2
 	'with'         reduce using rule 1
 	'||'           reduce using rule 1
 	'}'            reduce using rule 1
+	'~'            reduce using rule 1
 	L_quoted       reduce using rule 1
 	L_integ        reduce using rule 1
 	L_doubl        reduce using rule 1
@@ -660,6 +663,7 @@ State 20
 	'with'         reduce using rule 5
 	'||'           reduce using rule 5
 	'}'            reduce using rule 5
+	'~'            reduce using rule 5
 	L_quoted       reduce using rule 5
 	L_integ        reduce using rule 5
 	L_doubl        reduce using rule 5
@@ -869,6 +873,7 @@ State 33
 	'with'         reduce using rule 6
 	'||'           reduce using rule 6
 	'}'            reduce using rule 6
+	'~'            reduce using rule 6
 	L_quoted       reduce using rule 6
 	L_integ        reduce using rule 6
 	L_doubl        reduce using rule 6
@@ -2461,6 +2466,7 @@ State 165
 	'with'         reduce using rule 137
 	'||'           reduce using rule 137
 	'}'            reduce using rule 137
+	'~'            reduce using rule 137
 	L_quoted       reduce using rule 137
 	L_integ        reduce using rule 137
 	L_doubl        reduce using rule 137
@@ -2508,6 +2514,7 @@ State 166
 	'with'         reduce using rule 134
 	'||'           reduce using rule 134
 	'}'            reduce using rule 134
+	'~'            reduce using rule 134
 	L_quoted       reduce using rule 134
 	L_integ        reduce using rule 134
 	L_doubl        reduce using rule 134
@@ -2555,6 +2562,7 @@ State 167
 	'with'         reduce using rule 135
 	'||'           reduce using rule 135
 	'}'            reduce using rule 135
+	'~'            reduce using rule 135
 	L_quoted       reduce using rule 135
 	L_integ        reduce using rule 135
 	L_doubl        reduce using rule 135
@@ -2602,6 +2610,7 @@ State 168
 	'with'         reduce using rule 136
 	'||'           reduce using rule 136
 	'}'            reduce using rule 136
+	'~'            reduce using rule 136
 	L_quoted       reduce using rule 136
 	L_integ        reduce using rule 136
 	L_doubl        reduce using rule 136
@@ -2649,6 +2658,7 @@ State 169
 	'with'         reduce using rule 131
 	'||'           reduce using rule 131
 	'}'            reduce using rule 131
+	'~'            reduce using rule 131
 	L_quoted       reduce using rule 131
 	L_integ        reduce using rule 131
 	L_doubl        reduce using rule 131
@@ -2696,6 +2706,7 @@ State 170
 	'with'         reduce using rule 130
 	'||'           reduce using rule 130
 	'}'            reduce using rule 130
+	'~'            reduce using rule 130
 	L_quoted       reduce using rule 130
 	L_integ        reduce using rule 130
 	L_doubl        reduce using rule 130
@@ -2743,6 +2754,7 @@ State 171
 	'with'         reduce using rule 132
 	'||'           reduce using rule 132
 	'}'            reduce using rule 132
+	'~'            reduce using rule 132
 	L_quoted       reduce using rule 132
 	L_integ        reduce using rule 132
 	L_doubl        reduce using rule 132
@@ -2798,6 +2810,7 @@ State 173
 	'with'         reduce using rule 145
 	'||'           reduce using rule 145
 	'}'            reduce using rule 145
+	'~'            reduce using rule 145
 	L_quoted       reduce using rule 145
 	L_integ        reduce using rule 145
 	L_doubl        reduce using rule 145
@@ -2812,41 +2825,43 @@ State 174
 
 	Expr5 -> Expr5 . Expr6                              (rule 144)
 	Expr4 -> Expr5 . '^' Expr4                          (rule 164)
-	Expr4 -> Expr5 .                                    (rule 165)
+	Expr4 -> Expr5 . '~' Expr4                          (rule 165)
+	Expr4 -> Expr5 .                                    (rule 166)
 
-	'&&'           reduce using rule 165
+	'&&'           reduce using rule 166
 	'('            shift, and enter state 180
-	')'            reduce using rule 165
-	'*'            reduce using rule 165
-	'+'            reduce using rule 165
-	','            reduce using rule 165
-	'-'            reduce using rule 165
-	'->'           reduce using rule 165
-	'/'            reduce using rule 165
-	'/='           reduce using rule 165
-	':'            reduce using rule 165
-	';'            reduce using rule 165
-	'<'            reduce using rule 165
-	'<='           reduce using rule 165
-	'=='           reduce using rule 165
-	'>'            reduce using rule 165
-	'>='           reduce using rule 165
+	')'            reduce using rule 166
+	'*'            reduce using rule 166
+	'+'            reduce using rule 166
+	','            reduce using rule 166
+	'-'            reduce using rule 166
+	'->'           reduce using rule 166
+	'/'            reduce using rule 166
+	'/='           reduce using rule 166
+	':'            reduce using rule 166
+	';'            reduce using rule 166
+	'<'            reduce using rule 166
+	'<='           reduce using rule 166
+	'=='           reduce using rule 166
+	'>'            reduce using rule 166
+	'>='           reduce using rule 166
 	'['            shift, and enter state 182
 	'[]'           shift, and enter state 183
-	']'            reduce using rule 165
+	']'            reduce using rule 166
 	'^'            shift, and enter state 233
 	'_'            shift, and enter state 184
-	'else'         reduce using rule 165
+	'else'         reduce using rule 166
 	'false'        shift, and enter state 185
-	'in'           reduce using rule 165
-	'mod'          reduce using rule 165
+	'in'           reduce using rule 166
+	'mod'          reduce using rule 166
 	'super'        shift, and enter state 190
-	'then'         reduce using rule 165
+	'then'         reduce using rule 166
 	'this'         shift, and enter state 191
 	'true'         shift, and enter state 192
-	'with'         reduce using rule 165
-	'||'           reduce using rule 165
-	'}'            reduce using rule 165
+	'with'         reduce using rule 166
+	'||'           reduce using rule 166
+	'}'            reduce using rule 166
+	'~'            shift, and enter state 234
 	L_quoted       shift, and enter state 2
 	L_integ        shift, and enter state 194
 	L_doubl        shift, and enter state 195
@@ -2854,7 +2869,7 @@ State 174
 	L_UIdent       shift, and enter state 20
 	L_LIdent       shift, and enter state 33
 	L_MFun         shift, and enter state 197
-	L_Op           reduce using rule 165
+	L_Op           reduce using rule 166
 
 	String         goto state 165
 	Integer        goto state 166
@@ -3030,6 +3045,7 @@ State 179
 	'with'         reduce using rule 127
 	'||'           reduce using rule 127
 	'}'            reduce using rule 127
+	'~'            reduce using rule 127
 	L_quoted       reduce using rule 127
 	L_integ        reduce using rule 127
 	L_doubl        reduce using rule 127
@@ -3209,6 +3225,7 @@ State 183
 	'with'         reduce using rule 125
 	'||'           reduce using rule 125
 	'}'            reduce using rule 125
+	'~'            reduce using rule 125
 	L_quoted       reduce using rule 125
 	L_integ        reduce using rule 125
 	L_doubl        reduce using rule 125
@@ -3256,6 +3273,7 @@ State 184
 	'with'         reduce using rule 138
 	'||'           reduce using rule 138
 	'}'            reduce using rule 138
+	'~'            reduce using rule 138
 	L_quoted       reduce using rule 138
 	L_integ        reduce using rule 138
 	L_doubl        reduce using rule 138
@@ -3268,49 +3286,50 @@ State 184
 
 State 185
 
-	Boolean -> 'false' .                                (rule 167)
+	Boolean -> 'false' .                                (rule 168)
 
-	'&&'           reduce using rule 167
-	'('            reduce using rule 167
-	')'            reduce using rule 167
-	'*'            reduce using rule 167
-	'+'            reduce using rule 167
-	','            reduce using rule 167
-	'-'            reduce using rule 167
-	'->'           reduce using rule 167
-	'/'            reduce using rule 167
-	'/='           reduce using rule 167
-	':'            reduce using rule 167
-	';'            reduce using rule 167
-	'<'            reduce using rule 167
-	'<='           reduce using rule 167
-	'=='           reduce using rule 167
-	'>'            reduce using rule 167
-	'>='           reduce using rule 167
-	'['            reduce using rule 167
-	'[]'           reduce using rule 167
-	']'            reduce using rule 167
-	'^'            reduce using rule 167
-	'_'            reduce using rule 167
-	'else'         reduce using rule 167
-	'false'        reduce using rule 167
-	'in'           reduce using rule 167
-	'mod'          reduce using rule 167
-	'super'        reduce using rule 167
-	'then'         reduce using rule 167
-	'this'         reduce using rule 167
-	'true'         reduce using rule 167
-	'with'         reduce using rule 167
-	'||'           reduce using rule 167
-	'}'            reduce using rule 167
-	L_quoted       reduce using rule 167
-	L_integ        reduce using rule 167
-	L_doubl        reduce using rule 167
-	L_charac       reduce using rule 167
-	L_UIdent       reduce using rule 167
-	L_LIdent       reduce using rule 167
-	L_MFun         reduce using rule 167
-	L_Op           reduce using rule 167
+	'&&'           reduce using rule 168
+	'('            reduce using rule 168
+	')'            reduce using rule 168
+	'*'            reduce using rule 168
+	'+'            reduce using rule 168
+	','            reduce using rule 168
+	'-'            reduce using rule 168
+	'->'           reduce using rule 168
+	'/'            reduce using rule 168
+	'/='           reduce using rule 168
+	':'            reduce using rule 168
+	';'            reduce using rule 168
+	'<'            reduce using rule 168
+	'<='           reduce using rule 168
+	'=='           reduce using rule 168
+	'>'            reduce using rule 168
+	'>='           reduce using rule 168
+	'['            reduce using rule 168
+	'[]'           reduce using rule 168
+	']'            reduce using rule 168
+	'^'            reduce using rule 168
+	'_'            reduce using rule 168
+	'else'         reduce using rule 168
+	'false'        reduce using rule 168
+	'in'           reduce using rule 168
+	'mod'          reduce using rule 168
+	'super'        reduce using rule 168
+	'then'         reduce using rule 168
+	'this'         reduce using rule 168
+	'true'         reduce using rule 168
+	'with'         reduce using rule 168
+	'||'           reduce using rule 168
+	'}'            reduce using rule 168
+	'~'            reduce using rule 168
+	L_quoted       reduce using rule 168
+	L_integ        reduce using rule 168
+	L_doubl        reduce using rule 168
+	L_charac       reduce using rule 168
+	L_UIdent       reduce using rule 168
+	L_LIdent       reduce using rule 168
+	L_MFun         reduce using rule 168
+	L_Op           reduce using rule 168
 
 
 State 186
@@ -3480,6 +3499,7 @@ State 190
 	'with'         reduce using rule 129
 	'||'           reduce using rule 129
 	'}'            reduce using rule 129
+	'~'            reduce using rule 129
 	L_quoted       reduce using rule 129
 	L_integ        reduce using rule 129
 	L_doubl        reduce using rule 129
@@ -3527,6 +3547,7 @@ State 191
 	'with'         reduce using rule 128
 	'||'           reduce using rule 128
 	'}'            reduce using rule 128
+	'~'            reduce using rule 128
 	L_quoted       reduce using rule 128
 	L_integ        reduce using rule 128
 	L_doubl        reduce using rule 128
@@ -3539,49 +3560,50 @@ State 191
 
 State 192
 
-	Boolean -> 'true' .                                 (rule 166)
+	Boolean -> 'true' .                                 (rule 167)
 
-	'&&'           reduce using rule 166
-	'('            reduce using rule 166
-	')'            reduce using rule 166
-	'*'            reduce using rule 166
-	'+'            reduce using rule 166
-	','            reduce using rule 166
-	'-'            reduce using rule 166
-	'->'           reduce using rule 166
-	'/'            reduce using rule 166
-	'/='           reduce using rule 166
-	':'            reduce using rule 166
-	';'            reduce using rule 166
-	'<'            reduce using rule 166
-	'<='           reduce using rule 166
-	'=='           reduce using rule 166
-	'>'            reduce using rule 166
-	'>='           reduce using rule 166
-	'['            reduce using rule 166
-	'[]'           reduce using rule 166
-	']'            reduce using rule 166
-	'^'            reduce using rule 166
-	'_'            reduce using rule 166
-	'else'         reduce using rule 166
-	'false'        reduce using rule 166
-	'in'           reduce using rule 166
-	'mod'          reduce using rule 166
-	'super'        reduce using rule 166
-	'then'         reduce using rule 166
-	'this'         reduce using rule 166
-	'true'         reduce using rule 166
-	'with'         reduce using rule 166
-	'||'           reduce using rule 166
-	'}'            reduce using rule 166
-	L_quoted       reduce using rule 166
-	L_integ        reduce using rule 166
-	L_doubl        reduce using rule 166
-	L_charac       reduce using rule 166
-	L_UIdent       reduce using rule 166
-	L_LIdent       reduce using rule 166
-	L_MFun         reduce using rule 166
-	L_Op           reduce using rule 166
+	'&&'           reduce using rule 167
+	'('            reduce using rule 167
+	')'            reduce using rule 167
+	'*'            reduce using rule 167
+	'+'            reduce using rule 167
+	','            reduce using rule 167
+	'-'            reduce using rule 167
+	'->'           reduce using rule 167
+	'/'            reduce using rule 167
+	'/='           reduce using rule 167
+	':'            reduce using rule 167
+	';'            reduce using rule 167
+	'<'            reduce using rule 167
+	'<='           reduce using rule 167
+	'=='           reduce using rule 167
+	'>'            reduce using rule 167
+	'>='           reduce using rule 167
+	'['            reduce using rule 167
+	'[]'           reduce using rule 167
+	']'            reduce using rule 167
+	'^'            reduce using rule 167
+	'_'            reduce using rule 167
+	'else'         reduce using rule 167
+	'false'        reduce using rule 167
+	'in'           reduce using rule 167
+	'mod'          reduce using rule 167
+	'super'        reduce using rule 167
+	'then'         reduce using rule 167
+	'this'         reduce using rule 167
+	'true'         reduce using rule 167
+	'with'         reduce using rule 167
+	'||'           reduce using rule 167
+	'}'            reduce using rule 167
+	'~'            reduce using rule 167
+	L_quoted       reduce using rule 167
+	L_integ        reduce using rule 167
+	L_doubl        reduce using rule 167
+	L_charac       reduce using rule 167
+	L_UIdent       reduce using rule 167
+	L_LIdent       reduce using rule 167
+	L_MFun         reduce using rule 167
+	L_Op           reduce using rule 167
 
 
 State 193
@@ -3664,6 +3686,7 @@ State 194
 	'with'         reduce using rule 2
 	'||'           reduce using rule 2
 	'}'            reduce using rule 2
+	'~'            reduce using rule 2
 	L_quoted       reduce using rule 2
 	L_integ        reduce using rule 2
 	L_doubl        reduce using rule 2
@@ -3711,6 +3734,7 @@ State 195
 	'with'         reduce using rule 3
 	'||'           reduce using rule 3
 	'}'            reduce using rule 3
+	'~'            reduce using rule 3
 	L_quoted       reduce using rule 3
 	L_integ        reduce using rule 3
 	L_doubl        reduce using rule 3
@@ -3758,6 +3782,7 @@ State 196
 	'with'         reduce using rule 4
 	'||'           reduce using rule 4
 	'}'            reduce using rule 4
+	'~'            reduce using rule 4
 	L_quoted       reduce using rule 4
 	L_integ        reduce using rule 4
 	L_doubl        reduce using rule 4
@@ -3805,6 +3830,7 @@ State 197
 	'with'         reduce using rule 7
 	'||'           reduce using rule 7
 	'}'            reduce using rule 7
+	'~'            reduce using rule 7
 	L_quoted       reduce using rule 7
 	L_integ        reduce using rule 7
 	L_doubl        reduce using rule 7
@@ -3840,14 +3866,14 @@ State 200
 
 	ArgDef -> '(' LIdent ':' FreeTypeDef . ')'          (rule 41)
 
-	')'            shift, and enter state 263
+	')'            shift, and enter state 265
 
 
 State 201
 
 	Expr -> 'unify' Expr . 'with' Expr 'in' Expr        (rule 112)
 
-	'with'         shift, and enter state 262
+	'with'         shift, and enter state 264
 
 
 State 202
@@ -3878,7 +3904,7 @@ State 203
 
 	Expr -> 'match' Expr . 'with' '{' ListMatchClause '}'    (rule 110)
 
-	'with'         shift, and enter state 261
+	'with'         shift, and enter state 263
 
 
 State 204
@@ -3891,13 +3917,13 @@ State 204
 	'='            reduce using rule 39
 	L_LIdent       reduce using rule 39
 
-	ListArgDef     goto state 260
+	ListArgDef     goto state 262
 
 State 205
 
 	Expr -> 'let' LetDef . 'in' Expr                    (rule 109)
 
-	'in'           shift, and enter state 259
+	'in'           shift, and enter state 261
 
 
 State 206
@@ -3907,14 +3933,14 @@ State 206
 	L_LIdent       shift, and enter state 33
 
 	LIdent         goto state 204
-	ListLetDef     goto state 257
-	LetDef         goto state 258
+	ListLetDef     goto state 259
+	LetDef         goto state 260
 
 State 207
 
 	Expr -> 'if' Expr . 'then' Expr 'else' Expr         (rule 111)
 
-	'then'         shift, and enter state 256
+	'then'         shift, and enter state 258
 
 
 State 208
@@ -3928,7 +3954,7 @@ State 208
 	'+'            reduce using rule 134
 	','            reduce using rule 134
 	'-'            reduce using rule 134
-	'..'           shift, and enter state 255
+	'..'           shift, and enter state 257
 	'/'            reduce using rule 134
 	'/='           reduce using rule 134
 	':'            reduce using rule 134
@@ -3948,6 +3974,7 @@ State 208
 	'this'         reduce using rule 134
 	'true'         reduce using rule 134
 	'||'           reduce using rule 134
+	'~'            reduce using rule 134
 	L_quoted       reduce using rule 134
 	L_integ        reduce using rule 134
 	L_doubl        reduce using rule 134
@@ -3971,7 +3998,7 @@ State 210
 	ListListElem -> ListElem .                          (rule 141)
 	ListListElem -> ListElem . ',' ListListElem         (rule 142)
 
-	','            shift, and enter state 254
+	','            shift, and enter state 256
 	']'            reduce using rule 141
 
 
@@ -3979,7 +4006,7 @@ State 211
 
 	Expr6 -> '[' ListListElem . ']'                     (rule 124)
 
-	']'            shift, and enter state 253
+	']'            shift, and enter state 255
 
 
 State 212
@@ -4019,6 +4046,7 @@ State 212
 	'with'         reduce using rule 143
 	'||'           reduce using rule 143
 	'}'            reduce using rule 143
+	'~'            reduce using rule 143
 	L_quoted       reduce using rule 143
 	L_integ        reduce using rule 143
 	L_doubl        reduce using rule 143
@@ -4033,14 +4061,14 @@ State 213
 
 	Expr6 -> '(' Operator . ')'                         (rule 133)
 
-	')'            shift, and enter state 252
+	')'            shift, and enter state 254
 
 
 State 214
 
 	Expr6 -> '(' Expr . ')'                             (rule 139)
 
-	')'            shift, and enter state 251
+	')'            shift, and enter state 253
 
 
 State 215
@@ -4085,7 +4113,7 @@ State 216
 	':'            reduce using rule 39
 	L_LIdent       reduce using rule 39
 
-	ListArgDef     goto state 250
+	ListArgDef     goto state 252
 
 State 217
 
@@ -4117,7 +4145,7 @@ State 217
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr4          goto state 249
+	Expr4          goto state 251
 	Boolean        goto state 179
 
 State 218
@@ -4150,7 +4178,7 @@ State 218
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr4          goto state 248
+	Expr4          goto state 250
 	Boolean        goto state 179
 
 State 219
@@ -4183,7 +4211,7 @@ State 219
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 247
+	Expr2          goto state 249
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4218,7 +4246,7 @@ State 220
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr3          goto state 246
+	Expr3          goto state 248
 	Expr4          goto state 178
 	Boolean        goto state 179
 
@@ -4252,7 +4280,7 @@ State 221
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr3          goto state 245
+	Expr3          goto state 247
 	Expr4          goto state 178
 	Boolean        goto state 179
 
@@ -4286,7 +4314,7 @@ State 222
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 244
+	Expr2          goto state 246
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4321,7 +4349,7 @@ State 223
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 243
+	Expr2          goto state 245
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4356,7 +4384,7 @@ State 224
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 242
+	Expr2          goto state 244
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4391,7 +4419,7 @@ State 225
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 241
+	Expr2          goto state 243
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4426,7 +4454,7 @@ State 226
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 240
+	Expr2          goto state 242
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4461,7 +4489,7 @@ State 227
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 239
+	Expr2          goto state 241
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4496,7 +4524,7 @@ State 228
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 238
+	Expr2          goto state 240
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4531,7 +4559,7 @@ State 229
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 237
+	Expr2          goto state 239
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4569,7 +4597,7 @@ State 230
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 236
+	Expr           goto state 238
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -4608,7 +4636,7 @@ State 231
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr2          goto state 235
+	Expr2          goto state 237
 	Expr3          goto state 177
 	Expr4          goto state 178
 	Boolean        goto state 179
@@ -4650,6 +4678,7 @@ State 232
 	'with'         reduce using rule 144
 	'||'           reduce using rule 144
 	'}'            reduce using rule 144
+	'~'            reduce using rule 144
 	L_quoted       reduce using rule 144
 	L_integ        reduce using rule 144
 	L_doubl        reduce using rule 144
@@ -4690,10 +4719,74 @@ State 233
 	MFun           goto state 171
 	Expr6          goto state 173
 	Expr5          goto state 174
-	Expr4          goto state 234
+	Expr4          goto state 236
 	Boolean        goto state 179
 
 State 234
+
+	Expr4 -> Expr5 '~' . Expr4                          (rule 165)
+
+	'('            shift, and enter state 180
+	'-'            shift, and enter state 181
+	'['            shift, and enter state 182
+	'[]'           shift, and enter state 183
+	'_'            shift, and enter state 184
+	'false'        shift, and enter state 185
+	'super'        shift, and enter state 190
+	'this'         shift, and enter state 191
+	'true'         shift, and enter state 192
+	L_quoted       shift, and enter state 2
+	L_integ        shift, and enter state 194
+	L_doubl        shift, and enter state 195
+	L_charac       shift, and enter state 196
+	L_UIdent       shift, and enter state 20
+	L_LIdent       shift, and enter state 33
+	L_MFun         shift, and enter state 197
+
+	String         goto state 165
+	Integer        goto state 166
+	Double         goto state 167
+	Char           goto state 168
+	UIdent         goto state 169
+	LIdent         goto state 170
+	MFun           goto state 171
+	Expr6          goto state 173
+	Expr5          goto state 174
+	Expr4          goto state 235
+	Boolean        goto state 179
+
+State 235
+
+	Expr4 -> Expr5 '~' Expr4 .                          (rule 165)
+
+	'&&'           reduce using rule 165
+	')'            reduce using rule 165
+	'*'            reduce using rule 165
+	'+'            reduce using rule 165
+	','            reduce using rule 165
+	'-'            reduce using rule 165
+	'->'           reduce using rule 165
+	'/'            reduce using rule 165
+	'/='           reduce using rule 165
+	':'            reduce using rule 165
+	';'            reduce using rule 165
+	'<'            reduce using rule 165
+	'<='           reduce using rule 165
+	'=='           reduce using rule 165
+	'>'            reduce using rule 165
+	'>='           reduce using rule 165
+	']'            reduce using rule 165
+	'else'         reduce using rule 165
+	'in'           reduce using rule 165
+	'mod'          reduce using rule 165
+	'then'         reduce using rule 165
+	'with'         reduce using rule 165
+	'||'           reduce using rule 165
+	'}'            reduce using rule 165
+	L_Op           reduce using rule 165
+
+
+State 236
 
 	Expr4 -> Expr5 '^' Expr4 .                          (rule 164)
 
@@ -4724,7 +4817,7 @@ State 234
 	L_Op           reduce using rule 164
 
 
-State 235
+State 237
 
 	Expr1 -> Expr1 '==' Expr2 .                         (rule 147)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4748,7 +4841,7 @@ State 235
 	L_Op           reduce using rule 147
 
 
-State 236
+State 238
 
 	Expr -> Expr1 ':' Expr .                            (rule 113)
 
@@ -4764,7 +4857,7 @@ State 236
 	'}'            reduce using rule 113
 
 
-State 237
+State 239
 
 	Expr1 -> Expr1 '/=' Expr2 .                         (rule 148)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4788,7 +4881,7 @@ State 237
 	L_Op           reduce using rule 148
 
 
-State 238
+State 240
 
 	Expr1 -> Expr1 Op Expr2 .                           (rule 146)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4812,7 +4905,7 @@ State 238
 	L_Op           reduce using rule 146
 
 
-State 239
+State 241
 
 	Expr1 -> Expr2 '||' Expr2 .                         (rule 151)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4836,7 +4929,7 @@ State 239
 	L_Op           reduce using rule 151
 
 
-State 240
+State 242
 
 	Expr1 -> Expr2 'mod' Expr2 .                        (rule 149)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4860,7 +4953,7 @@ State 240
 	L_Op           reduce using rule 149
 
 
-State 241
+State 243
 
 	Expr1 -> Expr2 '>=' Expr2 .                         (rule 156)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4884,7 +4977,7 @@ State 241
 	L_Op           reduce using rule 156
 
 
-State 242
+State 244
 
 	Expr1 -> Expr2 '>' Expr2 .                          (rule 154)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4908,7 +5001,7 @@ State 242
 	L_Op           reduce using rule 154
 
 
-State 243
+State 245
 
 	Expr1 -> Expr2 '<=' Expr2 .                         (rule 155)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4932,7 +5025,7 @@ State 243
 	L_Op           reduce using rule 155
 
 
-State 244
+State 246
 
 	Expr1 -> Expr2 '<' Expr2 .                          (rule 153)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -4956,7 +5049,7 @@ State 244
 	L_Op           reduce using rule 153
 
 
-State 245
+State 247
 
 	Expr2 -> Expr2 '-' Expr3 .                          (rule 159)
 	Expr3 -> Expr3 . '*' Expr4                          (rule 161)
@@ -4989,7 +5082,7 @@ State 245
 	L_Op           reduce using rule 159
 
 
-State 246
+State 248
 
 	Expr2 -> Expr2 '+' Expr3 .                          (rule 158)
 	Expr3 -> Expr3 . '*' Expr4                          (rule 161)
@@ -5022,7 +5115,7 @@ State 246
 	L_Op           reduce using rule 158
 
 
-State 247
+State 249
 
 	Expr1 -> Expr2 '&&' Expr2 .                         (rule 152)
 	Expr2 -> Expr2 . '+' Expr3                          (rule 158)
@@ -5046,7 +5139,7 @@ State 247
 	L_Op           reduce using rule 152
 
 
-State 248
+State 250
 
 	Expr3 -> Expr3 '/' Expr4 .                          (rule 162)
 
@@ -5077,7 +5170,7 @@ State 248
 	L_Op           reduce using rule 162
 
 
-State 249
+State 251
 
 	Expr3 -> Expr3 '*' Expr4 .                          (rule 161)
 
@@ -5108,21 +5201,21 @@ State 249
 	L_Op           reduce using rule 161
 
 
-State 250
+State 252
 
 	ListArgDef -> ListArgDef . ArgDef                   (rule 40)
 	Expr6 -> '(' '\\' ListArgDef . ':' TypeDef '->' Expr ')'    (rule 122)
 	Expr6 -> '(' '\\' ListArgDef . '->' Expr ')'        (rule 123)
 
 	'('            shift, and enter state 156
-	'->'           shift, and enter state 274
-	':'            shift, and enter state 275
+	'->'           shift, and enter state 276
+	':'            shift, and enter state 277
 	L_LIdent       shift, and enter state 33
 
 	LIdent         goto state 152
 	ArgDef         goto state 153
 
-State 251
+State 253
 
 	Expr6 -> '(' Expr ')' .                             (rule 139)
 
@@ -5159,6 +5252,7 @@ State 251
 	'with'         reduce using rule 139
 	'||'           reduce using rule 139
 	'}'            reduce using rule 139
+	'~'            reduce using rule 139
 	L_quoted       reduce using rule 139
 	L_integ        reduce using rule 139
 	L_doubl        reduce using rule 139
@@ -5169,7 +5263,7 @@ State 251
 	L_Op           reduce using rule 139
 
 
-State 252
+State 254
 
 	Expr6 -> '(' Operator ')' .                         (rule 133)
 
@@ -5206,6 +5300,7 @@ State 252
 	'with'         reduce using rule 133
 	'||'           reduce using rule 133
 	'}'            reduce using rule 133
+	'~'            reduce using rule 133
 	L_quoted       reduce using rule 133
 	L_integ        reduce using rule 133
 	L_doubl        reduce using rule 133
@@ -5216,7 +5311,7 @@ State 252
 	L_Op           reduce using rule 133
 
 
-State 253
+State 255
 
 	Expr6 -> '[' ListListElem ']' .                     (rule 124)
 
@@ -5253,6 +5348,7 @@ State 253
 	'with'         reduce using rule 124
 	'||'           reduce using rule 124
 	'}'            reduce using rule 124
+	'~'            reduce using rule 124
 	L_quoted       reduce using rule 124
 	L_integ        reduce using rule 124
 	L_doubl        reduce using rule 124
@@ -5263,7 +5359,7 @@ State 253
 	L_Op           reduce using rule 124
 
 
-State 254
+State 256
 
 	ListListElem -> ListElem ',' . ListListElem         (rule 142)
 
@@ -5299,7 +5395,7 @@ State 254
 	Expr           goto state 209
 	Expr6          goto state 173
 	ListElem       goto state 210
-	ListListElem   goto state 273
+	ListListElem   goto state 275
 	Expr5          goto state 174
 	Expr1          goto state 175
 	Expr2          goto state 176
@@ -5307,15 +5403,15 @@ State 254
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 255
+State 257
 
 	Expr6 -> '[' Integer '..' . Integer ']'             (rule 126)
 
 	L_integ        shift, and enter state 194
 
-	Integer        goto state 272
+	Integer        goto state 274
 
-State 256
+State 258
 
 	Expr -> 'if' Expr 'then' . Expr 'else' Expr         (rule 111)
 
@@ -5348,7 +5444,7 @@ State 256
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 271
+	Expr           goto state 273
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5357,23 +5453,23 @@ State 256
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 257
+State 259
 
 	Expr -> 'let' '{' ListLetDef . '}' 'in' Expr        (rule 108)
 
-	'}'            shift, and enter state 270
+	'}'            shift, and enter state 272
 
 
-State 258
+State 260
 
 	ListLetDef -> LetDef .                              (rule 115)
 	ListLetDef -> LetDef . ';' ListLetDef               (rule 116)
 
-	';'            shift, and enter state 269
+	';'            shift, and enter state 271
 	'}'            reduce using rule 115
 
 
-State 259
+State 261
 
 	Expr -> 'let' LetDef 'in' . Expr                    (rule 109)
 
@@ -5406,7 +5502,7 @@ State 259
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 268
+	Expr           goto state 270
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5415,28 +5511,28 @@ State 259
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 260
+State 262
 
 	ListArgDef -> ListArgDef . ArgDef                   (rule 40)
 	LetDef -> LIdent ListArgDef . ':' FreeTypeDef '=' Expr    (rule 117)
 	LetDef -> LIdent ListArgDef . '=' Expr              (rule 118)
 
 	'('            shift, and enter state 156
-	':'            shift, and enter state 266
-	'='            shift, and enter state 267
+	':'            shift, and enter state 268
+	'='            shift, and enter state 269
 	L_LIdent       shift, and enter state 33
 
 	LIdent         goto state 152
 	ArgDef         goto state 153
 
-State 261
+State 263
 
 	Expr -> 'match' Expr 'with' . '{' ListMatchClause '}'    (rule 110)
 
-	'{'            shift, and enter state 265
+	'{'            shift, and enter state 267
 
 
-State 262
+State 264
 
 	Expr -> 'unify' Expr 'with' . Expr 'in' Expr        (rule 112)
 
@@ -5469,7 +5565,7 @@ State 262
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 264
+	Expr           goto state 266
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5478,7 +5574,7 @@ State 262
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 263
+State 265
 
 	ArgDef -> '(' LIdent ':' FreeTypeDef ')' .          (rule 41)
 
@@ -5491,14 +5587,14 @@ State 263
 	L_LIdent       reduce using rule 41
 
 
-State 264
+State 266
 
 	Expr -> 'unify' Expr 'with' Expr . 'in' Expr        (rule 112)
 
-	'in'           shift, and enter state 287
+	'in'           shift, and enter state 289
 
 
-State 265
+State 267
 
 	Expr -> 'match' Expr 'with' '{' . ListMatchClause '}'    (rule 110)
 
@@ -5531,9 +5627,9 @@ State 265
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 284
-	ListMatchClausegoto state 285
-	MatchClause    goto state 286
+	Expr           goto state 286
+	ListMatchClausegoto state 287
+	MatchClause    goto state 288
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5542,7 +5638,7 @@ State 265
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 266
+State 268
 
 	LetDef -> LIdent ListArgDef ':' . FreeTypeDef '=' Expr    (rule 117)
 
@@ -5552,10 +5648,10 @@ State 266
 
 	UIdent         goto state 35
 	LIdent         goto state 36
-	FreeTypeDef    goto state 283
+	FreeTypeDef    goto state 285
 	FreeTypeDef1   goto state 38
 
-State 267
+State 269
 
 	LetDef -> LIdent ListArgDef '=' . Expr              (rule 118)
 
@@ -5588,7 +5684,7 @@ State 267
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 282
+	Expr           goto state 284
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5597,7 +5693,7 @@ State 267
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 268
+State 270
 
 	Expr -> 'let' LetDef 'in' Expr .                    (rule 109)
 
@@ -5613,45 +5709,45 @@ State 268
 	'}'            reduce using rule 109
 
 
-State 269
+State 271
 
 	ListLetDef -> LetDef ';' . ListLetDef               (rule 116)
 
 	L_LIdent       shift, and enter state 33
 
 	LIdent         goto state 204
-	ListLetDef     goto state 281
-	LetDef         goto state 258
-
-State 270
-
-	Expr -> 'let' '{' ListLetDef '}' . 'in' Expr        (rule 108)
-
-	'in'           shift, and enter state 280
-
-
-State 271
-
-	Expr -> 'if' Expr 'then' Expr . 'else' Expr         (rule 111)
-
-	'else'         shift, and enter state 279
-
+	ListLetDef     goto state 283
+	LetDef         goto state 260
 
 State 272
 
-	Expr6 -> '[' Integer '..' Integer . ']'             (rule 126)
+	Expr -> 'let' '{' ListLetDef '}' . 'in' Expr        (rule 108)
 
-	']'            shift, and enter state 278
+	'in'           shift, and enter state 282
 
 
 State 273
+
+	Expr -> 'if' Expr 'then' Expr . 'else' Expr         (rule 111)
+
+	'else'         shift, and enter state 281
+
+
+State 274
+
+	Expr6 -> '[' Integer '..' Integer . ']'             (rule 126)
+
+	']'            shift, and enter state 280
+
+
+State 275
 
 	ListListElem -> ListElem ',' ListListElem .         (rule 142)
 
 	']'            reduce using rule 142
 
 
-State 274
+State 276
 
 	Expr6 -> '(' '\\' ListArgDef '->' . Expr ')'        (rule 123)
 
@@ -5684,7 +5780,7 @@ State 274
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 277
+	Expr           goto state 279
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5693,7 +5789,7 @@ State 274
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 275
+State 277
 
 	Expr6 -> '(' '\\' ListArgDef ':' . TypeDef '->' Expr ')'    (rule 122)
 
@@ -5703,24 +5799,24 @@ State 275
 
 	UIdent         goto state 83
 	LIdent         goto state 84
-	TypeDef        goto state 276
+	TypeDef        goto state 278
 	TypeDef1       goto state 86
 
-State 276
+State 278
 
 	Expr6 -> '(' '\\' ListArgDef ':' TypeDef . '->' Expr ')'    (rule 122)
 
-	'->'           shift, and enter state 296
+	'->'           shift, and enter state 298
 
 
-State 277
+State 279
 
 	Expr6 -> '(' '\\' ListArgDef '->' Expr . ')'        (rule 123)
 
-	')'            shift, and enter state 295
+	')'            shift, and enter state 297
 
 
-State 278
+State 280
 
 	Expr6 -> '[' Integer '..' Integer ']' .             (rule 126)
 
@@ -5757,6 +5853,7 @@ State 278
 	'with'         reduce using rule 126
 	'||'           reduce using rule 126
 	'}'            reduce using rule 126
+	'~'            reduce using rule 126
 	L_quoted       reduce using rule 126
 	L_integ        reduce using rule 126
 	L_doubl        reduce using rule 126
@@ -5767,7 +5864,7 @@ State 278
 	L_Op           reduce using rule 126
 
 
-State 279
+State 281
 
 	Expr -> 'if' Expr 'then' Expr 'else' . Expr         (rule 111)
 
@@ -5800,7 +5897,7 @@ State 279
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 294
+	Expr           goto state 296
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5809,7 +5906,7 @@ State 279
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 280
+State 282
 
 	Expr -> 'let' '{' ListLetDef '}' 'in' . Expr        (rule 108)
 
@@ -5842,7 +5939,7 @@ State 280
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 293
+	Expr           goto state 295
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5851,14 +5948,14 @@ State 280
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 281
+State 283
 
 	ListLetDef -> LetDef ';' ListLetDef .               (rule 116)
 
 	'}'            reduce using rule 116
 
 
-State 282
+State 284
 
 	LetDef -> LIdent ListArgDef '=' Expr .              (rule 118)
 
@@ -5867,37 +5964,37 @@ State 282
 	'}'            reduce using rule 118
 
 
-State 283
+State 285
 
 	LetDef -> LIdent ListArgDef ':' FreeTypeDef . '=' Expr    (rule 117)
 
-	'='            shift, and enter state 292
-
-
-State 284
-
-	MatchClause -> Expr . '->' Expr                     (rule 121)
-
-	'->'           shift, and enter state 291
-
-
-State 285
-
-	Expr -> 'match' Expr 'with' '{' ListMatchClause . '}'    (rule 110)
-
-	'}'            shift, and enter state 290
+	'='            shift, and enter state 294
 
 
 State 286
 
-	ListMatchClause -> MatchClause .                    (rule 119)
-	ListMatchClause -> MatchClause . ';' ListMatchClause    (rule 120)
+	MatchClause -> Expr . '->' Expr                     (rule 121)
 
-	';'            shift, and enter state 289
-	'}'            reduce using rule 119
+	'->'           shift, and enter state 293
 
 
 State 287
+
+	Expr -> 'match' Expr 'with' '{' ListMatchClause . '}'    (rule 110)
+
+	'}'            shift, and enter state 292
+
+
+State 288
+
+	ListMatchClause -> MatchClause .                    (rule 119)
+	ListMatchClause -> MatchClause . ';' ListMatchClause    (rule 120)
+
+	';'            shift, and enter state 291
+	'}'            reduce using rule 119
+
+
+State 289
 
 	Expr -> 'unify' Expr 'with' Expr 'in' . Expr        (rule 112)
 
@@ -5930,7 +6027,7 @@ State 287
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 288
+	Expr           goto state 290
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5939,7 +6036,7 @@ State 287
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 288
+State 290
 
 	Expr -> 'unify' Expr 'with' Expr 'in' Expr .        (rule 112)
 
@@ -5955,7 +6052,7 @@ State 288
 	'}'            reduce using rule 112
 
 
-State 289
+State 291
 
 	ListMatchClause -> MatchClause ';' . ListMatchClause    (rule 120)
 
@@ -5988,9 +6085,9 @@ State 289
 	UIdent         goto state 169
 	LIdent         goto state 170
 	MFun           goto state 171
-	Expr           goto state 284
-	ListMatchClausegoto state 300
-	MatchClause    goto state 286
+	Expr           goto state 286
+	ListMatchClausegoto state 302
+	MatchClause    goto state 288
 	Expr6          goto state 173
 	Expr5          goto state 174
 	Expr1          goto state 175
@@ -5999,7 +6096,7 @@ State 289
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 290
+State 292
 
 	Expr -> 'match' Expr 'with' '{' ListMatchClause '}' .    (rule 110)
 
@@ -6015,9 +6112,173 @@ State 290
 	'}'            reduce using rule 110
 
 
-State 291
+State 293
 
 	MatchClause -> Expr '->' . Expr                     (rule 121)
+
+	'('            shift, and enter state 180
+	'-'            shift, and enter state 181
+	'['            shift, and enter state 182
+	'[]'           shift, and enter state 183
+	'_'            shift, and enter state 184
+	'false'        shift, and enter state 185
+	'if'           shift, and enter state 186
+	'let'          shift, and enter state 187
+	'match'        shift, and enter state 188
+	'not'          shift, and enter state 189
+	'super'        shift, and enter state 190
+	'this'         shift, and enter state 191
+	'true'         shift, and enter state 192
+	'unify'        shift, and enter state 193
+	L_quoted       shift, and enter state 2
+	L_integ        shift, and enter state 194
+	L_doubl        shift, and enter state 195
+	L_charac       shift, and enter state 196
+	L_UIdent       shift, and enter state 20
+	L_LIdent       shift, and enter state 33
+	L_MFun         shift, and enter state 197
+
+	String         goto state 165
+	Integer        goto state 166
+	Double         goto state 167
+	Char           goto state 168
+	UIdent         goto state 169
+	LIdent         goto state 170
+	MFun           goto state 171
+	Expr           goto state 301
+	Expr6          goto state 173
+	Expr5          goto state 174
+	Expr1          goto state 175
+	Expr2          goto state 176
+	Expr3          goto state 177
+	Expr4          goto state 178
+	Boolean        goto state 179
+
+State 294
+
+	LetDef -> LIdent ListArgDef ':' FreeTypeDef '=' . Expr    (rule 117)
+
+	'('            shift, and enter state 180
+	'-'            shift, and enter state 181
+	'['            shift, and enter state 182
+	'[]'           shift, and enter state 183
+	'_'            shift, and enter state 184
+	'false'        shift, and enter state 185
+	'if'           shift, and enter state 186
+	'let'          shift, and enter state 187
+	'match'        shift, and enter state 188
+	'not'          shift, and enter state 189
+	'super'        shift, and enter state 190
+	'this'         shift, and enter state 191
+	'true'         shift, and enter state 192
+	'unify'        shift, and enter state 193
+	L_quoted       shift, and enter state 2
+	L_integ        shift, and enter state 194
+	L_doubl        shift, and enter state 195
+	L_charac       shift, and enter state 196
+	L_UIdent       shift, and enter state 20
+	L_LIdent       shift, and enter state 33
+	L_MFun         shift, and enter state 197
+
+	String         goto state 165
+	Integer        goto state 166
+	Double         goto state 167
+	Char           goto state 168
+	UIdent         goto state 169
+	LIdent         goto state 170
+	MFun           goto state 171
+	Expr           goto state 300
+	Expr6          goto state 173
+	Expr5          goto state 174
+	Expr1          goto state 175
+	Expr2          goto state 176
+	Expr3          goto state 177
+	Expr4          goto state 178
+	Boolean        goto state 179
+
+State 295
+
+	Expr -> 'let' '{' ListLetDef '}' 'in' Expr .        (rule 108)
+
+	')'            reduce using rule 108
+	','            reduce using rule 108
+	'->'           reduce using rule 108
+	';'            reduce using rule 108
+	']'            reduce using rule 108
+	'else'         reduce using rule 108
+	'in'           reduce using rule 108
+	'then'         reduce using rule 108
+	'with'         reduce using rule 108
+	'}'            reduce using rule 108
+
+
+State 296
+
+	Expr -> 'if' Expr 'then' Expr 'else' Expr .         (rule 111)
+
+	')'            reduce using rule 111
+	','            reduce using rule 111
+	'->'           reduce using rule 111
+	';'            reduce using rule 111
+	']'            reduce using rule 111
+	'else'         reduce using rule 111
+	'in'           reduce using rule 111
+	'then'         reduce using rule 111
+	'with'         reduce using rule 111
+	'}'            reduce using rule 111
+
+
+State 297
+
+	Expr6 -> '(' '\\' ListArgDef '->' Expr ')' .        (rule 123)
+
+	'&&'           reduce using rule 123
+	'('            reduce using rule 123
+	')'            reduce using rule 123
+	'*'            reduce using rule 123
+	'+'            reduce using rule 123
+	','            reduce using rule 123
+	'-'            reduce using rule 123
+	'->'           reduce using rule 123
+	'/'            reduce using rule 123
+	'/='           reduce using rule 123
+	':'            reduce using rule 123
+	';'            reduce using rule 123
+	'<'            reduce using rule 123
+	'<='           reduce using rule 123
+	'=='           reduce using rule 123
+	'>'            reduce using rule 123
+	'>='           reduce using rule 123
+	'['            reduce using rule 123
+	'[]'           reduce using rule 123
+	']'            reduce using rule 123
+	'^'            reduce using rule 123
+	'_'            reduce using rule 123
+	'else'         reduce using rule 123
+	'false'        reduce using rule 123
+	'in'           reduce using rule 123
+	'mod'          reduce using rule 123
+	'super'        reduce using rule 123
+	'then'         reduce using rule 123
+	'this'         reduce using rule 123
+	'true'         reduce using rule 123
+	'with'         reduce using rule 123
+	'||'           reduce using rule 123
+	'}'            reduce using rule 123
+	'~'            reduce using rule 123
+	L_quoted       reduce using rule 123
+	L_integ        reduce using rule 123
+	L_doubl        reduce using rule 123
+	L_charac       reduce using rule 123
+	L_UIdent       reduce using rule 123
+	L_LIdent       reduce using rule 123
+	L_MFun         reduce using rule 123
+	L_Op           reduce using rule 123
+
+
+State 298
+
+	Expr6 -> '(' '\\' ListArgDef ':' TypeDef '->' . Expr ')'    (rule 122)
 
 	'('            shift, and enter state 180
 	'-'            shift, and enter state 181
@@ -6057,177 +6318,14 @@ State 291
 	Expr4          goto state 178
 	Boolean        goto state 179
 
-State 292
-
-	LetDef -> LIdent ListArgDef ':' FreeTypeDef '=' . Expr    (rule 117)
-
-	'('            shift, and enter state 180
-	'-'            shift, and enter state 181
-	'['            shift, and enter state 182
-	'[]'           shift, and enter state 183
-	'_'            shift, and enter state 184
-	'false'        shift, and enter state 185
-	'if'           shift, and enter state 186
-	'let'          shift, and enter state 187
-	'match'        shift, and enter state 188
-	'not'          shift, and enter state 189
-	'super'        shift, and enter state 190
-	'this'         shift, and enter state 191
-	'true'         shift, and enter state 192
-	'unify'        shift, and enter state 193
-	L_quoted       shift, and enter state 2
-	L_integ        shift, and enter state 194
-	L_doubl        shift, and enter state 195
-	L_charac       shift, and enter state 196
-	L_UIdent       shift, and enter state 20
-	L_LIdent       shift, and enter state 33
-	L_MFun         shift, and enter state 197
-
-	String         goto state 165
-	Integer        goto state 166
-	Double         goto state 167
-	Char           goto state 168
-	UIdent         goto state 169
-	LIdent         goto state 170
-	MFun           goto state 171
-	Expr           goto state 298
-	Expr6          goto state 173
-	Expr5          goto state 174
-	Expr1          goto state 175
-	Expr2          goto state 176
-	Expr3          goto state 177
-	Expr4          goto state 178
-	Boolean        goto state 179
-
-State 293
-
-	Expr -> 'let' '{' ListLetDef '}' 'in' Expr .        (rule 108)
-
-	')'            reduce using rule 108
-	','            reduce using rule 108
-	'->'           reduce using rule 108
-	';'            reduce using rule 108
-	']'            reduce using rule 108
-	'else'         reduce using rule 108
-	'in'           reduce using rule 108
-	'then'         reduce using rule 108
-	'with'         reduce using rule 108
-	'}'            reduce using rule 108
-
-
-State 294
-
-	Expr -> 'if' Expr 'then' Expr 'else' Expr .         (rule 111)
-
-	')'            reduce using rule 111
-	','            reduce using rule 111
-	'->'           reduce using rule 111
-	';'            reduce using rule 111
-	']'            reduce using rule 111
-	'else'         reduce using rule 111
-	'in'           reduce using rule 111
-	'then'         reduce using rule 111
-	'with'         reduce using rule 111
-	'}'            reduce using rule 111
-
-
-State 295
-
-	Expr6 -> '(' '\\' ListArgDef '->' Expr ')' .        (rule 123)
-
-	'&&'           reduce using rule 123
-	'('            reduce using rule 123
-	')'            reduce using rule 123
-	'*'            reduce using rule 123
-	'+'            reduce using rule 123
-	','            reduce using rule 123
-	'-'            reduce using rule 123
-	'->'           reduce using rule 123
-	'/'            reduce using rule 123
-	'/='           reduce using rule 123
-	':'            reduce using rule 123
-	';'            reduce using rule 123
-	'<'            reduce using rule 123
-	'<='           reduce using rule 123
-	'=='           reduce using rule 123
-	'>'            reduce using rule 123
-	'>='           reduce using rule 123
-	'['            reduce using rule 123
-	'[]'           reduce using rule 123
-	']'            reduce using rule 123
-	'^'            reduce using rule 123
-	'_'            reduce using rule 123
-	'else'         reduce using rule 123
-	'false'        reduce using rule 123
-	'in'           reduce using rule 123
-	'mod'          reduce using rule 123
-	'super'        reduce using rule 123
-	'then'         reduce using rule 123
-	'this'         reduce using rule 123
-	'true'         reduce using rule 123
-	'with'         reduce using rule 123
-	'||'           reduce using rule 123
-	'}'            reduce using rule 123
-	L_quoted       reduce using rule 123
-	L_integ        reduce using rule 123
-	L_doubl        reduce using rule 123
-	L_charac       reduce using rule 123
-	L_UIdent       reduce using rule 123
-	L_LIdent       reduce using rule 123
-	L_MFun         reduce using rule 123
-	L_Op           reduce using rule 123
-
-
-State 296
-
-	Expr6 -> '(' '\\' ListArgDef ':' TypeDef '->' . Expr ')'    (rule 122)
-
-	'('            shift, and enter state 180
-	'-'            shift, and enter state 181
-	'['            shift, and enter state 182
-	'[]'           shift, and enter state 183
-	'_'            shift, and enter state 184
-	'false'        shift, and enter state 185
-	'if'           shift, and enter state 186
-	'let'          shift, and enter state 187
-	'match'        shift, and enter state 188
-	'not'          shift, and enter state 189
-	'super'        shift, and enter state 190
-	'this'         shift, and enter state 191
-	'true'         shift, and enter state 192
-	'unify'        shift, and enter state 193
-	L_quoted       shift, and enter state 2
-	L_integ        shift, and enter state 194
-	L_doubl        shift, and enter state 195
-	L_charac       shift, and enter state 196
-	L_UIdent       shift, and enter state 20
-	L_LIdent       shift, and enter state 33
-	L_MFun         shift, and enter state 197
-
-	String         goto state 165
-	Integer        goto state 166
-	Double         goto state 167
-	Char           goto state 168
-	UIdent         goto state 169
-	LIdent         goto state 170
-	MFun           goto state 171
-	Expr           goto state 297
-	Expr6          goto state 173
-	Expr5          goto state 174
-	Expr1          goto state 175
-	Expr2          goto state 176
-	Expr3          goto state 177
-	Expr4          goto state 178
-	Boolean        goto state 179
-
-State 297
+State 299
 
 	Expr6 -> '(' '\\' ListArgDef ':' TypeDef '->' Expr . ')'    (rule 122)
 
-	')'            shift, and enter state 301
+	')'            shift, and enter state 303
 
 
-State 298
+State 300
 
 	LetDef -> LIdent ListArgDef ':' FreeTypeDef '=' Expr .    (rule 117)
 
@@ -6236,7 +6334,7 @@ State 298
 	'}'            reduce using rule 117
 
 
-State 299
+State 301
 
 	MatchClause -> Expr '->' Expr .                     (rule 121)
 
@@ -6244,14 +6342,14 @@ State 299
 	'}'            reduce using rule 121
 
 
-State 300
+State 302
 
 	ListMatchClause -> MatchClause ';' ListMatchClause .    (rule 120)
 
 	'}'            reduce using rule 120
 
 
-State 301
+State 303
 
 	Expr6 -> '(' '\\' ListArgDef ':' TypeDef '->' Expr ')' .    (rule 122)
 
@@ -6288,6 +6386,7 @@ State 301
 	'with'         reduce using rule 122
 	'||'           reduce using rule 122
 	'}'            reduce using rule 122
+	'~'            reduce using rule 122
 	L_quoted       reduce using rule 122
 	L_integ        reduce using rule 122
 	L_doubl        reduce using rule 122
@@ -6301,7 +6400,7 @@ State 301
 -----------------------------------------------------------------------------
 Grammar Totals
 -----------------------------------------------------------------------------
-Number of rules: 168
-Number of terminals: 70
+Number of rules: 169
+Number of terminals: 71
 Number of non-terminals: 62
-Number of states: 302
+Number of states: 304

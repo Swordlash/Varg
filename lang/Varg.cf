@@ -160,6 +160,7 @@ ESub.               Expr2 ::= Expr2 "-"  Expr3 ;
 EMul.               Expr3 ::= Expr3 "*"  Expr4 ;
 EDiv.               Expr3 ::= Expr3 "/"  Expr4 ;
 EPow.               Expr4 ::= Expr5 "^"  Expr4 ;
+ECompose.           Expr4 ::= Expr5 "~" Expr4;
 
 EBoolean.           Expr6 ::= Boolean ;
 ETrue.              Boolean  ::= "true" ;
@@ -178,5 +179,6 @@ EString.            Expr6 ::= String ;
 EWild.              Expr6 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
 
 EApply.             Expr5 ::= Expr5 Expr6 ;
+--EStrictMember.      Expr5 ::= Expr6 MFun ; 
 
 coercions           Expr 6 ;

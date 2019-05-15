@@ -61,6 +61,7 @@ shiftDefinition lst rettype body =
       let t = ConcreteType "Function" [Exact td, Exact resttype]
       return (t, ELambda s td t restbody)
 
+-- TODO: zaorać tę funkcję, jest mnóstwo boilerplate
 parseExpression :: LookupFunction -> Abs.Expr -> HierarchyMonad Expr
 parseExpression lookupFun expr =
   case expr of
@@ -130,6 +131,10 @@ parseExpression lookupFun expr =
       pe3 <- parseExpression lookupFun expr3
       return $ EIfThenElse pe1 pe2 pe3
     Abs.EString str -> pure $ EString str
+    Abs.ECompose expr1 expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ EComp p1 p2
     Abs.ECons hd tl -> do
       phd <- parseExpression lookupFun hd
       ptl <- parseExpression lookupFun tl

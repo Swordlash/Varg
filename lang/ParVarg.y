@@ -75,6 +75,7 @@ import ErrM
   '{' { PT _ (TS _ 60) }
   '||' { PT _ (TS _ 61) }
   '}' { PT _ (TS _ 62) }
+  '~' { PT _ (TS _ 63) }
 
 L_quoted { PT _ (TL $$) }
 L_integ  { PT _ (TI $$) }
@@ -304,7 +305,9 @@ Expr3 : Expr3 '*' Expr4 { AbsVarg.EMul $1 $3 }
       | Expr3 '/' Expr4 { AbsVarg.EDiv $1 $3 }
       | Expr4 { $1 }
 Expr4 :: { Expr }
-Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 } | Expr5 { $1 }
+Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 }
+      | Expr5 '~' Expr4 { AbsVarg.ECompose $1 $3 }
+      | Expr5 { $1 }
 Boolean :: { Boolean }
 Boolean : 'true' { AbsVarg.ETrue } | 'false' { AbsVarg.EFalse }
 {

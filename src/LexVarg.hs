@@ -206,7 +206,7 @@ alex_table = listArray (0 :: Int, 4036)
   , 42
   , 49
   , 42
-  , 48
+  , 41
   , 37
   , 22
   , 0
@@ -8381,7 +8381,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "final" 32 (b "=" 16 (b "->" 8 (b "*" 4 (b "(" 2 (b "&&" 1 N N) (b ")" 3 N N)) (b "," 6 (b "+" 5 N N) (b "-" 7 N N))) (b ":" 12 (b "/" 10 (b ".." 9 N N) (b "/=" 11 N N)) (b "<" 14 (b ";" 13 N N) (b "<=" 15 N N)))) (b "]" 24 (b "?" 20 (b ">" 18 (b "==" 17 N N) (b ">=" 19 N N)) (b "[]" 22 (b "[" 21 N N) (b "\\" 23 N N))) (b "class" 28 (b "_" 26 (b "^" 25 N N) (b "abstract" 27 N N)) (b "else" 30 (b "deriving" 29 N N) (b "false" 31 N N))))) (b "sealed" 48 (b "interface" 40 (b "implement" 36 (b "has" 34 (b "function" 33 N N) (b "if" 35 N N)) (b "import" 38 (b "implementing" 37 N N) (b "in" 39 N N))) (b "mod" 44 (b "let" 42 (b "internal" 41 N N) (b "match" 43 N N)) (b "native" 46 (b "module" 45 N N) (b "not" 47 N N)))) (b "unify" 56 (b "template" 52 (b "struct" 50 (b "static" 49 N N) (b "super" 51 N N)) (b "this" 54 (b "then" 53 N N) (b "true" 55 N N))) (b "{" 60 (b "where" 58 (b "unique" 57 N N) (b "with" 59 N N)) (b "}" 62 (b "||" 61 N N) N))))
+resWords = b "final" 32 (b "=" 16 (b "->" 8 (b "*" 4 (b "(" 2 (b "&&" 1 N N) (b ")" 3 N N)) (b "," 6 (b "+" 5 N N) (b "-" 7 N N))) (b ":" 12 (b "/" 10 (b ".." 9 N N) (b "/=" 11 N N)) (b "<" 14 (b ";" 13 N N) (b "<=" 15 N N)))) (b "]" 24 (b "?" 20 (b ">" 18 (b "==" 17 N N) (b ">=" 19 N N)) (b "[]" 22 (b "[" 21 N N) (b "\\" 23 N N))) (b "class" 28 (b "_" 26 (b "^" 25 N N) (b "abstract" 27 N N)) (b "else" 30 (b "deriving" 29 N N) (b "false" 31 N N))))) (b "sealed" 48 (b "interface" 40 (b "implement" 36 (b "has" 34 (b "function" 33 N N) (b "if" 35 N N)) (b "import" 38 (b "implementing" 37 N N) (b "in" 39 N N))) (b "mod" 44 (b "let" 42 (b "internal" 41 N N) (b "match" 43 N N)) (b "native" 46 (b "module" 45 N N) (b "not" 47 N N)))) (b "unify" 56 (b "template" 52 (b "struct" 50 (b "static" 49 N N) (b "super" 51 N N)) (b "this" 54 (b "then" 53 N N) (b "true" 55 N N))) (b "{" 60 (b "where" 58 (b "unique" 57 N N) (b "with" 59 N N)) (b "}" 62 (b "||" 61 N N) (b "~" 63 N N)))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

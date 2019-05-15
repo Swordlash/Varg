@@ -1,5 +1,5 @@
 import "Std.Overture"
 
 class Main where
-    unique function main args = let lista = "bla" ++ " bla" in [lista, 10.0].toString
+    unique function main args = let f x = x + 1 in [1,2,3].map f
                  

@@ -111,6 +111,8 @@ data Expr
         String
         Expr
   | EClass String
+  | EComp Expr
+          Expr
   | EBool Bool
   | EInt Integer
   | EChar Char
@@ -165,6 +167,7 @@ instance Show Expr where
   show (EDouble val) = show val
   show (EFunctor val) = "@" ++ show val
   show (EOperator av) = "(" ++ show av ++ ")"
+  show (EComp e1 e2) = show e1 ++ " ~ " ++ show e2
   show EWild = "_"
   show ENative = "native"
   show EAbstract = "abstract"

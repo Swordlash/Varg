@@ -8,6 +8,7 @@ class String deriving List Char where
 
     function (:) (ch:Char) : String = String.String ch this
 
-    function empty : Bool = this == String.Empty
+    function null : Bool = this == String.Empty
+    function empty : String = ""
 
-    static function unwords (words : List String) : String = if words.empty then "" else words.head ++ " " ++ String.unwords (words.tail)
+    static function unwords (words : List String) : String = if words.null then "" else words.head ++ " " ++ String.unwords (words.tail)

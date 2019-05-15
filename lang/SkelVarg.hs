@@ -222,6 +222,7 @@ transExpr x =
     EMul expr1 expr2              -> failure x
     EDiv expr1 expr2              -> failure x
     EPow expr1 expr2              -> failure x
+    ECompose expr1 expr2          -> failure x
     EBoolean boolean              -> failure x
     EThis                         -> failure x
     ESuper                        -> failure x

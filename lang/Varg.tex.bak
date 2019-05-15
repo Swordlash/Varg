@@ -77,7 +77,7 @@ The symbols used in Varg are the following: \\
 {\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
 {\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} &{\symb{[]}} \\
 {\symb{..}} &{\symb{/{$=$}}} &{\symb{{$|$}{$|$}}} \\
-{\symb{\&\&}} &{\symb{'}} &{\symb{\_}} \\
+{\symb{\&\&}} &{\symb{\~{}}} &{\symb{\_}} \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -349,7 +349,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{(}} {\nonterminal{Operator}} {\terminal{)}}  \\
  & {\delimit}  &{\nonterminal{Integer}}  \\
  & {\delimit}  &{\nonterminal{Double}}  \\
- & {\delimit}  &{\terminal{'}} {\nonterminal{Char}} {\terminal{'}}  \\
+ & {\delimit}  &{\nonterminal{Char}}  \\
  & {\delimit}  &{\nonterminal{String}}  \\
  & {\delimit}  &{\terminal{\_}}  \\
  & {\delimit}  &{\terminal{(}} {\nonterminal{Expr}} {\terminal{)}}  \\
@@ -367,6 +367,7 @@ All other symbols are terminals.\\
 \begin{tabular}{lll}
 {\nonterminal{Expr5}} & {\arrow}  &{\terminal{{$-$}}} {\nonterminal{Expr6}}  \\
  & {\delimit}  &{\nonterminal{Expr5}} {\nonterminal{Expr6}}  \\
+ & {\delimit}  &{\nonterminal{Expr6}} {\nonterminal{MFun}}  \\
  & {\delimit}  &{\nonterminal{Expr6}}  \\
 \end{tabular}\\
 
@@ -399,6 +400,7 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Expr4}} & {\arrow}  &{\nonterminal{Expr5}} {\terminal{{\textasciicircum}}} {\nonterminal{Expr4}}  \\
+ & {\delimit}  &{\nonterminal{Expr5}} {\terminal{\~{}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr5}}  \\
 \end{tabular}\\
 

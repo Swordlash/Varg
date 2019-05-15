@@ -245,6 +245,8 @@ data Expr
          Expr
   | EPow Expr
          Expr
+  | ECompose Expr
+             Expr
   | EBoolean Boolean
   | EThis
   | ESuper

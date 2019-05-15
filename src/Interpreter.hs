@@ -298,6 +298,18 @@ interpretExpression expr = do
       p2 <- interpretExpression expr2
       return $ BoolInstance $ p1 /= p2
     ECons expr1 expr2 -> interpretExpression $ EApply (EMember expr2 ":") expr1
+    EComp expr1 expr2 -> do
+      env <- asks environment
+      p1 <- interpretExpression expr1
+      p2 <- interpretExpression expr2
+      case (p1, p2) of
+        (FunctionInstance (Function modifs _ _ out e1@(ELambda argname _ _ body)) cl1, FunctionInstance (Function modifs2 _ intt _ e2@(ELambda arg2name int _ body2)) cl2)
+            --TODO: infer and check types, modifiers
+         ->
+          rethrow
+            (interpretExpression $ ELambda arg2name intt out $ EApply e1 $ EApply e2 $ EVar arg2name)
+            ("Call: Composition " ++ show expr ++ "\nBound variables: " ++ showTr env ++ "\n")
+        _ -> throwe "Composition of non-functions!"
     EOperator op ->
       (case op of
          Abs.Op_plus -> numop EAdd "Num.+"
@@ -312,4 +324,4 @@ interpretExpression expr = do
          Abs.Op_eq -> anyop EEq "Num.=="
          Abs.Op_cons -> lstop ECons "List.:") <$>
       asks environment
-    _ -> throwException $ "Cannot interpret expr " ++ show expr ++ ": not implemented"
+    _ -> throwException $ "Cannot interpret expr " ++ show expr ++ ": not implemented\n"
