@@ -322,6 +322,7 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{LetDef}} & {\arrow}  &{\nonterminal{LIdent}} {\nonterminal{ListArgDef}} {\terminal{:}} {\nonterminal{FreeTypeDef}} {\terminal{{$=$}}} {\nonterminal{Expr}}  \\
+ & {\delimit}  &{\nonterminal{LIdent}} {\nonterminal{ListArgDef}} {\terminal{{$=$}}} {\nonterminal{Expr}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -335,6 +336,7 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Expr6}} & {\arrow}  &{\terminal{(}} {\terminal{$\backslash$}} {\nonterminal{ListArgDef}} {\terminal{:}} {\nonterminal{TypeDef}} {\terminal{{$-$}{$>$}}} {\nonterminal{Expr}} {\terminal{)}}  \\
+ & {\delimit}  &{\terminal{(}} {\terminal{$\backslash$}} {\nonterminal{ListArgDef}} {\terminal{{$-$}{$>$}}} {\nonterminal{Expr}} {\terminal{)}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{ListListElem}} {\terminal{]}}  \\
  & {\delimit}  &{\terminal{[]}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{Integer}} {\terminal{..}} {\nonterminal{Integer}} {\terminal{]}}  \\

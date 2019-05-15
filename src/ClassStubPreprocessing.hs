@@ -16,7 +16,7 @@ readPrimFreeType primType =
       case M.lookup name substs of
         Nothing -> do
           parsed <- asks currentPreparsedTypeName
-          throwError $ VargException $ "In declaration of " ++ parsed ++ ": unknown template parameter " ++ name
+          throwException $ "In declaration of " ++ parsed ++ ": unknown template parameter " ++ name
         Just subst -> pure $ Unbound subst
     Abs.ConcreteFreeType (Abs.UIdent name) -> pure $ Concrete name []
 
@@ -54,8 +54,7 @@ preparseStubTypeParam param =
     Abs.DerivingConstrainedTypeParam (Abs.LIdent name) _ -> bindAndLogName name
     _ -> do
       parsed <- asks currentPreparsedTypeName
-      throwError $
-        VargException $
+      throwException $
         "In declaration of " ++ parsed ++ ": illegal definition of template parameter " ++ printTree param
 
 readClassHeaders :: [Abs.ClassDef] -> PreprocessMonad ()
@@ -64,7 +63,7 @@ readClassHeaders (cl:t) = do
   stubs <- gets classStubs
   (name, paramCount, deriv, impls) <- readStubs cl
   if M.member name stubs
-    then throwError $ VargException $ "Multiple definition of class " ++ name
+    then throwException $ "Multiple definition of class " ++ name
     else do
       modify (registerStub (name, paramCount, deriv, impls))
       readClassHeaders t

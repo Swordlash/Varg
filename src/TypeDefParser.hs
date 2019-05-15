@@ -29,7 +29,7 @@ registerConstrainedTypeName lookupFun updater constr = do
   fname <- asks currentParsedMember
   let errMsg = "In definition of template constraint for " ++ name ++ "." ++ fname ++ ": "
   case constr of
-    Abs.WildcardTypeParam -> throwError $ VargException $ errMsg ++ "invalid usage of wildcard type param"
+    Abs.WildcardTypeParam -> throwException $ errMsg ++ "invalid usage of wildcard type param"
     Abs.InferredTypeParam (Abs.LIdent name) --case newlookup name of
       --Just _ -> throwError $ ParseException $ errMsg ++ "multiple definition of constraint for "++name
       --Nothing ->  do FIXME: that allows for shadowing template params from header
@@ -68,12 +68,11 @@ registerConstrainedTypeName lookupFun updater constr = do
         (do ptypedefs <- mapM (parseTypeDef newlookup) typedefs
             let constrs = map Super ptypedefs
             return (subst, constrs))
-    Abs.ConcreteTypeParam (Abs.UIdent param) ->
-      throwError $ VargException $ errMsg ++ "invalid usage of concrete type " ++ param
+    Abs.ConcreteTypeParam (Abs.UIdent param) -> throwException $ errMsg ++ "invalid usage of concrete type " ++ param
     --Abs.AnotherClassTypeParam def ->
     --  throwError $ ParseException $ errMsg ++ "parentheses not expected in" ++ printTree def
-    Abs.AnySuperConstrainedTypeParam _ -> throwError $ VargException $ errMsg ++ "invalid usage of wildcard '?'"
-    Abs.AnyDerivingConstrainedTypeParam _ -> throwError $ VargException $ errMsg ++ "invalid usage of wildcard '?'"
+    Abs.AnySuperConstrainedTypeParam _ -> throwException $ errMsg ++ "invalid usage of wildcard '?'"
+    Abs.AnyDerivingConstrainedTypeParam _ -> throwException $ errMsg ++ "invalid usage of wildcard '?'"
 
 parseTypeConstraint :: LookupFunction -> Abs.ConstrTypeParam -> HierarchyMonad TypeParamConstraint
 parseTypeConstraint lookupFun constr = do
@@ -83,14 +82,14 @@ parseTypeConstraint lookupFun constr = do
     Abs.WildcardTypeParam -> pure Types.Any
     Abs.InferredTypeParam (Abs.LIdent tparam) ->
       case lookupFun tparam of
-        Nothing -> throwError $ VargException $ errMsg ++ "unknown type param " ++ tparam
+        Nothing -> throwException $ errMsg ++ "unknown type param " ++ tparam
         Just subst -> do
           constrs <- gets (M.lookup subst . templateParamConstrains)
           return $ Exact $ InferredType subst (fromMaybe [] constrs) []
     Abs.DerivingConstrainedTypeParam (Abs.LIdent name) typedefs ->
-      throwError $ VargException $ errMsg ++ " template params not supported"
+      throwException $ errMsg ++ " template params not supported"
     Abs.SuperConstrainedTypeParam (Abs.LIdent name) typedefs ->
-      throwError $ VargException $ errMsg ++ " template params not supported"
+      throwException $ errMsg ++ " template params not supported"
     Abs.ConcreteTypeParam (Abs.UIdent param) -> pure $ Exact $ ConcreteType param []
     {-Abs.AnotherClassTypeParam def -> do
       typedef <- parseTypeDef lookupFun def
@@ -110,7 +109,7 @@ parseTypeDef lookupFun (Abs.InferredType (Abs.LIdent name) constrs) =
   case lookupFun name of
     Nothing -> do
       tname <- asks currentParsedTypeName
-      throwError $ VargException $ "In type definition in class " ++ tname ++ " cannot infer type " ++ name
+      throwException $ "In type definition in class " ++ tname ++ " cannot infer type " ++ name
     Just subst -> do
       tconstrs <- gets (M.lookup subst . templateParamConstrains)
       params <- mapM (parseTypeConstraint lookupFun) constrs
@@ -129,8 +128,7 @@ parsePrimFreeTypeDef lookupFun (Abs.TemplateFreeType (Abs.LIdent name)) =
       typename <- asks currentParsedTypeName
       field <- asks currentParsedMember
       variant <- asks currentParsedTypeVariant
-      throwError $
-        VargException $
+      throwException $
         "In definition of " ++ typename ++ "." ++ variant ++ "." ++ field ++ ": unknown template param " ++ name
 
 parseFreeTypeDef :: LookupFunction -> Abs.FreeTypeDef -> HierarchyMonad TypeDef
@@ -146,8 +144,7 @@ parseFreeTypeDef lookupFun (Abs.InferredFreeType (Abs.LIdent name) prims) = do
     Nothing -> do
       typename <- asks currentParsedTypeName
       variant <- asks currentParsedTypeVariant
-      throwError $
-        VargException $ "In definition of " ++ typename ++ "." ++ variant ++ ": unknown template param " ++ name
+      throwException $ "In definition of " ++ typename ++ "." ++ variant ++ ": unknown template param " ++ name
 
 parseArgDef :: LookupFunction -> Abs.ArgDef -> HierarchyMonad (String, TypeDef)
 parseArgDef lookupFun (Abs.ArgumentDefinition (Abs.LIdent name) tdef) = do
@@ -160,7 +157,7 @@ parseRetType :: LookupFunction -> Abs.RetType -> HierarchyMonad TypeDef
 parseRetType lookupFun (Abs.ReturnType tdef) = do
   tlookup <- readFunctionSubsts
   parseFreeTypeDef (combineLookups [lookupFun, tlookup]) tdef
-parseRetType _ (Abs.InferredReturnType) = pure AnyType -- TODO: Actually infer them or something
+parseRetType _ Abs.InferredReturnType = pure AnyType -- TODO: Actually infer them or something
 
 parseAbsRetType :: LookupFunction -> Abs.AbsRetType -> HierarchyMonad TypeDef
 parseAbsRetType lookupFun (Abs.AbsReturnType tdef) = do

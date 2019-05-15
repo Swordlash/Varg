@@ -134,6 +134,7 @@ EIfThenElse.        Expr  ::= "if" Expr "then" Expr "else" Expr ;
 EUnify.             Expr  ::= "unify" Expr "with" Expr "in" Expr;
 
 ELambda.            Expr6 ::= "(" "\\" [ArgDef] ":" TypeDef "->" Expr ")" ; -- lambda expr
+EInferredLambda.    Expr6 ::= "(" "\\" [ArgDef] "->" Expr ")" ;
 
 EList.              Expr6 ::= "[" [ListElem] "]" ;
 EEmptyList.         Expr6 ::= "[]" ;
@@ -172,7 +173,7 @@ EOperator.          Expr6 ::= "(" Operator ")" ;
 
 EInt.               Expr6 ::= Integer ;
 EReal.              Expr6 ::= Double  ;
-EChar.              Expr6 ::= "'" Char "'" ;
+EChar.              Expr6 ::= Char ;
 EString.            Expr6 ::= String ;
 EWild.              Expr6 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
 

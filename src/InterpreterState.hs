@@ -17,6 +17,7 @@ data InterpreterState = InterpreterState
 
 data InterpreterRuntime = InterpreterRuntime
   { environment :: Environment
+  , realType    :: Type
   , isUnifying  :: Bool
   }
 
@@ -30,6 +31,9 @@ bindVariable (name, inst) runt = runt {environment = M.insert name inst $ enviro
 
 pushLambdaName :: Updater String InterpreterState
 pushLambdaName name st = st {pushName = name}
+
+saveRealType :: Updater Type InterpreterRuntime
+saveRealType typ runt = runt {realType = typ}
 
 incrLambdaIdx :: Notifier InterpreterState
 incrLambdaIdx st =

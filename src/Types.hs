@@ -1,6 +1,3 @@
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-
 module Types where
 
 import qualified AbsVarg    as AV
@@ -27,6 +24,12 @@ typeof (CharInstance _)            = "Char"
 typeof (FunctionInstance f clos)   = show f
 typeof TypeInstance {baseType = t} = qualifiedTypeName t
 
+ntake _ []    = []
+ntake 0 _     = "..."
+ntake n (h:t) = h : ntake (n - 1) t
+
+show' inst = ntake 100 $ show inst
+
 instance Show Instance where
   show (IntInstance val) = show val
   show (DoubleInstance val) = show val
@@ -34,10 +37,15 @@ instance Show Instance where
   show (BoolInstance val) = show val
   show (FunctionInstance expr clos) = show expr -- ++ ", closure: " ++ show clos FIXME: show closure?
   show t@(TypeInstance base var params flds) =
-    if qualifiedTypeName base == "List"
-      then show (instanceListToList t)
-      else qualifiedTypeName base ++
-           "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
+    case qualifiedTypeName base of
+      "List" -> show (instanceListToList t)
+      "String" ->
+        if var == "Empty"
+          then ""
+          else (case lookup "head" flds of
+                  Just (CharInstance ch) -> ch) :
+               show (fromJust $ lookup "tail" flds)
+      name -> name ++ "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
 
 data Expr
   = Unparsed AV.Expr
@@ -106,6 +114,7 @@ data Expr
   | EBool Bool
   | EInt Integer
   | EChar Char
+  | EString String
   | EDouble Double
   | EOperator AV.Operator
   | EWild
@@ -151,6 +160,7 @@ instance Show Expr where
   show (EClass name) = name
   show (EBool val) = show val
   show (EInt val) = show val
+  show (EString val) = show val
   show (EChar val) = show val
   show (EDouble val) = show val
   show (EFunctor val) = "@" ++ show val
@@ -307,6 +317,9 @@ data Type = Type
 
 emptyType :: TypeName -> Type
 emptyType name = Type name voidDerivation [] S.empty 0 [] M.empty
+
+voidType :: Type
+voidType = Type "Void" (Concrete "Void" []) [] S.empty 0 [] M.empty
 
 genParams :: Int -> [String]
 genParams n = map (\n -> "_t" ++ show n) [0 .. (n - 1)]

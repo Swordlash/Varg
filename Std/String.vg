@@ -1,0 +1,13 @@
+import "Std.List"
+
+class String deriving List Char where
+    Empty
+    String has
+        head : Char
+        tail : String
+
+    function (:) (ch:Char) : String = String.String ch this
+
+    function empty : Bool = this == String.Empty
+
+    static function unwords (words : List String) : String = if words.empty then "" else words.head ++ " " ++ String.unwords (words.tail)

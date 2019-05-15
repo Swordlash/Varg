@@ -1,56 +1,15 @@
-{-# LANGUAGE FlexibleContexts #-}
-
 module PreprocessingState
-  ( module Control.Monad.Except
-  , module Control.Monad.Reader
-  , module Control.Monad.State
-  , module Control.Monad.Writer
-  , module Control.Monad.Identity
-  , module Types
+  ( module General
   , module PreprocessingState
   ) where
 
-import qualified Data.Map               as M
-import qualified Data.Set               as S
+import qualified Data.Map   as M
+import qualified Data.Set   as S
 
-import           Control.Monad.Except
-import           Control.Monad.Identity
-import           Control.Monad.Reader
-import           Control.Monad.State
-import           Control.Monad.Writer   hiding (Any)
-import           Types
+import           General
 
-import           Data.List              (find)
-import           Data.Maybe             (fromJust, fromMaybe, isJust)
-
-data VargException = VargException
-  { reason :: String
-  } deriving (Eq, Ord)
-
-instance Show VargException where
-  show v = "VargException: " ++ reason v
-
-type VargExceptionMonad = Either VargException
-
-type Substitutions = Mapping String
-
-type Constraints = Mapping [TypeParamConstraint]
-
-type Stub = (Int, DerivationKind, [DerivationKind], Substitutions)
-
-type Stubs = M.Map TypeName Stub
-
-type ClassHierarchy = S.Set Type
-
-type ClassContents = (S.Set Variant, Mapping Function)
-
-type LookupFunction = String -> Maybe String
-
-type ConstrLookupFunction = String -> Maybe [TypeParamConstraint]
-
-type Notifier a = a -> a
-
-type Updater a b = a -> b -> b
+import           Data.List  (find)
+import           Data.Maybe (fromJust, fromMaybe, isJust)
 
 data PreprocessState = PreprocessState
   { classStubs          :: Stubs
@@ -141,10 +100,6 @@ setParsedMember fld state = state {currentParsedMember = fld}
 setParsedTypeConstrName :: Updater String HierarchyRuntime
 setParsedTypeConstrName name state = state {currentParsedTypeConstrName = name}
 
-type VargMonad = ExceptT VargException IO
-
-type VargStatefulMonad a b c = ReaderT a (StateT b (ExceptT VargException IO)) c
-
 type PreprocessMonad c = VargStatefulMonad PreprocessRuntime PreprocessState c
 
 type HierarchyMonad c = VargStatefulMonad HierarchyRuntime HierarchyState c
@@ -174,18 +129,18 @@ lookupVariantFromType name Type {qualifiedTypeName = n, typeVariants = v} =
   let cand = emptyVariant name
    in if S.member cand v
         then pure $ fromJust $ S.lookupGE cand v
-        else throwError $ VargException $ "Cannot find variant " ++ name ++ " of type " ++ n
+        else throwException $ "Cannot find variant " ++ name ++ " of type " ++ n ++ "\n"
 
 --lookupTypeFromClassHierarchy :: TypeName -> ClassHierarchy -> VargExceptionMonad Type
 lookupTypeFromClassHierarchy name hier =
   if S.member (emptyType name) hier
     then pure $ fromJust $ S.lookupGE (emptyType name) hier
-    else throwError $
-         VargException $
-         "Cannot find type of name " ++ name ++ ". Registered classes: " ++ show (map qualifiedTypeName $ S.toList hier)
+    else throwException $
+         "Cannot find type of name " ++
+         name ++ ". Registered classes: " ++ show (map qualifiedTypeName $ S.toList hier) ++ "\n"
 
 --lookupFunctionFromType :: MemberName -> Type -> VargExceptionMonad Function
 lookupFunctionFromType name typ =
   case M.lookup name (typeMembers typ) of
     Just elem -> pure elem
-    Nothing -> throwError $ VargException $ "Cannot find method " ++ name ++ " in type " ++ qualifiedTypeName typ
+    Nothing -> throwException $ "Cannot find method " ++ name ++ " in type " ++ qualifiedTypeName typ ++ "\n"

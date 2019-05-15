@@ -1,39 +1,34 @@
 module Preprocessing where
 
-import           PreprocessingState
-import           Types
+import PreprocessingState
+import Types
 
-import           ErrM
-import           LayoutVarg
-import           LexVarg
-import           ParVarg
-import           PrintVarg
+import ErrM
+import LayoutVarg
+import LexVarg
+import ParVarg
+import PrintVarg
 
-import           Data.Maybe
+import Data.Maybe
 
-import qualified AbsVarg                as Abs
-import qualified Data.Map               as M
-import qualified Data.Set               as S
+import qualified AbsVarg as Abs
+import qualified Data.Map as M
+import qualified Data.Set as S
 
-import           ClassHierarchyBuilder
-import           ClassStubPreprocessing
+import ClassHierarchyBuilder
+import ClassStubPreprocessing
 
 ------------------------------------ running Alex and Happy ----------------------------------------------
 runLexer :: String -> StateT (S.Set String) VargMonad Abs.ProgramDef
 runLexer s =
   let ts = lexer s
    in case pProgramDef ts of
-        Bad s -> throwError $ VargException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s
+        Bad s -> throwException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s
         Ok tree -> do
           liftIO $ putStr $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
           pure tree
   where
     lexer = resolveLayout True . tokens
-
-repl c =
-  if c == '.'
-    then '/'
-    else c
 
 loadImports :: [Abs.ImportDef] -> StateT (S.Set String) VargMonad [Abs.ClassDef]
 loadImports [] = pure []
@@ -44,7 +39,15 @@ loadImports (Abs.Import modulename:t) = do
     then loadImports t
     else do
       liftIO $ putStrLn $ "-------------------- Reading module " ++ modulename ++ "--------------------"
-      _module <- liftIO $ readFile (map repl modulename ++ ".vg")
+      _module <-
+        liftIO $
+        readFile
+          (map
+             (\case
+                '.' -> '/'
+                x -> x)
+             modulename ++
+           ".vg")
       Abs.Program imports cldefs <- runLexer _module
       put $ S.insert modulename stat
       rest <- loadImports (t ++ imports)

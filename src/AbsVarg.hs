@@ -204,6 +204,8 @@ data Expr
   | ELambda [ArgDef]
             TypeDef
             Expr
+  | EInferredLambda [ArgDef]
+                    Expr
   | EList [ListElem]
   | EEmptyList
   | ERange Integer

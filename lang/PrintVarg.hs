@@ -463,6 +463,18 @@ instance Print Expr where
              , prt 0 expr
              , doc (showString ")")
              ])
+      EInferredLambda argdefs expr ->
+        prPrec
+          i
+          6
+          (concatD
+             [ doc (showString "(")
+             , doc (showString "\\")
+             , prt 0 argdefs
+             , doc (showString "->")
+             , prt 0 expr
+             , doc (showString ")")
+             ])
       EList listelems -> prPrec i 6 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
       EEmptyList -> prPrec i 6 (concatD [doc (showString "[]")])
       ERange n1 n2 ->
@@ -494,7 +506,7 @@ instance Print Expr where
       EOperator operator -> prPrec i 6 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
       EInt n -> prPrec i 6 (concatD [prt 0 n])
       EReal d -> prPrec i 6 (concatD [prt 0 d])
-      EChar c -> prPrec i 6 (concatD [doc (showString "'"), prt 0 c, doc (showString "'")])
+      EChar c -> prPrec i 6 (concatD [prt 0 c])
       EString str -> prPrec i 6 (concatD [prt 0 str])
       EWild -> prPrec i 6 (concatD [doc (showString "_")])
       EApply expr1 expr2 -> prPrec i 5 (concatD [prt 5 expr1, prt 6 expr2])

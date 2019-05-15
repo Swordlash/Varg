@@ -200,6 +200,7 @@ transExpr x =
     EIfThenElse expr1 expr2 expr3 -> failure x
     EUnify expr1 expr2 expr3      -> failure x
     ELambda argdefs typedef expr  -> failure x
+    EInferredLambda argdefs expr  -> failure x
     EList listelems               -> failure x
     EEmptyList                    -> failure x
     ERange integer1 integer2      -> failure x

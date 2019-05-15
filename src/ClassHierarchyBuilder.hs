@@ -42,8 +42,7 @@ parseClass classDef =
             (setParsedTypeName name)
             (do (variants, functions) <- parseClassContents contents
                 return $ Type name deriv impls variants 0 [] functions)
-        Nothing ->
-          throwError $ VargException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
+        Nothing -> throwException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
     Abs.TemplateDefinition modifs (Abs.UIdent name) typeParams _ _ contents ->
       let paramlen = length typeParams
        in do liftIO $ putStrLn $ "\nParsing template " ++ name
@@ -58,8 +57,7 @@ parseClass classDef =
                        (variants, functions) <- parseClassContents contents
                        return $ Type name deriv impls variants paramlen (map snd constrs) functions)
                Nothing ->
-                 throwError $
-                 VargException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
+                 throwException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
 
 buildClassHierarchy :: [Abs.ClassDef] -> HierarchyMonad ()
 buildClassHierarchy [] = pure ()
@@ -67,7 +65,7 @@ buildClassHierarchy (cl:t) = do
   newcl <- parseClass cl
   hierarchy <- gets preClassHierarchy
   if S.member newcl hierarchy
-    then throwError $ VargException ("Multiple definition of class " ++ qualifiedTypeName newcl)
+    then throwException ("Multiple definition of class " ++ qualifiedTypeName newcl)
     else do
       modify (registerClass newcl)
       buildClassHierarchy t

@@ -26,6 +26,5 @@ parseFields (field:t) = do
     then do
       typename <- asks currentParsedTypeName
       variant <- asks currentParsedTypeVariant
-      throwError $
-        VargException $ "In definition of " ++ typename ++ "." ++ variant ++ ": multiple definition of field " ++ pname
+      throwException $ "In definition of " ++ typename ++ "." ++ variant ++ ": multiple definition of field " ++ pname
     else return $ (pname, parsed) : parsedTail

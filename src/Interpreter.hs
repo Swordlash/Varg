@@ -1,24 +1,22 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase       #-}
-
 module Interpreter where
 
-import           Control.Monad.Except   (catchError)
-import           Instances
-import           InterpreterState
-import           Preprocessing
-import           PreprocessingState
+import Control.Monad.Except (catchError)
+import Instances
+import InterpreterState
+import Preprocessing
+import PreprocessingState
 
-import           Data.Fixed             (mod')
-import           Data.List
-import qualified Data.Map               as M
-import qualified Data.Set               as S
-import qualified Data.Typeable          as T
-import           System.IO.Unsafe       (unsafePerformIO)
-import           Types
+import Data.Fixed (mod')
+import Data.List
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Typeable as T
+import System.IO.Unsafe (unsafePerformIO)
+import Types
 
-import qualified AbsVarg                as Abs
-import           Control.Exception.Base (SomeException, evaluate, try)
+import qualified AbsVarg as Abs
+import Control.Exception.Base (SomeException, evaluate, try)
+import Data.Char (isUpper)
 
 nats = 0 : [n + 1 | n <- nats]
 
@@ -37,7 +35,8 @@ runInterpreter :: (Type, Type) -> ClassHierarchy -> VargMonad Instance
 runInterpreter (main, list) hier =
   case lookupFunctionFromType "main" main of
     Left a -> throwError a
-    Right f ->
+    Right f -> do
+      liftIO $ print $ functionBody f
       evalStateT (runReaderT (interpretExpression $ supplyArgs $ functionBody f) (emptyRuntime list)) (emptyState hier)
 
 emptyState :: ClassHierarchy -> InterpreterState
@@ -46,23 +45,16 @@ emptyState hier = InterpreterState hier 0 "Main.main"
 emptyRuntime :: Type -> InterpreterRuntime
 emptyRuntime listtype =
   let env = M.insert "args" (emptyArgs listtype) M.empty
-   in InterpreterRuntime env False
+   in InterpreterRuntime env voidType False
 
 showTr :: Mapping Instance -> String
-showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show i) $ M.toList env)
+showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show' i) $ M.toList env)
 
 supplyArgs :: Expr -> Expr
 supplyArgs main = EApply main (EVar "args")
 
 emptyArgs :: Type -> Instance
 emptyArgs listtype = TypeInstance listtype "Empty" [Template "List" [Primitive "Char"]] []
-
---throw :: Expr -> String -> InterpreterMonad Instance
-throw offending message =
-  throwError $
-  VargException $
-  "Interpreter exception: " ++
-  message ++ "\nOffending expression: " ++ show offending ++ "\n\n---------- STACK TRACE ---------- \n\n"
 
 interpretBinaryArithmetic ::
      Expr
@@ -129,8 +121,42 @@ lstop op n =
     (Function [] n lany (fun lany lany) $
      ELambda "x" lany (fun tany lany) $ ELambda "y" lany lany $ op (EVar "x") (EVar "y"))
 
-rethrow :: InterpreterMonad Instance -> String -> InterpreterMonad Instance
-rethrow inst trace = catchError inst (\e -> throwError $ VargException $ reason e ++ trace ++ "\n")
+nativeStringToInstance :: String -> InterpreterMonad Instance
+nativeStringToInstance str =
+  interpretExpression (foldr (\ch expr -> ECons (EChar ch) expr) (EMember (EClass "String") "Empty") str)
+
+getTypeFromDerivation :: DerivationKind -> InterpreterMonad Type
+getTypeFromDerivation (Concrete name _) = do
+  hier <- gets hierarchy
+  lookupTypeFromClassHierarchy name hier
+getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not implemented yet."
+
+findNativeMethod :: Instance -> String -> InterpreterMonad Instance
+findNativeMethod obj name = do
+  realtyp <- asks realType
+  case name of
+    "toString" -> nativeStringToInstance (show obj {baseType = realtyp})
+    _ -> throwException' $ "Nonexistent native method " ++ name
+
+getMember :: Instance -> String -> InterpreterMonad Instance
+getMember obj name =
+  case obj of
+    TypeInstance {baseType = t, fields = f} ->
+      if qualifiedTypeName t == "Void"
+        then findNativeMethod obj name
+        else case M.lookup name (typeMembers t) of
+               Just (Function _ fname _ _ body) -> do
+                 modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
+                 rethrow (interpretExpression body) ("Call: " ++ fname)
+               Nothing ->
+                 case lookup name f of
+                   Just fld -> pure fld
+                   Nothing -> do
+                     supert <- getTypeFromDerivation $ supertype t
+                     rethrow
+                       (getMember (obj {baseType = supert}) name)
+                       ("Call to nonexistent field " ++ name ++ " of class " ++ show obj)
+    other -> rethrow (findNativeMethod obj name) ("Call to member `" ++ name ++ "` on primitive type " ++ show other)
 
 interpretExpression :: Expr -> InterpreterMonad Instance
 interpretExpression expr = do
@@ -146,6 +172,7 @@ interpretExpression expr = do
     EDouble val -> pure $ DoubleInstance val
     EBool val -> pure $ BoolInstance val
     EChar val -> pure $ CharInstance val
+    EString val -> nativeStringToInstance val
     EThis ->
       asks (M.lookup "this" . environment) >>= \case
         Just inst -> pure inst
@@ -166,9 +193,9 @@ interpretExpression expr = do
       let lam = FunctionInstance (Function [] lname int out expr) env
       return lam
     EIfThenElse ife thene elsee ->
-      interpretExpression ife >>= \case
-        BoolInstance True -> interpretExpression thene
-        BoolInstance False -> interpretExpression elsee
+      rethrow (interpretExpression ife) ("Computing if condition " ++ show (show expr)) >>= \case
+        BoolInstance True -> rethrow (interpretExpression thene) ("Computing then expression " ++ show (show thene))
+        BoolInstance False -> rethrow (interpretExpression elsee) ("Computing else expression " ++ show (show elsee))
         res -> throwe ("Usage of invalid type (" ++ typeof res ++ ") in if clause")
     EApply fun arg -> do
       env <- asks environment
@@ -185,7 +212,7 @@ interpretExpression expr = do
         ("Call: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ showTr env ++ "\n")
     ELet name expr1@(ELambda _ int out _) _ expr2 -- recursive def
      -> do
-      let lname = "letlam"
+      let lname = "let"
       env <- asks environment
       let fun = FunctionInstance (Function [] lname int out expr1) (M.insert name fun env)
       local (bindVariable (name, fun)) (interpretExpression expr2)
@@ -194,32 +221,29 @@ interpretExpression expr = do
     EMember (EClass tname) name -> do
       hier <- gets hierarchy
       t <- lookupTypeFromClassHierarchy tname hier
-      Variant _ fieldsEx <- lookupVariantFromType name t
-      let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
-      let nargs = map (EVar . fst) argstypes
-      interpretExpression $
-        fst $
-        foldr
-          (\(narg, typ) (expr, typename) ->
-             let ftype = ConcreteType "Function" [Exact typ, Exact typename]
-              in (ELambda narg typ ftype expr, ftype))
-          (EConstructor tname name nargs, ConcreteType tname [])
-          argstypes
+      if isUpper (head name) -- call constructor
+        then do
+          Variant _ fieldsEx <- lookupVariantFromType name t
+          let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
+          let nargs = map (EVar . fst) argstypes
+          interpretExpression $
+            fst $
+            foldr
+              (\(narg, typ) (expr, typename) ->
+                 let ftype = ConcreteType "Function" [Exact typ, Exact typename]
+                  in (ELambda narg typ ftype expr, ftype))
+              (EConstructor tname name nargs, ConcreteType tname [])
+              argstypes
+        else case M.lookup name (typeMembers t) of
+               Just (Function _ fname _ _ body) -> do
+                 modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
+                 rethrow (interpretExpression body) ("Call: " ++ fname)
+               Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
     EMember expr name -> do
       env <- asks environment
       rethrow
-        (do pexpr <- interpretExpression expr
-            case pexpr of
-              obj@TypeInstance {baseType = t, fields = f} ->
-                case M.lookup name (typeMembers t) of
-                  Just (Function _ fname _ _ body) -> do
-                    modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
-                    rethrow (local (bindVariable ("this", obj)) (interpretExpression body)) ("Call: " ++ fname)
-                  Nothing ->
-                    case lookup name f of
-                      Just fld -> pure fld
-                      Nothing -> throwe ("Call to nonexistent field " ++ name ++ " of class " ++ show obj)
-              other -> throwe ("Call to member `" ++ name ++ "` on primitive type " ++ show other))
+        (interpretExpression expr >>= \obj ->
+           local (saveRealType (baseType obj) . bindVariable ("this", obj)) (getMember obj name))
         ("Computing member " ++ show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ showTr env ++ "\n")
     EConstructor tname var flds -- FIXME: It creates instances with no type params
      -> do
@@ -234,7 +258,7 @@ interpretExpression expr = do
       interpretExpression expr >>= \case
         IntInstance val -> pure $ IntInstance $ -val
         DoubleInstance val -> pure $ DoubleInstance $ -val
-        _ -> throwError $ VargException "You can only (-Int) or (-Double) dude."
+        _ -> throwException "You can only (-Int) or (-Double) dude."
     ENot expr ->
       interpretExpression expr >>= \case
         BoolInstance val -> pure $ BoolInstance $ not val
@@ -276,16 +300,16 @@ interpretExpression expr = do
     ECons expr1 expr2 -> interpretExpression $ EApply (EMember expr2 ":") expr1
     EOperator op ->
       (case op of
-         Abs.Op_plus  -> numop EAdd "Num.+"
+         Abs.Op_plus -> numop EAdd "Num.+"
          Abs.Op_minus -> numop ESub "Num.-"
-         Abs.Op_mul   -> numop EMul "Num.*"
-         Abs.Op_div   -> numop EDiv "Num./"
-         Abs.Op_pow   -> numop EPow "Num.^"
-         Abs.Op_less  -> numop ELt "Num.<"
-         Abs.Op_gr    -> numop EGt "Num.>"
-         Abs.Op_leq   -> numop ELeq "Num.<="
-         Abs.Op_geq   -> numop EGeq "Num.>="
-         Abs.Op_eq    -> anyop EEq "Num.=="
-         Abs.Op_cons  -> lstop ECons "List.:") <$>
+         Abs.Op_mul -> numop EMul "Num.*"
+         Abs.Op_div -> numop EDiv "Num./"
+         Abs.Op_pow -> numop EPow "Num.^"
+         Abs.Op_less -> numop ELt "Num.<"
+         Abs.Op_gr -> numop EGt "Num.>"
+         Abs.Op_leq -> numop ELeq "Num.<="
+         Abs.Op_geq -> numop EGeq "Num.>="
+         Abs.Op_eq -> anyop EEq "Num.=="
+         Abs.Op_cons -> lstop ECons "List.:") <$>
       asks environment
-    _ -> throwError $ VargException $ "Cannot interpret expr " ++ show expr ++ ": not implemented"
+    _ -> throwException $ "Cannot interpret expr " ++ show expr ++ ": not implemented"

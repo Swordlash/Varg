@@ -27,7 +27,7 @@ parseFunctorial lookupFun funct =
     Abs.SuperFunctor -> pure ESuper
     Abs.InstanceFunctor (Abs.LIdent var) -> pure $ EVar var
     Abs.TypeFunctor (Abs.UIdent _class) -> pure $ EClass _class
-    Abs.MemberFunctor _ -> throwError $ VargException "The leading application functor cannot be .ident"
+    Abs.MemberFunctor _ -> throwException "The leading application functor cannot be .ident"
     Abs.ExprFunctor expr -> parseExpression lookupFun expr
     Abs.OperatorFunctor op -> pure $ EOperator op
 
@@ -39,7 +39,7 @@ accumulateApplication lookupFun expr (Abs.ArgExpr argexpr) = do
 accumulateApplication lookupFun expr (Abs.ArgFunc funct) =
   case funct of
     Abs.ThisFunctor -> pure $ EApply expr EThis
-    Abs.SuperFunctor -> throwError $ VargException "Cannot pass super as function argument"
+    Abs.SuperFunctor -> throwException "Cannot pass super as function argument"
     Abs.InstanceFunctor (Abs.LIdent var) -> pure $ EApply expr $ EVar var
     Abs.TypeFunctor (Abs.UIdent _class) -> pure $ EApply expr $ EClass _class --TODO: is EClass a function?
     Abs.MemberFunctor (Abs.MFun name) -> pure $ EMember expr (drop 1 name)
@@ -79,13 +79,11 @@ parseExpression lookupFun expr =
     Abs.EType (Abs.UIdent name) -> pure $ EClass name
     Abs.EMember (Abs.MFun name) -> pure $ ELambda "x" AnyType AnyType (EMember (EVar "x") (drop 1 name))
     Abs.EOperator op -> pure $ EOperator op
-    Abs.EDefinition (Abs.IInferredDefinition (Abs.LIdent name) argdefs expr) inexpr -> do
-      pexpr <- parseExpression lookupFun expr
-      pinexpr <- parseExpression lookupFun inexpr
-      let pftdef = AnyType
-      namespargdefs <- mapM (parseArgDef lookupFun) argdefs
-      (tdef, shifted) <- shiftDefinition namespargdefs pftdef pexpr
-      return $ ELet name shifted tdef pinexpr
+    Abs.EDefinition (Abs.IInferredDefinition (Abs.LIdent name) argdefs expr) inexpr ->
+      parseExpression lookupFun $
+      Abs.EDefinition
+        (Abs.IDefinition (Abs.LIdent name) argdefs (Abs.FreeType (Abs.UIdent "?") []) expr)
+        inexpr -- FIXME: same as in lambda
     Abs.EDefinition (Abs.IDefinition (Abs.LIdent name) argdefs ftdef expr) inexpr -> do
       pexpr <- parseExpression lookupFun expr
       pinexpr <- parseExpression lookupFun inexpr
@@ -112,6 +110,8 @@ parseExpression lookupFun expr =
       let (ELambda _ argtype rettype _) = pbody
       let frettype = ConcreteType "Function" [Exact argtype, Exact rettype]
       return $ ELambda name pargtdef frettype pbody
+    Abs.EInferredLambda t body -> parseExpression lookupFun $ Abs.ELambda t (Abs.ConcreteType (Abs.UIdent "?") []) body
+      --FIXME : change that to some AnyType
     Abs.EApply expr (Abs.EMember (Abs.MFun name)) -> do
       pexpr <- parseExpression lookupFun expr
       return $ EMember pexpr (drop 1 name)
@@ -129,9 +129,7 @@ parseExpression lookupFun expr =
       pe2 <- parseExpression lookupFun expr2
       pe3 <- parseExpression lookupFun expr3
       return $ EIfThenElse pe1 pe2 pe3
-    Abs.EString str ->
-      let chars = map (Abs.EListElem . Abs.EChar) str
-       in parseExpression lookupFun $ Abs.EList chars
+    Abs.EString str -> pure $ EString str
     Abs.ECons hd tl -> do
       phd <- parseExpression lookupFun hd
       ptl <- parseExpression lookupFun tl
@@ -213,4 +211,4 @@ parseExpression lookupFun expr =
     Abs.ENeg expr -> do
       p <- parseExpression lookupFun expr
       return $ ENeg p
-    _ -> throwError $ VargException $ "Cannot parse " ++ show expr
+    _ -> throwException $ "Cannot parse " ++ show expr ++ ". Not implemented."
