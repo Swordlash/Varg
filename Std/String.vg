@@ -2,11 +2,11 @@ import "Std.List"
 
 class String deriving List Char where
     Empty
-    String has
+    Cons has
         head : Char
         tail : String
 
-    function (:) (ch:Char) : String = String.String ch this
+    function (:) (ch:Char) : String = String.Cons ch this # we must shadow (:) from List to avoid implicit cast on List
 
     function null : Bool = this == String.Empty
     function empty : String = ""

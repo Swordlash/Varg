@@ -367,7 +367,6 @@ All other symbols are terminals.\\
 \begin{tabular}{lll}
 {\nonterminal{Expr5}} & {\arrow}  &{\terminal{{$-$}}} {\nonterminal{Expr6}}  \\
  & {\delimit}  &{\nonterminal{Expr5}} {\nonterminal{Expr6}}  \\
- & {\delimit}  &{\nonterminal{Expr6}} {\nonterminal{MFun}}  \\
  & {\delimit}  &{\nonterminal{Expr6}}  \\
 \end{tabular}\\
 

@@ -16,7 +16,7 @@ template List a implementing Collection a where
     function null : Bool = this == List.Empty
     function empty : List a = []
 
-    function map <b> (f: Function a b) : List b = (this.foldr ((:) ~ f)) (List.Empty)
+    function map <b> (f: Function a b) : List b = (this.foldr ((:) . f)) (List.Empty)
 
     function take (am : Int) : List a = if this.null || am == 0 then this else this.head : this.tail.take (am-1)
     function drop (am : Int) : List a = if this.null || am == 0 then this else this.tail.drop (am-1)

@@ -13,69 +13,69 @@ import ErrM
 %monad { Err } { thenM } { returnM }
 %tokentype {Token}
 %token
-  '&&' { PT _ (TS _ 1) }
-  '(' { PT _ (TS _ 2) }
-  ')' { PT _ (TS _ 3) }
-  '*' { PT _ (TS _ 4) }
-  '+' { PT _ (TS _ 5) }
-  ',' { PT _ (TS _ 6) }
-  '-' { PT _ (TS _ 7) }
-  '->' { PT _ (TS _ 8) }
-  '..' { PT _ (TS _ 9) }
-  '/' { PT _ (TS _ 10) }
-  '/=' { PT _ (TS _ 11) }
-  ':' { PT _ (TS _ 12) }
-  ';' { PT _ (TS _ 13) }
-  '<' { PT _ (TS _ 14) }
-  '<=' { PT _ (TS _ 15) }
-  '=' { PT _ (TS _ 16) }
-  '==' { PT _ (TS _ 17) }
-  '>' { PT _ (TS _ 18) }
-  '>=' { PT _ (TS _ 19) }
-  '?' { PT _ (TS _ 20) }
-  '[' { PT _ (TS _ 21) }
-  '[]' { PT _ (TS _ 22) }
-  '\\' { PT _ (TS _ 23) }
-  ']' { PT _ (TS _ 24) }
-  '^' { PT _ (TS _ 25) }
-  '_' { PT _ (TS _ 26) }
-  'abstract' { PT _ (TS _ 27) }
-  'class' { PT _ (TS _ 28) }
-  'deriving' { PT _ (TS _ 29) }
-  'else' { PT _ (TS _ 30) }
-  'false' { PT _ (TS _ 31) }
-  'final' { PT _ (TS _ 32) }
-  'function' { PT _ (TS _ 33) }
-  'has' { PT _ (TS _ 34) }
-  'if' { PT _ (TS _ 35) }
-  'implement' { PT _ (TS _ 36) }
-  'implementing' { PT _ (TS _ 37) }
-  'import' { PT _ (TS _ 38) }
-  'in' { PT _ (TS _ 39) }
-  'interface' { PT _ (TS _ 40) }
-  'internal' { PT _ (TS _ 41) }
-  'let' { PT _ (TS _ 42) }
-  'match' { PT _ (TS _ 43) }
-  'mod' { PT _ (TS _ 44) }
-  'module' { PT _ (TS _ 45) }
-  'native' { PT _ (TS _ 46) }
-  'not' { PT _ (TS _ 47) }
-  'sealed' { PT _ (TS _ 48) }
-  'static' { PT _ (TS _ 49) }
-  'struct' { PT _ (TS _ 50) }
-  'super' { PT _ (TS _ 51) }
-  'template' { PT _ (TS _ 52) }
-  'then' { PT _ (TS _ 53) }
-  'this' { PT _ (TS _ 54) }
-  'true' { PT _ (TS _ 55) }
-  'unify' { PT _ (TS _ 56) }
-  'unique' { PT _ (TS _ 57) }
-  'where' { PT _ (TS _ 58) }
-  'with' { PT _ (TS _ 59) }
-  '{' { PT _ (TS _ 60) }
-  '||' { PT _ (TS _ 61) }
-  '}' { PT _ (TS _ 62) }
-  '~' { PT _ (TS _ 63) }
+  ' . ' { PT _ (TS _ 1) }
+  '&&' { PT _ (TS _ 2) }
+  '(' { PT _ (TS _ 3) }
+  ')' { PT _ (TS _ 4) }
+  '*' { PT _ (TS _ 5) }
+  '+' { PT _ (TS _ 6) }
+  ',' { PT _ (TS _ 7) }
+  '-' { PT _ (TS _ 8) }
+  '->' { PT _ (TS _ 9) }
+  '..' { PT _ (TS _ 10) }
+  '/' { PT _ (TS _ 11) }
+  '/=' { PT _ (TS _ 12) }
+  ':' { PT _ (TS _ 13) }
+  ';' { PT _ (TS _ 14) }
+  '<' { PT _ (TS _ 15) }
+  '<=' { PT _ (TS _ 16) }
+  '=' { PT _ (TS _ 17) }
+  '==' { PT _ (TS _ 18) }
+  '>' { PT _ (TS _ 19) }
+  '>=' { PT _ (TS _ 20) }
+  '?' { PT _ (TS _ 21) }
+  '[' { PT _ (TS _ 22) }
+  '[]' { PT _ (TS _ 23) }
+  '\\' { PT _ (TS _ 24) }
+  ']' { PT _ (TS _ 25) }
+  '^' { PT _ (TS _ 26) }
+  '_' { PT _ (TS _ 27) }
+  'abstract' { PT _ (TS _ 28) }
+  'class' { PT _ (TS _ 29) }
+  'deriving' { PT _ (TS _ 30) }
+  'else' { PT _ (TS _ 31) }
+  'false' { PT _ (TS _ 32) }
+  'final' { PT _ (TS _ 33) }
+  'function' { PT _ (TS _ 34) }
+  'has' { PT _ (TS _ 35) }
+  'if' { PT _ (TS _ 36) }
+  'implement' { PT _ (TS _ 37) }
+  'implementing' { PT _ (TS _ 38) }
+  'import' { PT _ (TS _ 39) }
+  'in' { PT _ (TS _ 40) }
+  'interface' { PT _ (TS _ 41) }
+  'internal' { PT _ (TS _ 42) }
+  'let' { PT _ (TS _ 43) }
+  'match' { PT _ (TS _ 44) }
+  'mod' { PT _ (TS _ 45) }
+  'module' { PT _ (TS _ 46) }
+  'native' { PT _ (TS _ 47) }
+  'not' { PT _ (TS _ 48) }
+  'sealed' { PT _ (TS _ 49) }
+  'static' { PT _ (TS _ 50) }
+  'struct' { PT _ (TS _ 51) }
+  'super' { PT _ (TS _ 52) }
+  'template' { PT _ (TS _ 53) }
+  'then' { PT _ (TS _ 54) }
+  'this' { PT _ (TS _ 55) }
+  'true' { PT _ (TS _ 56) }
+  'unify' { PT _ (TS _ 57) }
+  'unique' { PT _ (TS _ 58) }
+  'where' { PT _ (TS _ 59) }
+  'with' { PT _ (TS _ 60) }
+  '{' { PT _ (TS _ 61) }
+  '||' { PT _ (TS _ 62) }
+  '}' { PT _ (TS _ 63) }
 
 L_quoted { PT _ (TL $$) }
 L_integ  { PT _ (TI $$) }
@@ -306,7 +306,7 @@ Expr3 : Expr3 '*' Expr4 { AbsVarg.EMul $1 $3 }
       | Expr4 { $1 }
 Expr4 :: { Expr }
 Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 }
-      | Expr5 '~' Expr4 { AbsVarg.ECompose $1 $3 }
+      | Expr5 ' . ' Expr4 { AbsVarg.ECompose $1 $3 }
       | Expr5 { $1 }
 Boolean :: { Boolean }
 Boolean : 'true' { AbsVarg.ETrue } | 'false' { AbsVarg.EFalse }

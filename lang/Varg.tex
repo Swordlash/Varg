@@ -77,7 +77,7 @@ The symbols used in Varg are the following: \\
 {\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
 {\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} &{\symb{[]}} \\
 {\symb{..}} &{\symb{/{$=$}}} &{\symb{{$|$}{$|$}}} \\
-{\symb{\&\&}} &{\symb{\~{}}} &{\symb{\_}} \\
+{\symb{\&\&}} &{\symb{ . }} &{\symb{\_}} \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -399,7 +399,7 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Expr4}} & {\arrow}  &{\nonterminal{Expr5}} {\terminal{{\textasciicircum}}} {\nonterminal{Expr4}}  \\
- & {\delimit}  &{\nonterminal{Expr5}} {\terminal{\~{}}} {\nonterminal{Expr4}}  \\
+ & {\delimit}  &{\nonterminal{Expr5}} {\terminal{ . }} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr5}}  \\
 \end{tabular}\\
 
