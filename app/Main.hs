@@ -1,6 +1,8 @@
-module Main where
+module Main
+  ( main
+  ) where
 
-import Lib
+import           Lib
 
 main :: IO ()
 main = runInterpreter

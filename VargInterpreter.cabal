@@ -4,15 +4,15 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4191626c23bcf02ca073f76da7ad294d4a821ea58d7dc3f5e0a600abeebfa54a
+-- hash: 6a4b5be5f28b462e55cdad20d2e931213ce1727fdad2e53cfd099676e541f2a3
 
-name:           Interpreter
-version:        0.1.0.0
+name:           VargInterpreter
+version:        1.0
 description:    Please see the README on GitHub at <https://github.com/Swordlash/Varg#readme>
 homepage:       https://github.com/Swordlash/Interpreter#readme
 bug-reports:    https://github.com/Swordlash/Interpreter/issues
 author:         Mateusz Goślinowski
-maintainer:     mateusz.gosinowski@gmail.com
+maintainer:     mateusz.goslinowski@gmail.com
 copyright:      2018 Mateusz Goślinowski
 license:        BSD3
 license-file:   LICENSE
@@ -50,7 +50,7 @@ library
       TypeDefParser
       Types
   other-modules:
-      Paths_Interpreter
+      Paths_VargInterpreter
   hs-source-dirs:
       src
   default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
@@ -64,13 +64,13 @@ library
 executable Varg
   main-is: Main.hs
   other-modules:
-      Paths_Interpreter
+      Paths_VargInterpreter
   hs-source-dirs:
       app
   default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      Interpreter
+      VargInterpreter
     , array
     , base >=4.7 && <5
     , containers
@@ -81,13 +81,13 @@ test-suite Interpreter-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_Interpreter
+      Paths_VargInterpreter
   hs-source-dirs:
       test
   default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      Interpreter
+      VargInterpreter
     , array
     , base >=4.7 && <5
     , containers

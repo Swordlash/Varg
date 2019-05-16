@@ -1,9 +1,9 @@
-name:                Interpreter
-version:             0.1.0.0
+name:                VargInterpreter
+version:             1.0
 github:              "Swordlash/Interpreter"
 license:             BSD3
 author:              "Mateusz Goślinowski"
-maintainer:          "mateusz.gosinowski@gmail.com"
+maintainer:          "mateusz.goslinowski@gmail.com"
 copyright:           "2018 Mateusz Goślinowski"
 
 extra-source-files:
@@ -45,7 +45,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - Interpreter
+    - VargInterpreter
 
 tests:
   Interpreter-test:
@@ -56,4 +56,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - Interpreter
+    - VargInterpreter
