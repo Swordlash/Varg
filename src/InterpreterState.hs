@@ -5,7 +5,7 @@ import           Instances
 import           PreprocessingState
 import           Types
 
-type Closure = Clos Function Type
+type Closure = Clos Function Type Expr
 
 type Environment = Closure
 

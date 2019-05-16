@@ -12,7 +12,7 @@ type TypeName = String
 
 type MemberName = String
 
-type Instance = Inst Function Type
+type Instance = Inst Function Type Expr
 
 type Mapping a = M.Map String a
 
@@ -22,6 +22,7 @@ typeof (DoubleInstance _)          = "Double"
 typeof (BoolInstance _)            = "Bool"
 typeof (CharInstance _)            = "Char"
 typeof (FunctionInstance f clos)   = show f
+typeof (ThunkInstance _ _) = "Thunk"
 typeof TypeInstance {baseType = t} = qualifiedTypeName t
 
 ntake _ []    = []
@@ -36,6 +37,7 @@ instance Show Instance where
   show (CharInstance val) = "'" ++ show val ++ "'"
   show (BoolInstance val) = show val
   show (FunctionInstance expr clos) = show expr -- ++ ", closure: " ++ show clos FIXME: show closure?
+  show (ThunkInstance expr _) = show expr
   show t@(TypeInstance base var params flds) =
     case qualifiedTypeName base of
       "List" -> show (instanceListToList t)

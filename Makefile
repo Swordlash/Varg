@@ -1,4 +1,6 @@
-all: configure build install
+all: 
+	configure install
+	cp Varg interpreter
 
 configure:
 	cabal new-configure --symlink-bindir=.
@@ -11,3 +13,4 @@ install:
 
 clean:
 	cabal new-clean
+	rm interpreter

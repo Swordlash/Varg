@@ -1,5 +1,4 @@
 import "Std.Overture"
 
 class Main where
-    unique function main args = let f x = 2*x in [1,2,3].map (f . f)
-
+    unique function main args = let lista = [1,2,3,4] in lista.map (\v -> v + 1)

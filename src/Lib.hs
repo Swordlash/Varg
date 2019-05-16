@@ -13,5 +13,5 @@ runInterpreter :: IO ()
 runInterpreter = do
   getArgs >>= mapM_ parse
   program >>= runInterpreter' >>= \case
-    Left err -> printErr err
+    Left err -> hPutStr stderr $ show err
     Right res -> logStderr "\n[[Result]]\n\n" >> putStrLn res

@@ -10,8 +10,6 @@ import Data.Fixed (mod')
 import Data.List
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.Typeable as T
-import System.IO.Unsafe (unsafePerformIO)
 import Types
 
 import qualified AbsVarg as Abs
@@ -28,8 +26,7 @@ interpret text = do
   main <- lookupTypeFromClassHierarchy "Main" classes
   list <- lookupTypeFromClassHierarchy "List" classes
   liftIO $ logStderr "\n\n[[Interpreting...]]\n\n"
-  retval <- runInterpreter (main, list) classes
-  return $ show retval
+  show <$> runInterpreter (main, list) classes
 
 runInterpreter :: (Type, Type) -> ClassHierarchy -> VargMonad Instance
 runInterpreter (main, list) hier =
@@ -78,23 +75,23 @@ interpretBinaryArithmetic whole name expr1 expr2 intfun dblfun boolfun = do
     ("Call: " ++ show whole ++ "\nBound variables: " ++ showTr env ++ "\n")
 
 -- auxiliary functions
-ifne e f v1 v2 = do
-  result <- liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Integer))
-  case result of
-    Left expr -> throw e (show expr)
-    Right val -> pure $ IntInstance val
+ifne e f v1 v2 =
+  liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Integer))
+    >>= \case
+      Left expr -> throw e (show expr)
+      Right val -> pure $ IntInstance val
 
-dfne e f v1 v2 = do
-  result <- liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Double))
-  case result of
-    Left expr -> throw e (show expr)
-    Right val -> pure $ DoubleInstance val
+dfne e f v1 v2 =
+  liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Double))
+    >>= \case
+      Left expr -> throw e (show expr)
+      Right val -> pure $ DoubleInstance val
 
-bfne e f b1 b2 = do
-  result <- liftIO (try (evaluate $ f b1 b2) :: IO (Either SomeException Bool))
-  case result of
-    Left expr -> throw e (show expr)
-    Right val -> pure $ BoolInstance val
+bfne e f b1 b2 =
+  liftIO (try (evaluate $ f b1 b2) :: IO (Either SomeException Bool))
+    >>= \case
+      Left expr -> throw e (show expr)
+      Right val -> pure $ BoolInstance val
 
 efn str e _ _ = throw e str
 
@@ -125,9 +122,7 @@ nativeStringToInstance str =
   interpretExpression (foldr (\ch expr -> ECons (EChar ch) expr) (EMember (EClass "String") "Empty") str)
 
 getTypeFromDerivation :: DerivationKind -> InterpreterMonad Type
-getTypeFromDerivation (Concrete name _) = do
-  hier <- gets hierarchy
-  lookupTypeFromClassHierarchy name hier
+getTypeFromDerivation (Concrete name _) = gets hierarchy >>= lookupTypeFromClassHierarchy name
 getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not implemented yet."
 
 findNativeMethod :: Instance -> String -> InterpreterMonad Instance
@@ -148,14 +143,17 @@ getMember obj name =
                  modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
                  rethrow (interpretExpression body) ("Call: " ++ fname)
                Nothing ->
-                 case lookup name f of
-                   Just fld -> pure fld
-                   Nothing -> do
+                 fmapMaybe (lookup name f) pure
+                   (do
                      supert <- getTypeFromDerivation $ supertype t
                      rethrow
                        (getMember (obj {baseType = supert}) name)
-                       ("Call to nonexistent field " ++ name ++ " of class " ++ show obj)
+                       ("Call to nonexistent field " ++ name ++ " of class " ++ show obj))
     other -> rethrow (findNativeMethod obj name) ("Call to member `" ++ name ++ "` on primitive type " ++ show other)
+
+fmapMaybe m f err = case m of
+  Just val -> f val
+  Nothing -> err
 
 interpretExpression :: Expr -> InterpreterMonad Instance
 interpretExpression expr = do
@@ -164,6 +162,8 @@ interpretExpression expr = do
       ifn = ifne expr
       dfn = dfne expr
       bfn = bfne expr
+  env <- asks environment
+  hier <- gets hierarchy
   case expr of
     EAbstract -> throwe "Call to an abstract function"
     EInterpreted inst -> pure inst
@@ -172,53 +172,43 @@ interpretExpression expr = do
     EBool val -> pure $ BoolInstance val
     EChar val -> pure $ CharInstance val
     EString val -> nativeStringToInstance val
-    EThis ->
-      asks (M.lookup "this" . environment) >>= \case
-        Just inst -> pure inst
-        Nothing -> throwe "Referencing this from a static context"
-    ESuper ->
-      asks (M.lookup "super" . environment) >>= \case
-        Just inst -> pure inst
-        Nothing -> throwe "Referencing super from a static context"
+    EThis -> fmapMaybe (M.lookup "this" env) pure (throwe "Referencing this from a static context")
+    ESuper -> fmapMaybe (M.lookup "super" env) pure (throwe "Referencing super from a static context")
     EVar name ->
-      asks (M.lookup name . environment) >>= \case
+      case M.lookup name env of
         Nothing -> throwe (name ++ "? I have never seen this man in my life!")
+        Just (ThunkInstance expr clos) -> local (exchangeEnvironment clos) (interpretExpression expr)
         Just val -> return val
-    ELambda _ int out _ -> do
-      lname <- gets nextLambdaName
-      --liftIO $ putStrLn $ "Naming "++lname ++ " to "++show expr
-      modify incrLambdaIdx
-      env <- asks environment
-      let lam = FunctionInstance (Function [] lname int out expr) env
-      return lam
+    ELambda _ int out _ ->
+      modify incrLambdaIdx >> gets nextLambdaName >>= \lname ->
+        return $ FunctionInstance (Function [] lname int out expr) env
     EIfThenElse ife thene elsee ->
       rethrow (interpretExpression ife) ("Computing if condition " ++ show (show expr)) >>= \case
         BoolInstance True -> rethrow (interpretExpression thene) ("Computing then expression " ++ show (show thene))
         BoolInstance False -> rethrow (interpretExpression elsee) ("Computing else expression " ++ show (show elsee))
         res -> throwe ("Usage of invalid type (" ++ typeof res ++ ") in if clause")
-    EApply fun arg -> do
-      env <- asks environment
+    EApply fun arg ->
       rethrow
         (do funval <- interpretExpression fun
             argval <- interpretExpression arg
             case funval of
-              FunctionInstance Function {functionName = name, functionBody = ELambda argname _ _ body} env ->
-                local (exchangeEnvironment $ M.insert argname argval env) (interpretExpression body)
+              FunctionInstance Function {functionName = name, functionBody = ELambda argname _ _ body} envf ->
+                local (exchangeEnvironment $ M.insert argname argval envf) (interpretExpression body)
               _ ->
                 throwe
                   ("One does not simply apply argument to a non-function. Functor: " ++
                    show fun ++ " (=" ++ show funval ++ ")" ++ ", argument: " ++ show arg ++ " (=" ++ show argval ++ ")"))
         ("Call: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ showTr env ++ "\n")
-    ELet name expr1@(ELambda _ int out _) _ expr2 -- recursive def
+    {-ELet name expr1@(ELambda _ int out _) _ expr2 -- recursive def
      -> do
       let lname = "let"
       env <- asks environment
       let fun = FunctionInstance (Function [] lname int out expr1) (M.insert name fun env)
-      local (bindVariable (name, fun)) (interpretExpression expr2)
+      local (bindVariable (name, fun)) (interpretExpression expr2)-}
     ELet name expr1 _ expr2 -- TODO: try to actually care about types
-     -> interpretExpression expr1 >>= \p1 -> local (bindVariable (name, p1)) (interpretExpression expr2)
+     -> let nenv = M.insert name (ThunkInstance expr1 nenv) env in -- bind as thunk, eval when needed as var, recursive def
+        local (exchangeEnvironment nenv) (interpretExpression expr2)
     EMember (EClass tname) name -> do
-      hier <- gets hierarchy
       t <- lookupTypeFromClassHierarchy tname hier
       if isUpper (head name) -- call constructor
         then do
@@ -238,20 +228,17 @@ interpretExpression expr = do
                  modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
                  rethrow (interpretExpression body) ("Call: " ++ fname)
                Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
-    EMember expr name -> do
-      env <- asks environment
+    EMember expr name ->
       rethrow
         (interpretExpression expr >>= \obj ->
            local (saveRealType (baseType obj) . bindVariable ("this", obj)) (getMember obj name))
         ("Computing member " ++ show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ showTr env ++ "\n")
     EConstructor tname var flds -- FIXME: It creates instances with no type params
      -> do
-      hier <- gets hierarchy
       typ <- lookupTypeFromClassHierarchy tname hier
       Variant _ supervar fieldsEx <- lookupVariantFromType var typ
       vals <- mapM interpretExpression flds
-      let flds = zip (map fst fieldsEx) vals
-      return $ TypeInstance typ var [] flds
+      return $ TypeInstance typ var [] $ zip (map fst fieldsEx) vals
     -- arithmetic ops
     ENeg expr ->
       interpretExpression expr >>= \case
@@ -298,7 +285,6 @@ interpretExpression expr = do
       return $ BoolInstance $ p1 /= p2
     ECons expr1 expr2 -> interpretExpression $ EApply (EMember expr2 ":") expr1
     EComp expr1 expr2 -> do
-      env <- asks environment
       p1 <- interpretExpression expr1
       p2 <- interpretExpression expr2
       case (p1, p2) of
@@ -309,7 +295,7 @@ interpretExpression expr = do
             (interpretExpression $ ELambda arg2name intt out $ EApply e1 $ EApply e2 $ EVar arg2name)
             ("Call: Composition " ++ show expr ++ "\nBound variables: " ++ showTr env ++ "\n")
         _ -> throwe "Composition of non-functions!"
-    EOperator op ->
+    EOperator op -> return $
       (case op of
          Abs.Op_plus -> numop EAdd "Num.+"
          Abs.Op_minus -> numop ESub "Num.-"
@@ -321,6 +307,5 @@ interpretExpression expr = do
          Abs.Op_leq -> numop ELeq "Num.<="
          Abs.Op_geq -> numop EGeq "Num.>="
          Abs.Op_eq -> anyop EEq "Num.=="
-         Abs.Op_cons -> lstop ECons "List.:") <$>
-      asks environment
+         Abs.Op_cons -> lstop ECons "List.:") env
     _ -> throwException $ "Cannot interpret expr " ++ show expr ++ ": not implemented\n"

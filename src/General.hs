@@ -80,7 +80,7 @@ parse :: String -> IO ()
 parse "-h" = putStrLn usage >> exitSuccess
 parse "-v" = setEnv "VargVerbosity" "1"
 parse s =
-  if take 2 s == "-N"
+  if take 2 s == "-d"
     then setEnv "VargTraceDepth" (drop 2 s)
     else setEnv "VargProg" s
 
