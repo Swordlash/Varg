@@ -14,7 +14,12 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Writer hiding (Any)
 
+import System.Environment
+import System.Exit
+import System.IO
 import Types
+
+import Text.Read
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -53,6 +58,47 @@ type VargMonad = ExceptT VargException IO
 
 type VargStatefulMonad a b c = ReaderT a (StateT b VargMonad) c
 
+logStderr :: String -> IO ()
+logStderr str =
+  lookupEnv "VargVerbosity" >>= \case
+    Nothing -> pure ()
+    Just _ -> hPutStr stderr str
+
+printErr :: (Show s) => s -> IO ()
+printErr = logStderr . show
+
+logg :: (Show s) => s -> IO ()
+logg obj =
+  lookupEnv "VargVerbosity" >>= \case
+    Nothing -> pure ()
+    Just _ -> print obj
+
+usage :: String
+usage = "Invalid arguments given. Usage: Varg [-h] [-v] [-dN] <program>"
+
+parse :: String -> IO ()
+parse "-h" = putStrLn usage >> exitSuccess
+parse "-v" = setEnv "VargVerbosity" "1"
+parse s =
+  if take 2 s == "-N"
+    then setEnv "VargTraceDepth" (drop 2 s)
+    else setEnv "VargProg" s
+
+program :: IO String
+program =
+  lookupEnv "VargProg" >>= \case
+    Nothing -> pure "Main"
+    Just prog -> pure prog
+
+defaultTraceDepth :: IO Int
+defaultTraceDepth =
+  lookupEnv "VargTraceDepth" >>= \case
+    Nothing -> pure 20
+    Just val ->
+      case readMaybe val :: Maybe Int of
+        Just ival -> pure ival
+        Nothing -> pure 20
+
 throw offending message =
   throwException
     ("Interpreter exception: " ++
@@ -60,7 +106,9 @@ throw offending message =
 
 throwException' ex = throwException (ex ++ "\n\n---------- STACK TRACE ---------- \n\n")
 
-throwException ex = throwError $ VargException ex 20
+throwException ex = do
+  d <- liftIO defaultTraceDepth
+  throwError $ VargException ex d
 
 rethrow inst trace =
   catchError

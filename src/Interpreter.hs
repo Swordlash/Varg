@@ -27,17 +27,16 @@ interpret text = do
   classes <- preprocessClasses text
   main <- lookupTypeFromClassHierarchy "Main" classes
   list <- lookupTypeFromClassHierarchy "List" classes
-  liftIO $ putStrLn "\n\n[[Interpreting...]]\n"
+  liftIO $ logStderr "\n\n[[Interpreting...]]\n\n"
   retval <- runInterpreter (main, list) classes
   return $ show retval
 
 runInterpreter :: (Type, Type) -> ClassHierarchy -> VargMonad Instance
 runInterpreter (main, list) hier =
-  case lookupFunctionFromType "main" main of
-    Left a -> throwError a
-    Right f -> do
-      liftIO $ print $ functionBody f
-      evalStateT (runReaderT (interpretExpression $ supplyArgs $ functionBody f) (emptyRuntime list)) (emptyState hier)
+  lookupFunctionFromType "main" main >>=
+  (\f -> do
+     liftIO $ logg $ functionBody f
+     evalStateT (runReaderT (interpretExpression $ supplyArgs $ functionBody f) (emptyRuntime list)) (emptyState hier))
 
 emptyState :: ClassHierarchy -> InterpreterState
 emptyState hier = InterpreterState hier 0 "Main.main"
@@ -223,7 +222,7 @@ interpretExpression expr = do
       t <- lookupTypeFromClassHierarchy tname hier
       if isUpper (head name) -- call constructor
         then do
-          Variant _ fieldsEx <- lookupVariantFromType name t
+          Variant _ supervar fieldsEx <- lookupVariantFromType name t
           let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
           let nargs = map (EVar . fst) argstypes
           interpretExpression $
@@ -249,7 +248,7 @@ interpretExpression expr = do
      -> do
       hier <- gets hierarchy
       typ <- lookupTypeFromClassHierarchy tname hier
-      Variant _ fieldsEx <- lookupVariantFromType var typ
+      Variant _ supervar fieldsEx <- lookupVariantFromType var typ
       vals <- mapM interpretExpression flds
       let flds = zip (map fst fieldsEx) vals
       return $ TypeInstance typ var [] flds

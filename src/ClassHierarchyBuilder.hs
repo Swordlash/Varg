@@ -13,13 +13,17 @@ import           FieldParser
 import           FunctionParser
 import           TypeDefParser
 
+parseSuperVariant :: Abs.DerivationDef -> String
+parseSuperVariant Abs.NotDerives                  = ""
+parseSuperVariant (Abs.Derives (Abs.UIdent name)) = name
+
 parseMember :: Abs.MemberDef -> HierarchyMonad Variant
-parseMember (Abs.EmptyMemberDefinition (Abs.UIdent name)) = pure $ emptyVariant name
-parseMember (Abs.MemberDefinition (Abs.UIdent name) fields) =
+parseMember (Abs.EmptyMemberDefinition (Abs.UIdent name) der) = pure $ emptyVariant name $ parseSuperVariant der
+parseMember (Abs.MemberDefinition (Abs.UIdent name) der fields) =
   local
     (setParsedTypeVariant name)
     (do parsedFields <- parseFields fields
-        return $ Variant name parsedFields)
+        return $ Variant name (parseSuperVariant der) parsedFields)
 
 parseClassContents :: Abs.ClassContents -> HierarchyMonad ClassContents
 parseClassContents (Abs.ClassContent members fundefs) = do
@@ -33,7 +37,7 @@ parseClass classDef =
     --Abs.StructDefinition modifs name fields -> return VoidType
         of
     Abs.ClassDefinition modifs (Abs.UIdent name) _ _ contents -> do
-      liftIO $ putStrLn $ "\nParsing class " ++ name
+      liftIO $ logStderr $ "\nParsing class " ++ name ++ "\n"
       classModifs <- mapM readModifier modifs
       stub <- gets (M.lookup name . preparsedStubs)
       case stub of
@@ -45,7 +49,7 @@ parseClass classDef =
         Nothing -> throwException $ "Parser error: non-existent stub for " ++ name ++ " type, or invalid param count"
     Abs.TemplateDefinition modifs (Abs.UIdent name) typeParams _ _ contents ->
       let paramlen = length typeParams
-       in do liftIO $ putStrLn $ "\nParsing template " ++ name
+       in do liftIO $ logStderr $ "\nParsing template " ++ name ++ "\n"
              classModifs <- mapM readModifier modifs
              stub <- gets (M.lookup name . preparsedStubs)
              case stub of
@@ -67,6 +71,7 @@ buildClassHierarchy (cl:t) = do
   if S.member newcl hierarchy
     then throwException ("Multiple definition of class " ++ qualifiedTypeName newcl)
     else do
+      liftIO $ logg newcl
       modify (registerClass newcl)
       buildClassHierarchy t
 

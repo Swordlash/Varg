@@ -42,40 +42,42 @@ import ErrM
   '_' { PT _ (TS _ 27) }
   'abstract' { PT _ (TS _ 28) }
   'class' { PT _ (TS _ 29) }
-  'deriving' { PT _ (TS _ 30) }
-  'else' { PT _ (TS _ 31) }
-  'false' { PT _ (TS _ 32) }
-  'final' { PT _ (TS _ 33) }
-  'function' { PT _ (TS _ 34) }
-  'has' { PT _ (TS _ 35) }
-  'if' { PT _ (TS _ 36) }
-  'implement' { PT _ (TS _ 37) }
-  'implementing' { PT _ (TS _ 38) }
-  'import' { PT _ (TS _ 39) }
-  'in' { PT _ (TS _ 40) }
-  'interface' { PT _ (TS _ 41) }
-  'internal' { PT _ (TS _ 42) }
-  'let' { PT _ (TS _ 43) }
-  'match' { PT _ (TS _ 44) }
-  'mod' { PT _ (TS _ 45) }
-  'module' { PT _ (TS _ 46) }
-  'native' { PT _ (TS _ 47) }
-  'not' { PT _ (TS _ 48) }
-  'sealed' { PT _ (TS _ 49) }
-  'static' { PT _ (TS _ 50) }
-  'struct' { PT _ (TS _ 51) }
-  'super' { PT _ (TS _ 52) }
-  'template' { PT _ (TS _ 53) }
-  'then' { PT _ (TS _ 54) }
-  'this' { PT _ (TS _ 55) }
-  'true' { PT _ (TS _ 56) }
-  'unify' { PT _ (TS _ 57) }
-  'unique' { PT _ (TS _ 58) }
-  'where' { PT _ (TS _ 59) }
-  'with' { PT _ (TS _ 60) }
-  '{' { PT _ (TS _ 61) }
-  '||' { PT _ (TS _ 62) }
-  '}' { PT _ (TS _ 63) }
+  'derives' { PT _ (TS _ 30) }
+  'deriving' { PT _ (TS _ 31) }
+  'else' { PT _ (TS _ 32) }
+  'false' { PT _ (TS _ 33) }
+  'final' { PT _ (TS _ 34) }
+  'function' { PT _ (TS _ 35) }
+  'has' { PT _ (TS _ 36) }
+  'if' { PT _ (TS _ 37) }
+  'implement' { PT _ (TS _ 38) }
+  'implementing' { PT _ (TS _ 39) }
+  'import' { PT _ (TS _ 40) }
+  'in' { PT _ (TS _ 41) }
+  'interface' { PT _ (TS _ 42) }
+  'internal' { PT _ (TS _ 43) }
+  'let' { PT _ (TS _ 44) }
+  'match' { PT _ (TS _ 45) }
+  'matching' { PT _ (TS _ 46) }
+  'mod' { PT _ (TS _ 47) }
+  'module' { PT _ (TS _ 48) }
+  'native' { PT _ (TS _ 49) }
+  'not' { PT _ (TS _ 50) }
+  'sealed' { PT _ (TS _ 51) }
+  'static' { PT _ (TS _ 52) }
+  'struct' { PT _ (TS _ 53) }
+  'super' { PT _ (TS _ 54) }
+  'template' { PT _ (TS _ 55) }
+  'then' { PT _ (TS _ 56) }
+  'this' { PT _ (TS _ 57) }
+  'true' { PT _ (TS _ 58) }
+  'unify' { PT _ (TS _ 59) }
+  'unique' { PT _ (TS _ 60) }
+  'where' { PT _ (TS _ 61) }
+  'with' { PT _ (TS _ 62) }
+  '{' { PT _ (TS _ 63) }
+  '||' { PT _ (TS _ 64) }
+  '}' { PT _ (TS _ 65) }
 
 L_quoted { PT _ (TL $$) }
 L_integ  { PT _ (TI $$) }
@@ -173,8 +175,11 @@ ClassModifier : 'module' { AbsVarg.ClassModifier_module }
 ClassContents :: { ClassContents }
 ClassContents : ListMemberDef ListFunDef { AbsVarg.ClassContent $1 $2 }
 MemberDef :: { MemberDef }
-MemberDef : UIdent { AbsVarg.EmptyMemberDefinition $1 }
-          | UIdent 'has' '{' ListClassField '}' { AbsVarg.MemberDefinition $1 $4 }
+MemberDef : UIdent DerivationDef { AbsVarg.EmptyMemberDefinition $1 $2 }
+          | UIdent DerivationDef 'has' '{' ListClassField '}' { AbsVarg.MemberDefinition $1 $2 $5 }
+DerivationDef :: { DerivationDef }
+DerivationDef : 'derives' UIdent { AbsVarg.Derives $2 }
+              | {- empty -} { AbsVarg.NotDerives }
 ListMemberDef :: { [MemberDef] }
 ListMemberDef : {- empty -} { [] }
               | MemberDef { (:[]) $1 }
@@ -240,6 +245,7 @@ Expr :: { Expr }
 Expr : 'let' '{' ListLetDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'let' LetDef 'in' Expr { AbsVarg.EDefinition $2 $4 }
      | 'match' Expr 'with' '{' ListMatchClause '}' { AbsVarg.EMatch $2 $5 }
+     | 'matching' '{' ListMatchClause '}' { AbsVarg.ELambdaMatch $3 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
      | 'unify' Expr 'with' Expr 'in' Expr { AbsVarg.EUnify $2 $4 $6 }
      | Expr1 ':' Expr { AbsVarg.ECons $1 $3 }

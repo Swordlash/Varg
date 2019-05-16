@@ -143,6 +143,15 @@ parseExpression lookupFun expr =
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
       return $ EApply (EMember p1 name) p2
+    Abs.ELambdaMatch matchclauses -> do
+      pclauses <-
+        mapM
+          (\(Abs.IMatchClause e1 e2) -> do
+             pe1 <- parseExpression lookupFun e1
+             pe2 <- parseExpression lookupFun e2
+             return (pe1, pe2))
+          matchclauses
+      return $ ELambda "matchvar" AnyType AnyType (EMatch (EVar "matchvar") pclauses) -- FIXME: what about types?
     Abs.EMatch mexpr matchclauses -> do
       pm <- parseExpression lookupFun mexpr
       pclauses <-

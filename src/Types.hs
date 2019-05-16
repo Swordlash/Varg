@@ -167,7 +167,7 @@ instance Show Expr where
   show (EDouble val) = show val
   show (EFunctor val) = "@" ++ show val
   show (EOperator av) = "(" ++ show av ++ ")"
-  show (EComp e1 e2) = show e1 ++ " ~ " ++ show e2
+  show (EComp e1 e2) = show e1 ++ " . " ++ show e2
   show EWild = "_"
   show ENative = "native"
   show EAbstract = "abstract"
@@ -265,10 +265,10 @@ functionToTypedef (Function _ _ int outt _) = ConcreteType "Function" [Exact int
 showFunctionHeader :: Function -> String
 showFunctionHeader (Function modifs name int outt b) =
   name ++
-  " " ++
+  " :: " ++
   case show int of
-    "Void" -> unwords (map show modifs) ++ show outt
-    _      -> unwords (map show modifs) ++ show int ++ " -> " ++ show outt
+    "Void" -> unwords (map show modifs) ++ " " ++ show outt
+    _ -> unwords (map show modifs) ++ " " ++ show int ++ " -> " ++ show outt
 
 instance Show Function where
   show fn@Function {functionBody = b} = showFunctionHeader fn ++ " = " ++ show b
@@ -292,6 +292,7 @@ functorialDerivation typename = Concrete "Function" [voidDerivation, Concrete ty
 
 data Variant = Variant
   { variantName   :: TypeName
+  , supervariant  :: TypeName
   , variantFields :: [(String, Function)]
     -- TODO: Think about storing only typedef and modifier, they're all Void -> Type
   }
@@ -303,10 +304,16 @@ instance Ord Variant where
   v1 <= v2 = variantName v1 <= variantName v2
 
 instance Show Variant where
-  show (Variant vname fields) = "\n    " ++ vname ++ ":\n        " ++ intercalate "\n        " (map show fields)
+  show (Variant vname supervar fields) =
+    "\n    " ++
+    vname ++
+    (if supervar == ""
+       then ""
+       else " derives " ++ supervar) ++
+    ":\n        " ++ intercalate "\n        " (map (show . snd) fields)
 
-emptyVariant :: TypeName -> Variant
-emptyVariant name = Variant name []
+emptyVariant :: TypeName -> TypeName -> Variant
+emptyVariant name supervar = Variant name supervar []
 
 data Type = Type
   { qualifiedTypeName    :: TypeName
@@ -335,7 +342,7 @@ instance Show Type where
     deriv ++
     impl ++
     intercalate "\n" (map show (S.toList $ typeVariants t)) ++
-    "\n\n    " ++ intercalate "\n    " (map show (M.toList $ typeMembers t)) ++ "\n"
+    "\n\n    " ++ intercalate "\n    " (map (show . snd) (M.toList $ typeMembers t)) ++ "\n"
     where
       deriv = " deriving " ++ show (supertype t)
       impl = " implementing " ++ intercalate ", " (show <$> implementing t)

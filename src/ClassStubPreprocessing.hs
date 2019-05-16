@@ -75,14 +75,14 @@ readClassHeaders (cl:t) = do
         Abs.ClassDefinition modifs (Abs.UIdent sname) isderiving isimplementing contents ->
           local
             (setPreparsedTypeName sname)
-            (do liftIO $ putStrLn $ "\nReading header of class " ++ sname
+            (do liftIO $ logStderr $ "\nReading header of class " ++ sname
                 superclasses <- readDeriving isderiving
                 superifaces <- readImplementing isimplementing
                 return (sname, 0, superclasses, superifaces))
         Abs.TemplateDefinition modifs (Abs.UIdent sname) typeParams isderiving isimplementing contents ->
           local
             (setPreparsedTypeName sname)
-            (do liftIO $ putStrLn $ "\nReading header of template " ++ sname
+            (do liftIO $ logStderr $ "\nReading header of template " ++ sname
                 mapM_ preparseStubTypeParam typeParams
                 superclasses <- readDeriving isderiving
                 superifaces <- readImplementing isimplementing

@@ -23,12 +23,17 @@ runLexer :: String -> StateT (S.Set String) VargMonad Abs.ProgramDef
 runLexer s =
   let ts = lexer s
    in case pProgramDef ts of
-        Bad s -> throwException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s
+        Bad s -> throwException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s ++ "\n"
         Ok tree -> do
-          liftIO $ putStr $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
+          liftIO $ logStderr $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
           pure tree
   where
     lexer = resolveLayout True . tokens
+
+f =
+  \case
+    '.' -> '/'
+    x -> x
 
 loadImports :: [Abs.ImportDef] -> StateT (S.Set String) VargMonad [Abs.ClassDef]
 loadImports [] = pure []
@@ -38,16 +43,8 @@ loadImports (Abs.Import modulename:t) = do
   if isloaded
     then loadImports t
     else do
-      liftIO $ putStrLn $ "-------------------- Reading module " ++ modulename ++ "--------------------"
-      _module <-
-        liftIO $
-        readFile
-          (map
-             (\case
-                '.' -> '/'
-                x -> x)
-             modulename ++
-           ".vg")
+      liftIO $ logStderr $ "-------------------- Reading module " ++ modulename ++ "--------------------\n"
+      _module <- liftIO $ readFile (map f modulename ++ ".vg")
       Abs.Program imports cldefs <- runLexer _module
       put $ S.insert modulename stat
       rest <- loadImports (t ++ imports)

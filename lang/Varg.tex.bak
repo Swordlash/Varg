@@ -52,17 +52,18 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 The reserved words used in Varg are the following: \\
 
 \begin{tabular}{lll}
-{\reserved{abstract}} &{\reserved{class}} &{\reserved{deriving}} \\
-{\reserved{else}} &{\reserved{false}} &{\reserved{final}} \\
-{\reserved{function}} &{\reserved{has}} &{\reserved{if}} \\
-{\reserved{implement}} &{\reserved{implementing}} &{\reserved{import}} \\
-{\reserved{in}} &{\reserved{interface}} &{\reserved{internal}} \\
-{\reserved{let}} &{\reserved{match}} &{\reserved{mod}} \\
-{\reserved{module}} &{\reserved{native}} &{\reserved{not}} \\
-{\reserved{sealed}} &{\reserved{static}} &{\reserved{struct}} \\
-{\reserved{super}} &{\reserved{template}} &{\reserved{then}} \\
-{\reserved{this}} &{\reserved{true}} &{\reserved{unify}} \\
-{\reserved{unique}} &{\reserved{where}} &{\reserved{with}} \\
+{\reserved{abstract}} &{\reserved{class}} &{\reserved{derives}} \\
+{\reserved{deriving}} &{\reserved{else}} &{\reserved{false}} \\
+{\reserved{final}} &{\reserved{function}} &{\reserved{has}} \\
+{\reserved{if}} &{\reserved{implement}} &{\reserved{implementing}} \\
+{\reserved{import}} &{\reserved{in}} &{\reserved{interface}} \\
+{\reserved{internal}} &{\reserved{let}} &{\reserved{match}} \\
+{\reserved{matching}} &{\reserved{mod}} &{\reserved{module}} \\
+{\reserved{native}} &{\reserved{not}} &{\reserved{sealed}} \\
+{\reserved{static}} &{\reserved{struct}} &{\reserved{super}} \\
+{\reserved{template}} &{\reserved{then}} &{\reserved{this}} \\
+{\reserved{true}} &{\reserved{unify}} &{\reserved{unique}} \\
+{\reserved{where}} &{\reserved{with}} & \\
 \end{tabular}\\
 
 The symbols used in Varg are the following: \\
@@ -71,13 +72,14 @@ The symbols used in Varg are the following: \\
 {\symb{?}} &{\symb{[}} &{\symb{]}} \\
 {\symb{(}} &{\symb{)}} &{\symb{,}} \\
 {\symb{:}} &{\symb{\{}} &{\symb{\}}} \\
-{\symb{;}} &{\symb{{$=$}}} &{\symb{{$+$}}} \\
-{\symb{{$-$}}} &{\symb{*}} &{\symb{/}} \\
-{\symb{{\textasciicircum}}} &{\symb{{$<$}}} &{\symb{{$>$}}} \\
-{\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
-{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} &{\symb{[]}} \\
-{\symb{..}} &{\symb{/{$=$}}} &{\symb{{$|$}{$|$}}} \\
-{\symb{\&\&}} &{\symb{\~{}}} &{\symb{\_}} \\
+{\symb{}} &{\symb{;}} &{\symb{{$=$}}} \\
+{\symb{{$+$}}} &{\symb{{$-$}}} &{\symb{*}} \\
+{\symb{/}} &{\symb{{\textasciicircum}}} &{\symb{{$<$}}} \\
+{\symb{{$>$}}} &{\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} \\
+{\symb{{$=$}{$=$}}} &{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} \\
+{\symb{[]}} &{\symb{..}} &{\symb{/{$=$}}} \\
+{\symb{{$|$}{$|$}}} &{\symb{\&\&}} &{\symb{ . }} \\
+{\symb{\_}} & & \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -210,8 +212,13 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{MemberDef}} & {\arrow}  &{\nonterminal{UIdent}}  \\
- & {\delimit}  &{\nonterminal{UIdent}} {\terminal{has}} {\terminal{\{}} {\nonterminal{ListClassField}} {\terminal{\}}}  \\
+{\nonterminal{MemberDef}} & {\arrow}  &{\nonterminal{UIdent}} {\nonterminal{DerivationDef}}  \\
+ & {\delimit}  &{\nonterminal{UIdent}} {\nonterminal{DerivationDef}} {\terminal{has}} {\terminal{\{}} {\nonterminal{ListClassField}} {\terminal{\}}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{DerivationDef}} & {\arrow}  &{\terminal{derives}} {\nonterminal{UIdent}}  \\
+ & {\delimit}  &{\terminal{}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -309,6 +316,7 @@ All other symbols are terminals.\\
 {\nonterminal{Expr}} & {\arrow}  &{\terminal{let}} {\terminal{\{}} {\nonterminal{ListLetDef}} {\terminal{\}}} {\terminal{in}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\terminal{let}} {\nonterminal{LetDef}} {\terminal{in}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\terminal{match}} {\nonterminal{Expr}} {\terminal{with}} {\terminal{\{}} {\nonterminal{ListMatchClause}} {\terminal{\}}}  \\
+ & {\delimit}  &{\terminal{matching}} {\terminal{\{}} {\nonterminal{ListMatchClause}} {\terminal{\}}}  \\
  & {\delimit}  &{\terminal{if}} {\nonterminal{Expr}} {\terminal{then}} {\nonterminal{Expr}} {\terminal{else}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\terminal{unify}} {\nonterminal{Expr}} {\terminal{with}} {\nonterminal{Expr}} {\terminal{in}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{:}} {\nonterminal{Expr}}  \\
@@ -399,7 +407,7 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Expr4}} & {\arrow}  &{\nonterminal{Expr5}} {\terminal{{\textasciicircum}}} {\nonterminal{Expr4}}  \\
- & {\delimit}  &{\nonterminal{Expr5}} {\terminal{\~{}}} {\nonterminal{Expr4}}  \\
+ & {\delimit}  &{\nonterminal{Expr5}} {\terminal{ . }} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr5}}  \\
 \end{tabular}\\
 

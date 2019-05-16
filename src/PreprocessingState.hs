@@ -126,7 +126,7 @@ combineLookups lookups name =
 
 --lookupVariantFromType :: TypeName -> Type -> VargExceptionMonad Variant
 lookupVariantFromType name Type {qualifiedTypeName = n, typeVariants = v} =
-  let cand = emptyVariant name
+  let cand = emptyVariant name ""
    in if S.member cand v
         then pure $ fromJust $ S.lookupGE cand v
         else throwException $ "Cannot find variant " ++ name ++ " of type " ++ n ++ "\n"

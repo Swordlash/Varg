@@ -2,4 +2,4 @@ import "Std.Overture"
 
 class Main where
     unique function main args = let f x = 2*x in [1,2,3].map (f . f)
-                 
+

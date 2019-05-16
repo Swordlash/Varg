@@ -1,7 +1,7 @@
 comment "#" ;
 comment "#{" "}#" ;
 
-layout "let", "where", "has", "with";
+layout "let", "where", "has", "with", "matching";
 layout stop "in";
 
 token UIdent (upper (letter | digit)*);
@@ -73,9 +73,12 @@ rules      ClassModifier ::= "module" | "interface" | "sealed" | "native" ; -- m
 
 ClassContent. ClassContents ::= [MemberDef] [FunDef] ;
 
-EmptyMemberDefinition. MemberDef ::= UIdent; -- variant type definition, like Either . Left / Right
-MemberDefinition.      MemberDef ::= UIdent "has" "{" [ClassField] "}" ; -- variant type with own fields 
-separator              MemberDef ";" ;
+EmptyMemberDefinition. MemberDef ::= UIdent DerivationDef; -- variant type definition, like Either . Left / Right
+MemberDefinition.      MemberDef ::= UIdent DerivationDef "has" "{" [ClassField] "}" ; -- variant type with own fields 
+
+Derives.                DerivationDef ::= "derives" UIdent ;
+NotDerives.             DerivationDef ::= ;
+separator               MemberDef ";" ;
 
 MemberFunctionDefinition.    FunDef ::= [FunctionModifier] "function" FunctionName FunTemplateParams [ArgDef] RetType "=" Expr ;
 ReturnType.                  RetType ::= ":" FreeTypeDef ;
@@ -126,6 +129,7 @@ IDefinition.         LetDef ::= LIdent [ArgDef] ":" FreeTypeDef "=" Expr;
 IInferredDefinition. LetDef ::= LIdent [ArgDef] "=" Expr;
 
 EMatch.             Expr  ::= "match" Expr "with" "{" [MatchClause] "}" ;
+ELambdaMatch.       Expr  ::= "matching" "{" [MatchClause] "}" ;
 
 separator nonempty  MatchClause ";" ;
 IMatchClause.       MatchClause ::= Expr "->" Expr;

@@ -52,25 +52,25 @@ Op literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Varg are the following:
-  | ``abstract`` | ``class`` | ``deriving`` | ``else``
-  | ``false`` | ``final`` | ``function`` | ``has``
-  | ``if`` | ``implement`` | ``implementing`` | ``import``
-  | ``in`` | ``interface`` | ``internal`` | ``let``
-  | ``match`` | ``mod`` | ``module`` | ``native``
-  | ``not`` | ``sealed`` | ``static`` | ``struct``
-  | ``super`` | ``template`` | ``then`` | ``this``
-  | ``true`` | ``unify`` | ``unique`` | ``where``
-  | ``with`` |  |  | 
+  | ``abstract`` | ``class`` | ``derives`` | ``deriving``
+  | ``else`` | ``false`` | ``final`` | ``function``
+  | ``has`` | ``if`` | ``implement`` | ``implementing``
+  | ``import`` | ``in`` | ``interface`` | ``internal``
+  | ``let`` | ``match`` | ``matching`` | ``mod``
+  | ``module`` | ``native`` | ``not`` | ``sealed``
+  | ``static`` | ``struct`` | ``super`` | ``template``
+  | ``then`` | ``this`` | ``true`` | ``unify``
+  | ``unique`` | ``where`` | ``with`` | 
 
 The symbols used in Varg are the following:
   | ? | [ | ] | (
   | ) | , | : | {
-  | } | ; | = | +
-  | - | * | / | ^
-  | < | > | <= | >=
-  | == | -> | \ | []
-  | .. | /= | || | &&
-  | ~ | _ |  | 
+  | } |  | ; | =
+  | + | - | * | /
+  | ^ | < | > | <=
+  | >= | == | -> | \
+  | [] | .. | /= | ||
+  | && |  .  | _ | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #{ and }#.
@@ -132,8 +132,10 @@ All other symbols are terminals.
   |  |  **|**  | ``sealed`` 
   |  |  **|**  | ``native`` 
   | //ClassContents// | -> | //[MemberDef]// //[FunDef]// 
-  | //MemberDef// | -> | //UIdent// 
-  |  |  **|**  | //UIdent// ``has`` ``{`` //[ClassField]// ``}`` 
+  | //MemberDef// | -> | //UIdent// //DerivationDef// 
+  |  |  **|**  | //UIdent// //DerivationDef// ``has`` ``{`` //[ClassField]// ``}`` 
+  | //DerivationDef// | -> | ``derives`` //UIdent// 
+  |  |  **|**  | ```` 
   | //[MemberDef]// | -> | **eps**
   |  |  **|**  | //MemberDef// 
   |  |  **|**  | //MemberDef// ``;`` //[MemberDef]// 
@@ -183,6 +185,7 @@ All other symbols are terminals.
   | //Expr// | -> | ``let`` ``{`` //[LetDef]// ``}`` ``in`` //Expr// 
   |  |  **|**  | ``let`` //LetDef// ``in`` //Expr// 
   |  |  **|**  | ``match`` //Expr// ``with`` ``{`` //[MatchClause]// ``}`` 
+  |  |  **|**  | ``matching`` ``{`` //[MatchClause]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
   |  |  **|**  | ``unify`` //Expr// ``with`` //Expr// ``in`` //Expr// 
   |  |  **|**  | //Expr1// ``:`` //Expr// 
@@ -237,7 +240,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr3// ``/`` //Expr4// 
   |  |  **|**  | //Expr4// 
   | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
-  |  |  **|**  | //Expr5// ``~`` //Expr4// 
+  |  |  **|**  | //Expr5// `` . `` //Expr4// 
   |  |  **|**  | //Expr5// 
   | //Boolean// | -> | ``true`` 
   |  |  **|**  | ``false`` 
