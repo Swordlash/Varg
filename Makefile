@@ -1,3 +1,13 @@
-all : cabal new - configure
+configure: 
+  cabal new-configure
 
-clean : cabal new - clean
+build: 
+  cabal new-build
+
+install: 
+  cabal new-install exe:Varg
+
+all : configure build install
+
+clean : 
+  cabal new-clean
