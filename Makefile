@@ -1,13 +1,13 @@
-configure: 
-  cabal new-configure
+configure:
+	cabal new-configure --symlink-bindir=.
 
-build: 
-  cabal new-build
+build:
+	cabal new-build
 
-install: 
-  cabal new-install exe:Varg
+install:
+	cabal new-install exe:Varg
 
-all : configure build install
+all: configure build install
 
-clean : 
-  cabal new-clean
+clean:
+	cabal new-clean
