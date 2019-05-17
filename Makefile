@@ -1,5 +1,4 @@
-all: 
-	configure install
+all: configure install
 	cp Varg interpreter
 
 configure:
