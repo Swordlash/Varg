@@ -1,0 +1,9 @@
+import "Std.Overture"
+
+#błąd: aplikacja argumentu do nie-funkcji
+
+class Main where
+    static function main args =
+        let funkcje = List.replicate 10 ((+) 1)
+            zaaplikowane = funkcje.zipWith (Function.call) [1..10]
+            in (zaaplikowane.head) (1)

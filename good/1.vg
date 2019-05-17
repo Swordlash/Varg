@@ -1,0 +1,7 @@
+import "Std.Overture"
+
+# suma pierwszych 19 liczb Fibonacciego
+class Main where
+    static function main (args : List String) : Void =
+        let fib n = if n<=1 then n else fib(n-1) + fib(n-2) in
+            ([0..19].map fib).foldl (+) 0
