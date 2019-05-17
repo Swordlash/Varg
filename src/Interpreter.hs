@@ -43,9 +43,6 @@ emptyRuntime listtype =
   let env = M.insert "args" (emptyArgs listtype) M.empty
    in InterpreterRuntime env voidType False
 
-showTr :: Mapping Instance -> String
-showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show' i) $ M.toList env)
-
 supplyArgs :: Expr -> Expr
 supplyArgs main = EApply main (EVar "args")
 
@@ -176,8 +173,11 @@ interpretExpression expr = do
     ESuper -> fmapMaybe (M.lookup "super" env) pure (throwe "Referencing super from a static context")
     EVar name ->
       case M.lookup name env of
-        Nothing -> throwe (name ++ "? I have never seen this man in my life!")
-        Just (ThunkInstance expr clos) -> local (exchangeEnvironment clos) (interpretExpression expr)
+        Nothing ->
+          throwe (name ++ "? I have never seen this man in my life!\n I know only that "++showTr env)
+        Just (ThunkInstance expr clos) ->
+          rethrow (local (exchangeEnvironment clos) (interpretExpression expr))
+            ("Evaluating thunk "++show expr++"\nBound variables: " ++ showTr env ++ "\n")
         Just val -> return val
     ELambda _ int out _ ->
       modify incrLambdaIdx >> gets nextLambdaName >>= \lname ->
@@ -198,13 +198,7 @@ interpretExpression expr = do
                 throwe
                   ("One does not simply apply argument to a non-function. Functor: " ++
                    show fun ++ " (=" ++ show funval ++ ")" ++ ", argument: " ++ show arg ++ " (=" ++ show argval ++ ")"))
-        ("Call: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ showTr env ++ "\n")
-    {-ELet name expr1@(ELambda _ int out _) _ expr2 -- recursive def
-     -> do
-      let lname = "let"
-      env <- asks environment
-      let fun = FunctionInstance (Function [] lname int out expr1) (M.insert name fun env)
-      local (bindVariable (name, fun)) (interpretExpression expr2)-}
+        ("Call apply: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ showTr env ++ "\n")
     ELet name expr1 _ expr2 -- TODO: try to actually care about types
      -> let nenv = M.insert name (ThunkInstance expr1 nenv) env in -- bind as thunk, eval when needed as var, recursive def
         local (exchangeEnvironment nenv) (interpretExpression expr2)
@@ -284,17 +278,8 @@ interpretExpression expr = do
       p2 <- interpretExpression expr2
       return $ BoolInstance $ p1 /= p2
     ECons expr1 expr2 -> interpretExpression $ EApply (EMember expr2 ":") expr1
-    EComp expr1 expr2 -> do
-      p1 <- interpretExpression expr1
-      p2 <- interpretExpression expr2
-      case (p1, p2) of
-        (FunctionInstance (Function modifs _ _ out e1@(ELambda argname _ _ body)) cl1, FunctionInstance (Function modifs2 _ intt _ e2@(ELambda arg2name int _ body2)) cl2)
-            --TODO: infer and check types, modifiers
-         ->
-          rethrow
-            (interpretExpression $ ELambda arg2name intt out $ EApply e1 $ EApply e2 $ EVar arg2name)
-            ("Call: Composition " ++ show expr ++ "\nBound variables: " ++ showTr env ++ "\n")
-        _ -> throwe "Composition of non-functions!"
+    EComp expr1 expr2 ->
+      interpretExpression $ EApply (EApply (EMember (EClass "Function") "compose") expr1) expr2
     EOperator op -> return $
       (case op of
          Abs.Op_plus -> numop EAdd "Num.+"

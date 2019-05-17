@@ -1,4 +1,4 @@
 import "Std.Overture"
 
 class Main where
-    unique function main args = let lista = [1,2,3,4] in lista.map (\v -> v + 1)
+    static function main (args : List String) : Void = let f = (/) in let f2 = f 1 in f2 1

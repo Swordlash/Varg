@@ -1,0 +1,6 @@
+import "Std.Overture"
+
+# BŁĄD: brak klasy Main
+
+class Main2 where
+    static function main args = 0
