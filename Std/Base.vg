@@ -2,4 +2,5 @@ class Void where
     unique function toString : abstract String
 
 interface template Function a b where
-    unique function call <a, b> (x: a) : abstract b
+    static function call (f: Function a b) (x:a) : b = f x
+    static function compose <a, b, c> (f: Function b c) (g: Function a b) : Function a c = (\x -> f (g x))

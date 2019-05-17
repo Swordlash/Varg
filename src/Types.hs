@@ -16,6 +16,9 @@ type Instance = Inst Function Type Expr
 
 type Mapping a = M.Map String a
 
+showTr :: Mapping Instance -> String
+showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show' i) $ M.toList env)
+
 typeof :: Instance -> String
 typeof (IntInstance _)             = "Int"
 typeof (DoubleInstance _)          = "Double"
@@ -36,7 +39,7 @@ instance Show Instance where
   show (DoubleInstance val) = show val
   show (CharInstance val) = "'" ++ show val ++ "'"
   show (BoolInstance val) = show val
-  show (FunctionInstance expr clos) = show expr -- ++ ", closure: " ++ show clos FIXME: show closure?
+  show (FunctionInstance expr clos) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
   show (ThunkInstance expr _) = show expr
   show t@(TypeInstance base var params flds) =
     case qualifiedTypeName base of

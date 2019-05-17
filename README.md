@@ -4,6 +4,8 @@ Varg jest językiem obiektowo - funkcyjnym, syntaktycznie podobnym do Haskella i
 
 ## Instalacja i uruchamianie
 
+Aby pobrać najnowszą wersję, warto sprawdzić `git pull`.
+
 Polecenie `make` buduje plik wykonywalny `Varg` (i jego kopię `interpreter`) w bieżącym katalogu, za pomocą systemu `Cabal`. 
 
 Plik uruchomiony bez argumentów domyślnie uruchamia plik `Main.vg`. Plik źródłowy powinien zawierać co najmniej definicję klasy `Main` z funkcją `main` o jednym argumencie `args` typu `List String`, zwracającą `Void`, oraz zaimportowany moduł `Std.List`. Minimalny program wygląda więc następująco:
@@ -25,4 +27,3 @@ Na tę chwilę Varg udostępnia standardową arytmetykę liczb całkowitych, zmi
 Obiektowość wspierana jest na razie głównie bez skomplikowanego dziedziczenia (przykład - klasa `String` dziedzicząca po `List Char` w stdlib). Wspierane jest tworzenie typów algebraicznych i polimorficznych, jednak z racji na niezaimplementowane dopasowywanie wzorców, można z nich korzystać jedynie w najprostszych przypadkach (np. klasa `List` z konstruktorem pustym `List.Empty` i `List.Cons`, gdzie można sprawdzać wariant poprzez wyrażenie warunkowe `if this.null then (lista pusta) else (lista niepusta)`). Definicje funkcji wyszukiwane są rekurencyjnie w nadklasach aż do klasy Void, gdzie w ostateczności poszukiwane są natywne metody. Każdy obiekt ma natywną metodę `toString`.
 
 System typów jeszcze nie istnieje, program wykonuje się dopóki nie napotka na błąd (np. dodawanie liczby do funkcji, błąd arytmetyki). Rzuca wówczas wyjątek z danymi śledzenia stosu.
-
