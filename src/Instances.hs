@@ -14,22 +14,30 @@ instance Show TypeParam where
   show (Primitive str) = str
   show (Template str params) = str ++ " (" ++ intercalate ")(" (map show params)
 
-type Clos f t e = M.Map String (Inst f t e)
+type Loc = Int
+
+type Closure = M.Map String Loc
 
 data Inst f t e
   = IntInstance Integer
+                Loc
   | DoubleInstance Double
+                   Loc
   | CharInstance Char
+                 Loc
   | BoolInstance Bool
+                 Loc
   | FunctionInstance f
-                     (Clos f t e)
+                     Closure
+                     Loc
   | ThunkInstance e
-                  (Clos f t e)
-  | UnificatorInstance (Clos f t e)
+                  Closure
+                  Loc
   | TypeInstance { baseType        :: t
                  , typeVariantName :: String
                  , instanceParams  :: [TypeParam]
-                 , fields          :: [(String, Inst f t e)] }
+                 , fields          :: [(String, Inst f t e)]
+                 , memoryLocation  :: Loc }
   deriving (Eq, Ord)
 
 instanceMember :: String -> Inst f t e -> Maybe (Inst f t e)

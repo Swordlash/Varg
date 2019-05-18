@@ -19,16 +19,16 @@ type Instance = Inst Function Type Expr
 type Mapping a = M.Map String a
 
 --------------------------------- Instance definitions --------------------------------------
-showTr :: Mapping Instance -> String
-showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show' i) $ M.toList env)
+showTr :: M.Map String Loc -> String
+showTr env = intercalate ", " (map (\(s, i) -> s ++ " -> " ++ show i) $ M.toList env)
 
 typeof :: Instance -> String
-typeof (IntInstance _)             = "Int"
-typeof (DoubleInstance _)          = "Double"
-typeof (BoolInstance _)            = "Bool"
-typeof (CharInstance _)            = "Char"
-typeof (FunctionInstance f clos)   = show f
-typeof (ThunkInstance _ _)         = "Thunk"
+typeof IntInstance {}              = "Int"
+typeof DoubleInstance {}           = "Double"
+typeof BoolInstance {}             = "Bool"
+typeof CharInstance {}             = "Char"
+typeof (FunctionInstance f _ _)    = show f
+typeof ThunkInstance {}            = "Thunk"
 typeof TypeInstance {baseType = t} = qualifiedTypeName t
 
 ntake _ []    = []
@@ -38,20 +38,21 @@ ntake n (h:t) = h : ntake (n - 1) t
 show' inst = ntake 100 $ show inst
 
 instance Show Instance where
-  show (IntInstance val) = show val
-  show (DoubleInstance val) = show val
-  show (CharInstance val) = "'" ++ show val ++ "'"
-  show (BoolInstance val) = show val
-  show (FunctionInstance expr clos) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
-  show (ThunkInstance expr clos) = "thunk " ++ show expr ++ " of closure " ++ showTr clos
-  show t@(TypeInstance base var params flds) =
+  show (IntInstance val _) = show val
+  show (DoubleInstance val _) = show val
+  show (CharInstance val _) = "'" ++ show val ++ "'"
+  show (BoolInstance val _) = show val
+  show (FunctionInstance expr clos _) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
+  show (ThunkInstance expr clos mem) =
+    "thunk " ++ show expr ++ " of closure " ++ showTr clos ++ " address: " ++ show mem
+  show t@(TypeInstance base var params flds _) =
     case qualifiedTypeName base of
       "List" -> show (instanceListToList t)
       "String" ->
         if var == "Empty"
           then ""
           else (case lookup "head" flds of
-                  Just (CharInstance ch) -> ch) :
+                  Just (CharInstance ch _) -> ch) :
                show (fromJust $ lookup "tail" flds)
       name -> name ++ "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
 

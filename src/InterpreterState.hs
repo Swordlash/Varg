@@ -1,25 +1,24 @@
 module InterpreterState where
 
-import qualified Data.Map           as M
-import           Instances
-import           PreprocessingState
-import           Types
-
-type Closure = Clos Function Type Expr
+import qualified Data.Map as M
+import Instances
+import PreprocessingState
+import Types
 
 type Environment = Closure
 
 data InterpreterState = InterpreterState
-  { hierarchy   :: ClassHierarchy
+  { hierarchy :: ClassHierarchy
   , lambdaIndex :: Int
-  , pushName    :: String
-  --, thunkCache  :: M.Map Instance Instance
+  , pushName :: String
+  , memory :: M.Map Loc Instance
+  , freeChunks :: [Int]
   }
 
 data InterpreterRuntime = InterpreterRuntime
   { environment :: Environment
-  , realType    :: Type
-  , isUnifying  :: Bool
+  , realType :: Type
+  , isUnifying :: Bool
   }
 
 type InterpreterMonad a = VargStatefulMonad InterpreterRuntime InterpreterState a
@@ -27,8 +26,58 @@ type InterpreterMonad a = VargStatefulMonad InterpreterRuntime InterpreterState 
 exchangeEnvironment :: Updater Environment InterpreterRuntime
 exchangeEnvironment nenv runt = runt {environment = nenv}
 
-bindVariable :: Updater (String, Instance) InterpreterRuntime
-bindVariable (name, inst) runt = runt {environment = M.insert name inst $ environment runt}
+address :: Instance -> Int
+address (IntInstance _ loc) = loc
+address (DoubleInstance _ loc) = loc
+address (CharInstance _ loc) = loc
+address (BoolInstance _ loc) = loc
+address (FunctionInstance _ _ loc) = loc
+address (ThunkInstance _ _ loc) = loc
+address t@TypeInstance {} = memoryLocation t
+
+nextFreeLoc :: InterpreterMonad Int
+nextFreeLoc = do
+  elem:chunks <- gets freeChunks
+  modify $ updateChunks chunks
+  return elem
+
+lookupInst :: String -> InterpreterMonad (Maybe Instance)
+lookupInst name =
+  asks (M.lookup name . environment) >>= \case
+    Nothing -> return Nothing
+    Just loc -> gets (M.lookup loc . memory)
+
+register constr = do
+  addr <- nextFreeLoc
+  let obj = constr addr
+  modify $ putValue (addr, obj)
+  return obj
+
+putValue :: Updater (Loc, Instance) InterpreterState
+putValue (loc, val) st = st {memory = M.insert loc val $ memory st}
+
+free :: Updater Loc InterpreterState
+free loc st = st {memory = M.delete loc $ memory st, freeChunks = loc : freeChunks st}
+
+malloc :: Instance -> InterpreterMonad Int
+malloc val = do
+  newloc <- nextFreeLoc
+  modify $ putValue (newloc, val)
+  return newloc
+
+deref :: Int -> InterpreterMonad Instance
+deref loc =
+  gets (M.lookup loc . memory) >>= \case
+    Just val -> pure val
+    Nothing -> do
+      mem <- gets (M.toList . memory)
+      throwException' $ "Dereferencing nonexistent location " ++ show loc ++ "\nMemory: " ++ show mem
+
+updateChunks :: Updater [Int] InterpreterState
+updateChunks chunks stat = stat {freeChunks = chunks}
+
+bindVariable :: Updater (String, Loc) InterpreterRuntime
+bindVariable (name, loc) runt = runt {environment = M.insert name loc $ environment runt}
 
 pushLambdaName :: Updater String InterpreterState
 pushLambdaName name st = st {pushName = name}
