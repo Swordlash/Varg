@@ -139,6 +139,10 @@ parseExpression lookupFun expr =
       phd <- parseExpression lookupFun hd
       ptl <- parseExpression lookupFun tl
       return $ ECons phd ptl
+    Abs.ESCons hd tl -> do
+      phd <- parseExpression lookupFun hd
+      ptl <- parseExpression lookupFun tl
+      return $ ESCons phd ptl
     Abs.EOp expr1 (Abs.Op name) expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2

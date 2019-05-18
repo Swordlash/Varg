@@ -1,4 +1,7 @@
-module Types (module TypeDefs, module Types) where
+module Types
+  ( module TypeDefs
+  , module Types
+  ) where
 
 import qualified AbsVarg    as AV
 import           Data.List  (intercalate)
@@ -10,11 +13,12 @@ import           PrintVarg
 import           TypeDefs
 
 type MemberName = String
+
 type Instance = Inst Function Type Expr
+
 type Mapping a = M.Map String a
 
 --------------------------------- Instance definitions --------------------------------------
-
 showTr :: Mapping Instance -> String
 showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show' i) $ M.toList env)
 
@@ -24,7 +28,7 @@ typeof (DoubleInstance _)          = "Double"
 typeof (BoolInstance _)            = "Bool"
 typeof (CharInstance _)            = "Char"
 typeof (FunctionInstance f clos)   = show f
-typeof (ThunkInstance _ _) = "Thunk"
+typeof (ThunkInstance _ _)         = "Thunk"
 typeof TypeInstance {baseType = t} = qualifiedTypeName t
 
 ntake _ []    = []
@@ -39,7 +43,7 @@ instance Show Instance where
   show (CharInstance val) = "'" ++ show val ++ "'"
   show (BoolInstance val) = show val
   show (FunctionInstance expr clos) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
-  show (ThunkInstance expr clos) = "thunk "++show expr ++" of closure "++showTr clos
+  show (ThunkInstance expr clos) = "thunk " ++ show expr ++ " of closure " ++ showTr clos
   show t@(TypeInstance base var params flds) =
     case qualifiedTypeName base of
       "List" -> show (instanceListToList t)
@@ -52,7 +56,6 @@ instance Show Instance where
       name -> name ++ "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
 
 ---------------------------------- Expression definitions --------------------------------------
-
 data Expr
   = Unparsed AV.Expr
   | EConstructor TypeName
@@ -81,9 +84,10 @@ data Expr
                 Expr
   | EMatch Expr
            [(Expr, Expr)]
-
   | ECons Expr
           Expr
+  | ESCons Expr
+           Expr
   | EMod Expr
          Expr
   | EAdd Expr
@@ -151,6 +155,7 @@ instance Show Expr where
     where
       conds = concatMap (\(e, v) -> show e ++ " -> " ++ show v ++ "\n") table
   show (ECons e1 e2) = show e1 ++ " : " ++ show e2
+  show (ESCons e1 e2) = show e1 ++ " :' " ++ show e2
   show (EMod e1 e2) = show e1 ++ " mod " ++ show e2
   show (EAdd e1 e2) = show e1 ++ " + " ++ show e2
   show (ESub e1 e2) = show e1 ++ " - " ++ show e2
@@ -184,8 +189,6 @@ instance Show Expr where
   show EEmpty = "EMPTY"
 
 ------------------------------------- Function, Variant & Type --------------------------------
-
-
 data Function = Function
   { functionModifiers  :: [MemberModifier]
   , functionName       :: String
@@ -210,7 +213,6 @@ showFunctionHeader (Function modifs name int outt b) =
 
 instance Show Function where
   show fn@Function {functionBody = b} = showFunctionHeader fn ++ " = " ++ show b
-
 
 data Variant = Variant
   { variantName   :: TypeName

@@ -190,6 +190,7 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
   |  |  **|**  | ``unify`` //Expr// ``with`` //Expr// ``in`` //Expr// 
   |  |  **|**  | //Expr1// ``:`` //Expr// 
+  |  |  **|**  | //Expr1// ``||`` //Expr1// 
   |  |  **|**  | //Expr1// 
   | //[LetDef]// | -> | //LetDef// 
   |  |  **|**  | //LetDef// ``;`` //[LetDef]// 
@@ -225,7 +226,6 @@ All other symbols are terminals.
   |  |  **|**  | //Expr1// ``/=`` //Expr2// 
   |  |  **|**  | //Expr2// ``mod`` //Expr2// 
   |  |  **|**  | ``not`` //Expr2// 
-  |  |  **|**  | //Expr2// ``||`` //Expr2// 
   |  |  **|**  | //Expr2// ``&&`` //Expr2// 
   |  |  **|**  | //Expr2// ``<`` //Expr2// 
   |  |  **|**  | //Expr2// ``>`` //Expr2// 

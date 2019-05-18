@@ -99,6 +99,7 @@ Op_leq.   Operator ::= "<=";
 Op_geq.   Operator ::= ">=";
 Op_eq.    Operator ::= "==";
 Op_cons.  Operator ::= ":" ;
+Op_scons. Operator ::= ":'";
 Op_appl.  Operator ::= "$" ;
 
 AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" FunctionName FunTemplateParams [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
@@ -148,6 +149,7 @@ separator nonempty  ListElem ",";
 
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr  ::= Expr1 ":"   Expr;
+ESCons.             Expr  ::= Expr1 ":'" Expr;
 EOp.                Expr1  ::= Expr1 Op Expr2;
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
 ENeq.               Expr1  ::= Expr1  "/=" Expr2 ;

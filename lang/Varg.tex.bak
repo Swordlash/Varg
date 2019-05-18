@@ -321,6 +321,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{if}} {\nonterminal{Expr}} {\terminal{then}} {\nonterminal{Expr}} {\terminal{else}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\terminal{unify}} {\nonterminal{Expr}} {\terminal{with}} {\nonterminal{Expr}} {\terminal{in}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{:}} {\nonterminal{Expr}}  \\
+ & {\delimit}  &{\nonterminal{Expr1}} {\terminal{{$|$}{$|$}}} {\nonterminal{Expr1}}  \\
  & {\delimit}  &{\nonterminal{Expr1}}  \\
 \end{tabular}\\
 
@@ -380,7 +381,6 @@ All other symbols are terminals.\\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{/{$=$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{mod}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\terminal{not}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$|$}{$|$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{\&\&}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$<$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$>$}}} {\nonterminal{Expr2}}  \\

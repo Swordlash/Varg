@@ -2,4 +2,4 @@ import "Std.Overture"
 
 class Main where
     static function main args =
-        let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 10
+        let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 30
