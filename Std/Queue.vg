@@ -1,0 +1,21 @@
+import "Std.Collections"
+import "Std.Functor"
+
+template Queue a where
+	Q has
+		front : List a
+		rear : List a
+
+	implement function null : Bool = (this.front.null) && (this.rear.null)
+	static function empty : Queue a = Queue.Q [] []
+	
+	function peek : a = this.front.head
+	function pop : a = if this.front.length == 1 then Queue.Q (this.rear.reverse) [] else Queue.Q $ this.front.tail $ this.rear
+	
+	function push (elem:a) : Queue a = if this.front.null then Queue.Q [elem] (this.rear)
+		else Queue.Q (this.front) (elem : this.rear)
+	
+	static function fromList (l : List a) : Queue a = Queue.Q l []
+
+	function toList : List a = if this.null then [] else this.peek : (this.pop.toList)
+	function toString : String = this.toList.toString

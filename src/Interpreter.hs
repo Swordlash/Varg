@@ -136,9 +136,10 @@ getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not impl
 findNativeMethod :: Instance -> String -> InterpreterMonad Instance
 findNativeMethod obj name = do
   realtyp <- asks realType
+  memory <- gets memory
   case name of
     "toString" -> nativeStringToInstance (show obj {baseType = realtyp})
-    _ -> throwException' $ "Nonexistent native method " ++ name
+    _ -> throwException' $ "Nonexistent native method " ++ name ++ "\nMemory storage: " ++ show (M.toList memory)
 
 deepForce :: Instance -> InterpreterMonad Instance
 deepForce =
@@ -209,9 +210,7 @@ getMember obj name = do
                       (lookup name f)
                       pure
                       (do supert <- getTypeFromDerivation $ supertype t
-                          rethrow
-                            (getMember (obj {baseType = supert}) name)
-                            ("Call to nonexistent field " ++ name ++ " of class " ++ show obj))
+                          getMember (obj {baseType = supert}) name)
        IntInstance {} -> do
          intcl <- lookupTypeFromClassHierarchy "Integer" hier
          getMember (TypeInstance intcl "" [] [] (-1)) name
@@ -230,7 +229,7 @@ getMember obj name = do
        th@ThunkInstance {} -> do
          forced <- force th
          getMember forced name)
-    ("Call to member `" ++ name ++ "` on primitive type " ++ show obj)
+    ("Call to member `" ++ name ++ "` on object " ++ show obj)
 
 fmapMaybe m f err =
   case m of
@@ -291,7 +290,7 @@ interpretExpression expr = do
       modify incrLambdaIdx >> gets nextLambdaName >>= \lname ->
         register $ FunctionInstance (Function [] lname int out expr) env
     EIfThenElse ife thene elsee ->
-      rethrow (interpretExpression ife) ("Computing if condition " ++ show (show expr)) >>= \case
+      rethrow (interpretExpression ife >>= force) ("Computing if condition " ++ show (show expr)) >>= \case
         BoolInstance True _ -> rethrow (interpretExpression thene) ("Computing then expression " ++ show (show thene))
         BoolInstance False _ -> rethrow (interpretExpression elsee) ("Computing else expression " ++ show (show elsee))
         res -> throwe ("Usage of invalid type (" ++ typeof res ++ ") in if clause")
@@ -329,10 +328,9 @@ interpretExpression expr = do
                Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
     EMember expr name ->
       rethrow
-        (interpretExpression expr >>= force >>= \obj -> do
-           let t = baseType obj
-           addr <- malloc obj
-           local (saveRealType (baseType obj) . bindVariable ("this", addr)) (getMember obj name))
+        (do obj <- force =<< interpretExpression expr
+            let t = baseType obj
+            local (saveRealType (baseType obj) . bindVariable ("this", address obj)) (getMember obj name))
         ("Computing member " ++ show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ showTr env ++ "\n")
     EConstructor tname var flds -- FIXME: It creates instances with no type params
      -> do
@@ -390,7 +388,7 @@ interpretExpression expr = do
       list <- lookupTypeFromClassHierarchy "List" hier
       register $ TypeInstance list "Cons" [] [("head", p1), ("tail", p2)] -- FIXME: hardcoded List.Cons, but can we do better?
     ESCons expr1 expr2 -> delay $ EApply (EMember expr2 ":") expr1 --strict cons
-    EComp expr1 expr2 -> delay $ EApply (EApply (EMember (EClass "Function") "compose") expr1) expr2
+    EComp expr1 expr2 -> delay $ EApply (EApply (EMember (EClass "Function") "composeI") expr1) expr2
     ERange expr1 expr2 ->
       delay $
       if expr2 == EWild

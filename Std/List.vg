@@ -15,7 +15,7 @@ template List a implementing Collection a where
     function (:) (x:a) : List a = List.Cons x this
 
     function null : Bool = this == List.Empty
-    function empty : List a = []
+    static function empty : List a = List.Empty
 
     function map <b> (f: Function a b) : List b = this.foldr ((:) . f) (List.Empty)
 
@@ -28,7 +28,7 @@ template List a implementing Collection a where
     function foldr <b> (f: Function a (Function b b)) (acc : b) : b = if this.null then acc
         else f $ this.head $ this.tail.foldr f acc
 
-    function reverse : List a = this.foldl (:) []
+    function reverse : List a = this.foldl ((:).flip) []
 
     function zipWith <b,c> (f: Function a (Function b c)) (other : List b) : List c = if this.null || other.null then this.empty
         else f (this.head) (other.head) : this.tail.zipWith f (other.tail)

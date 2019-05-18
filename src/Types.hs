@@ -54,7 +54,7 @@ instance Show Instance where
           else (case lookup "head" flds of
                   Just (CharInstance ch _) -> ch) :
                show (fromJust $ lookup "tail" flds)
-      name -> name ++ "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
+      name -> name ++ "." ++ var ++ unwords (map show flds) {-" (" ++ intercalate ")(" (map show params) ++ ") " ++-}
 
 ---------------------------------- Expression definitions --------------------------------------
 data Expr

@@ -1,5 +1,6 @@
 import "Std.Overture"
+import "Std.Queue"
 
 class Main where
     static function main args =
-        let nats = [0..100000] in (nats.take 100000).foldl (+) 0
+        let q = Queue.fromList [1,2,3,4] in q.peek
