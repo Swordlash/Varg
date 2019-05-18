@@ -138,55 +138,55 @@ IMatchClause.       MatchClause ::= Expr "->" Expr;
 EIfThenElse.        Expr  ::= "if" Expr "then" Expr "else" Expr ;
 EUnify.             Expr  ::= "unify" Expr "with" Expr "in" Expr;
 
-ELambda.            Expr6 ::= "(" "\\" [ArgDef] ":" TypeDef "->" Expr ")" ; -- lambda expr
-EInferredLambda.    Expr6 ::= "(" "\\" [ArgDef] "->" Expr ")" ;
+ELambda.            Expr7 ::= "(" "\\" [ArgDef] ":" TypeDef "->" Expr ")" ; -- lambda expr
+EInferredLambda.    Expr7 ::= "(" "\\" [ArgDef] "->" Expr ")" ;
 
-EList.              Expr6 ::= "[" [ListElem] "]" ;
-EEmptyList.         Expr6 ::= "[]" ;
-ERange.             Expr6 ::= "[" Expr ".." Expr "]" ;
-ERangeFr.           Expr6 ::= "[" Expr ".." "]" ;
+EList.              Expr7 ::= "[" [ListElem] "]" ;
+EEmptyList.         Expr7 ::= "[]" ;
+ERange.             Expr7 ::= "[" Expr ".." Expr "]" ;
+ERangeFr.           Expr7 ::= "[" Expr ".." "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
-ECons.              Expr  ::= Expr1 ":"   Expr;
-ESCons.             Expr  ::= Expr1 "::" Expr;
-EOp.                Expr1  ::= Expr1 Op Expr2;
-EEq.                Expr1  ::= Expr1  "==" Expr2 ;
-ENeq.               Expr1  ::= Expr1  "/=" Expr2 ;
-EMod.               Expr1  ::= Expr2 "mod" Expr2;
-ENot.               Expr1  ::= "not" Expr2;
-EOr.                Expr   ::= Expr1 "||" Expr1;
-EAnd.               Expr1  ::= Expr2 "&&" Expr2;
-ELt.                Expr1  ::= Expr2 "<"  Expr2 ;
-EGt.                Expr1  ::= Expr2 ">"  Expr2 ;
-ELeq.               Expr1  ::= Expr2 "<=" Expr2 ;
-EGeq.               Expr1  ::= Expr2 ">=" Expr2 ;
-EAdd.               Expr2 ::= Expr2 "+"  Expr3 ;
-ESub.               Expr2 ::= Expr2 "-"  Expr3 ;
-EMul.               Expr3 ::= Expr3 "*"  Expr4 ;
-EDiv.               Expr3 ::= Expr3 "/"  Expr4 ;
-EPow.               Expr4 ::= Expr5 "^"  Expr4 ;
-ECompose.           Expr4 ::= Expr5 " . " Expr4;
-ENeg.               Expr5  ::= "-" Expr6 ;
+ECons.              Expr2  ::= Expr3 ":"   Expr2;
+ESCons.             Expr2  ::= Expr3 "::" Expr2;
+EOp.                Expr3  ::= Expr3 Op Expr4;
+EEq.                Expr2  ::= Expr3  "==" Expr3 ;
+ENeq.               Expr2  ::= Expr4  "/=" Expr3 ;
+EMod.               Expr2  ::= Expr3 "mod" Expr3;
+ENot.               Expr2  ::= "not" Expr3;
+EOr.                Expr1   ::= Expr2 "||" Expr2;
+EAnd.               Expr2  ::= Expr3 "&&" Expr3;
+ELt.                Expr2  ::= Expr3 "<"  Expr3 ;
+EGt.                Expr2  ::= Expr3 ">"  Expr3 ;
+ELeq.               Expr2  ::= Expr3 "<=" Expr3 ;
+EGeq.               Expr2  ::= Expr3 ">=" Expr3 ;
+EAdd.               Expr3 ::= Expr3 "+"  Expr4 ;
+ESub.               Expr3 ::= Expr3 "-"  Expr4 ;
+EMul.               Expr4 ::= Expr4 "*"  Expr5 ;
+EDiv.               Expr4 ::= Expr4 "/"  Expr5 ;
+EPow.               Expr5 ::= Expr6 "^"  Expr5 ;
+ECompose.           Expr5 ::= Expr6 " . " Expr5;
+ENeg.               Expr6  ::= "-" Expr7 ;
 
-EBoolean.           Expr6 ::= Boolean ;
+EBoolean.           Expr7 ::= Boolean ;
 ETrue.              Boolean  ::= "true" ;
 EFalse.             Boolean  ::= "false" ; 
-EThis.              Expr6 ::= "this";
-ESuper.             Expr6 ::= "super";
-EVar.               Expr6 ::= LIdent ;
-EType.              Expr6 ::= UIdent ;
-EMember.            Expr6 ::= MFun ;
-EOperator.          Expr6 ::= "(" Operator ")" ;
+EThis.              Expr7 ::= "this";
+ESuper.             Expr7 ::= "super";
+EVar.               Expr7 ::= LIdent ;
+EType.              Expr7 ::= UIdent ;
+EMember.            Expr7 ::= MFun ;
+EOperator.          Expr7 ::= "(" Operator ")" ;
 
-EInt.               Expr6 ::= Integer ;
-EReal.              Expr6 ::= Double  ;
-EChar.              Expr6 ::= Char ;
-EString.            Expr6 ::= String ;
-EWild.              Expr6 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
+EInt.               Expr7 ::= Integer ;
+EReal.              Expr7 ::= Double  ;
+EChar.              Expr7 ::= Char ;
+EString.            Expr7 ::= String ;
+EWild.              Expr7 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
 
-EApply.             Expr5 ::= Expr5 Expr6 ;
+EApply.             Expr6 ::= Expr6 Expr7 ;
 --EStrictMember.      Expr5 ::= Expr6 MFun ; 
 
-coercions           Expr 6 ;
+coercions           Expr 7 ;

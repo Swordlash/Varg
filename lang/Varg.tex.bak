@@ -321,9 +321,6 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{matching}} {\terminal{\{}} {\nonterminal{ListMatchClause}} {\terminal{\}}}  \\
  & {\delimit}  &{\terminal{if}} {\nonterminal{Expr}} {\terminal{then}} {\nonterminal{Expr}} {\terminal{else}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\terminal{unify}} {\nonterminal{Expr}} {\terminal{with}} {\nonterminal{Expr}} {\terminal{in}} {\nonterminal{Expr}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\terminal{:}} {\nonterminal{Expr}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\terminal{::}} {\nonterminal{Expr}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\terminal{{$|$}{$|$}}} {\nonterminal{Expr1}}  \\
  & {\delimit}  &{\nonterminal{Expr1}}  \\
 \end{tabular}\\
 
@@ -347,11 +344,12 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr6}} & {\arrow}  &{\terminal{(}} {\terminal{$\backslash$}} {\nonterminal{ListArgDef}} {\terminal{:}} {\nonterminal{TypeDef}} {\terminal{{$-$}{$>$}}} {\nonterminal{Expr}} {\terminal{)}}  \\
+{\nonterminal{Expr7}} & {\arrow}  &{\terminal{(}} {\terminal{$\backslash$}} {\nonterminal{ListArgDef}} {\terminal{:}} {\nonterminal{TypeDef}} {\terminal{{$-$}{$>$}}} {\nonterminal{Expr}} {\terminal{)}}  \\
  & {\delimit}  &{\terminal{(}} {\terminal{$\backslash$}} {\nonterminal{ListArgDef}} {\terminal{{$-$}{$>$}}} {\nonterminal{Expr}} {\terminal{)}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{ListListElem}} {\terminal{]}}  \\
  & {\delimit}  &{\terminal{[]}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\nonterminal{Expr}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\terminal{]}}  \\
  & {\delimit}  &{\nonterminal{Boolean}}  \\
  & {\delimit}  &{\terminal{this}}  \\
  & {\delimit}  &{\terminal{super}}  \\
@@ -378,41 +376,48 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Expr1}} & {\arrow}  &{\nonterminal{Expr1}} {\terminal{\$}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\nonterminal{Op}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\terminal{{$=$}{$=$}}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\terminal{/{$=$}}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{mod}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\terminal{not}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{\&\&}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$<$}}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$>$}}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$<$}{$=$}}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$>$}{$=$}}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$|$}{$|$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr2}} & {\arrow}  &{\nonterminal{Expr2}} {\terminal{{$+$}}} {\nonterminal{Expr3}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\terminal{{$-$}}} {\nonterminal{Expr3}}  \\
+{\nonterminal{Expr2}} & {\arrow}  &{\nonterminal{Expr3}} {\terminal{:}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{::}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr2}} {\nonterminal{Op}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$=$}{$=$}}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr4}} {\terminal{/{$=$}}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{mod}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\terminal{not}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{\&\&}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$<$}}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$>$}}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$<$}{$=$}}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$>$}{$=$}}} {\nonterminal{Expr3}}  \\
  & {\delimit}  &{\nonterminal{Expr3}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr3}} & {\arrow}  &{\nonterminal{Expr3}} {\terminal{*}} {\nonterminal{Expr4}}  \\
- & {\delimit}  &{\nonterminal{Expr3}} {\terminal{/}} {\nonterminal{Expr4}}  \\
+{\nonterminal{Expr3}} & {\arrow}  &{\nonterminal{Expr3}} {\terminal{{$+$}}} {\nonterminal{Expr4}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$-$}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr4}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr4}} & {\arrow}  &{\nonterminal{Expr5}} {\terminal{{\textasciicircum}}} {\nonterminal{Expr4}}  \\
- & {\delimit}  &{\nonterminal{Expr5}} {\terminal{ . }} {\nonterminal{Expr4}}  \\
+{\nonterminal{Expr4}} & {\arrow}  &{\nonterminal{Expr4}} {\terminal{*}} {\nonterminal{Expr5}}  \\
+ & {\delimit}  &{\nonterminal{Expr4}} {\terminal{/}} {\nonterminal{Expr5}}  \\
  & {\delimit}  &{\nonterminal{Expr5}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr5}} & {\arrow}  &{\terminal{{$-$}}} {\nonterminal{Expr6}}  \\
- & {\delimit}  &{\nonterminal{Expr5}} {\nonterminal{Expr6}}  \\
+{\nonterminal{Expr5}} & {\arrow}  &{\nonterminal{Expr6}} {\terminal{{\textasciicircum}}} {\nonterminal{Expr5}}  \\
+ & {\delimit}  &{\nonterminal{Expr6}} {\terminal{ . }} {\nonterminal{Expr5}}  \\
  & {\delimit}  &{\nonterminal{Expr6}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{Expr6}} & {\arrow}  &{\terminal{{$-$}}} {\nonterminal{Expr7}}  \\
+ & {\delimit}  &{\nonterminal{Expr6}} {\nonterminal{Expr7}}  \\
+ & {\delimit}  &{\nonterminal{Expr7}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}

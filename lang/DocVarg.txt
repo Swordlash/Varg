@@ -191,9 +191,6 @@ All other symbols are terminals.
   |  |  **|**  | ``matching`` ``{`` //[MatchClause]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
   |  |  **|**  | ``unify`` //Expr// ``with`` //Expr// ``in`` //Expr// 
-  |  |  **|**  | //Expr1// ``:`` //Expr// 
-  |  |  **|**  | //Expr1// ``::`` //Expr// 
-  |  |  **|**  | //Expr1// ``||`` //Expr1// 
   |  |  **|**  | //Expr1// 
   | //[LetDef]// | -> | //LetDef// 
   |  |  **|**  | //LetDef// ``;`` //[LetDef]// 
@@ -202,7 +199,7 @@ All other symbols are terminals.
   | //[MatchClause]// | -> | //MatchClause// 
   |  |  **|**  | //MatchClause// ``;`` //[MatchClause]// 
   | //MatchClause// | -> | //Expr// ``->`` //Expr// 
-  | //Expr6// | -> | ``(`` ``\`` //[ArgDef]// ``:`` //TypeDef// ``->`` //Expr// ``)`` 
+  | //Expr7// | -> | ``(`` ``\`` //[ArgDef]// ``:`` //TypeDef// ``->`` //Expr// ``)`` 
   |  |  **|**  | ``(`` ``\`` //[ArgDef]// ``->`` //Expr// ``)`` 
   |  |  **|**  | ``[`` //[ListElem]// ``]`` 
   |  |  **|**  | ``[]`` 
@@ -225,29 +222,33 @@ All other symbols are terminals.
   | //[ListElem]// | -> | //ListElem// 
   |  |  **|**  | //ListElem// ``,`` //[ListElem]// 
   | //Expr1// | -> | //Expr1// ``$`` //Expr2// 
-  |  |  **|**  | //Expr1// //Op// //Expr2// 
-  |  |  **|**  | //Expr1// ``==`` //Expr2// 
-  |  |  **|**  | //Expr1// ``/=`` //Expr2// 
-  |  |  **|**  | //Expr2// ``mod`` //Expr2// 
-  |  |  **|**  | ``not`` //Expr2// 
-  |  |  **|**  | //Expr2// ``&&`` //Expr2// 
-  |  |  **|**  | //Expr2// ``<`` //Expr2// 
-  |  |  **|**  | //Expr2// ``>`` //Expr2// 
-  |  |  **|**  | //Expr2// ``<=`` //Expr2// 
-  |  |  **|**  | //Expr2// ``>=`` //Expr2// 
+  |  |  **|**  | //Expr2// ``||`` //Expr2// 
   |  |  **|**  | //Expr2// 
-  | //Expr2// | -> | //Expr2// ``+`` //Expr3// 
-  |  |  **|**  | //Expr2// ``-`` //Expr3// 
+  | //Expr2// | -> | //Expr3// ``:`` //Expr2// 
+  |  |  **|**  | //Expr3// ``::`` //Expr2// 
+  |  |  **|**  | //Expr3// ``==`` //Expr3// 
+  |  |  **|**  | //Expr4// ``/=`` //Expr3// 
+  |  |  **|**  | //Expr3// ``mod`` //Expr3// 
+  |  |  **|**  | ``not`` //Expr3// 
+  |  |  **|**  | //Expr3// ``&&`` //Expr3// 
+  |  |  **|**  | //Expr3// ``<`` //Expr3// 
+  |  |  **|**  | //Expr3// ``>`` //Expr3// 
+  |  |  **|**  | //Expr3// ``<=`` //Expr3// 
+  |  |  **|**  | //Expr3// ``>=`` //Expr3// 
   |  |  **|**  | //Expr3// 
-  | //Expr3// | -> | //Expr3// ``*`` //Expr4// 
-  |  |  **|**  | //Expr3// ``/`` //Expr4// 
+  | //Expr3// | -> | //Expr3// //Op// //Expr4// 
+  |  |  **|**  | //Expr3// ``+`` //Expr4// 
+  |  |  **|**  | //Expr3// ``-`` //Expr4// 
   |  |  **|**  | //Expr4// 
-  | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
-  |  |  **|**  | //Expr5// `` . `` //Expr4// 
+  | //Expr4// | -> | //Expr4// ``*`` //Expr5// 
+  |  |  **|**  | //Expr4// ``/`` //Expr5// 
   |  |  **|**  | //Expr5// 
-  | //Expr5// | -> | ``-`` //Expr6// 
-  |  |  **|**  | //Expr5// //Expr6// 
+  | //Expr5// | -> | //Expr6// ``^`` //Expr5// 
+  |  |  **|**  | //Expr6// `` . `` //Expr5// 
   |  |  **|**  | //Expr6// 
+  | //Expr6// | -> | ``-`` //Expr7// 
+  |  |  **|**  | //Expr6// //Expr7// 
+  |  |  **|**  | //Expr7// 
   | //Boolean// | -> | ``true`` 
   |  |  **|**  | ``false`` 
 

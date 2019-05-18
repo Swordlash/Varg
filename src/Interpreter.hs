@@ -35,7 +35,7 @@ runInterpreter (main, list) hier =
   (\f -> do
      liftIO $ logg $ functionBody f
      evalStateT
-       (runReaderT (interpretExpression (supplyArgs (functionBody f)) >>= deepForce) emptyRuntime)
+       (runReaderT (interpretExpression (EMember (supplyArgs (functionBody f)) "toString") >>= deepForce) emptyRuntime)
        (emptyState list hier))
 
 emptyState :: Type -> ClassHierarchy -> InterpreterState

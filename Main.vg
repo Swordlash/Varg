@@ -3,4 +3,4 @@ import "Std.Queue"
 
 class Main where
     static function main args =
-        let q = Queue.fromList [1,2,3,4] in q.peek
+        let q = Queue.fromList [1,2,3,4] in q.push 3

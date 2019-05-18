@@ -472,7 +472,7 @@ instance Print Expr where
       ELambda argdefs typedef expr ->
         prPrec
           i
-          6
+          7
           (concatD
              [ doc (showString "(")
              , doc (showString "\\")
@@ -486,7 +486,7 @@ instance Print Expr where
       EInferredLambda argdefs expr ->
         prPrec
           i
-          6
+          7
           (concatD
              [ doc (showString "(")
              , doc (showString "\\")
@@ -495,49 +495,49 @@ instance Print Expr where
              , prt 0 expr
              , doc (showString ")")
              ])
-      EList listelems -> prPrec i 6 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
-      EEmptyList -> prPrec i 6 (concatD [doc (showString "[]")])
+      EList listelems -> prPrec i 7 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
+      EEmptyList -> prPrec i 7 (concatD [doc (showString "[]")])
       ERange expr1 expr2 ->
         prPrec
           i
-          6
+          7
           (concatD [doc (showString "["), prt 0 expr1, doc (showString ".."), prt 0 expr2, doc (showString "]")])
       ERangeFr expr ->
-        prPrec i 6 (concatD [doc (showString "["), prt 0 expr, doc (showString ".."), doc (showString "]")])
+        prPrec i 7 (concatD [doc (showString "["), prt 0 expr, doc (showString ".."), doc (showString "]")])
       EAppl expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "$"), prt 2 expr2])
-      ECons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString ":"), prt 0 expr2])
-      ESCons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "::"), prt 0 expr2])
-      EOp expr1 op expr2 -> prPrec i 1 (concatD [prt 1 expr1, prt 0 op, prt 2 expr2])
-      EEq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "=="), prt 2 expr2])
-      ENeq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "/="), prt 2 expr2])
-      EMod expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "mod"), prt 2 expr2])
-      ENot expr -> prPrec i 1 (concatD [doc (showString "not"), prt 2 expr])
-      EOr expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "||"), prt 1 expr2])
-      EAnd expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "&&"), prt 2 expr2])
-      ELt expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "<"), prt 2 expr2])
-      EGt expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString ">"), prt 2 expr2])
-      ELeq expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "<="), prt 2 expr2])
-      EGeq expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString ">="), prt 2 expr2])
-      EAdd expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, doc (showString "+"), prt 3 expr2])
-      ESub expr1 expr2 -> prPrec i 2 (concatD [prt 2 expr1, doc (showString "-"), prt 3 expr2])
-      EMul expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "*"), prt 4 expr2])
-      EDiv expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "/"), prt 4 expr2])
-      EPow expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "^"), prt 4 expr2])
-      ECompose expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString " . "), prt 4 expr2])
-      ENeg expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
-      EBoolean boolean -> prPrec i 6 (concatD [prt 0 boolean])
-      EThis -> prPrec i 6 (concatD [doc (showString "this")])
-      ESuper -> prPrec i 6 (concatD [doc (showString "super")])
-      EVar lident -> prPrec i 6 (concatD [prt 0 lident])
-      EType uident -> prPrec i 6 (concatD [prt 0 uident])
-      EMember mfun -> prPrec i 6 (concatD [prt 0 mfun])
-      EOperator operator -> prPrec i 6 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
-      EInt n -> prPrec i 6 (concatD [prt 0 n])
-      EReal d -> prPrec i 6 (concatD [prt 0 d])
-      EChar c -> prPrec i 6 (concatD [prt 0 c])
-      EString str -> prPrec i 6 (concatD [prt 0 str])
-      EWild -> prPrec i 6 (concatD [doc (showString "_")])
-      EApply expr1 expr2 -> prPrec i 5 (concatD [prt 5 expr1, prt 6 expr2])
+      ECons expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString ":"), prt 2 expr2])
+      ESCons expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "::"), prt 2 expr2])
+      EOp expr1 op expr2 -> prPrec i 3 (concatD [prt 3 expr1, prt 0 op, prt 4 expr2])
+      EEq expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "=="), prt 3 expr2])
+      ENeq expr1 expr2 -> prPrec i 2 (concatD [prt 4 expr1, doc (showString "/="), prt 3 expr2])
+      EMod expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "mod"), prt 3 expr2])
+      ENot expr -> prPrec i 2 (concatD [doc (showString "not"), prt 3 expr])
+      EOr expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "||"), prt 2 expr2])
+      EAnd expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "&&"), prt 3 expr2])
+      ELt expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "<"), prt 3 expr2])
+      EGt expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString ">"), prt 3 expr2])
+      ELeq expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "<="), prt 3 expr2])
+      EGeq expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString ">="), prt 3 expr2])
+      EAdd expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "+"), prt 4 expr2])
+      ESub expr1 expr2 -> prPrec i 3 (concatD [prt 3 expr1, doc (showString "-"), prt 4 expr2])
+      EMul expr1 expr2 -> prPrec i 4 (concatD [prt 4 expr1, doc (showString "*"), prt 5 expr2])
+      EDiv expr1 expr2 -> prPrec i 4 (concatD [prt 4 expr1, doc (showString "/"), prt 5 expr2])
+      EPow expr1 expr2 -> prPrec i 5 (concatD [prt 6 expr1, doc (showString "^"), prt 5 expr2])
+      ECompose expr1 expr2 -> prPrec i 5 (concatD [prt 6 expr1, doc (showString " . "), prt 5 expr2])
+      ENeg expr -> prPrec i 6 (concatD [doc (showString "-"), prt 7 expr])
+      EBoolean boolean -> prPrec i 7 (concatD [prt 0 boolean])
+      EThis -> prPrec i 7 (concatD [doc (showString "this")])
+      ESuper -> prPrec i 7 (concatD [doc (showString "super")])
+      EVar lident -> prPrec i 7 (concatD [prt 0 lident])
+      EType uident -> prPrec i 7 (concatD [prt 0 uident])
+      EMember mfun -> prPrec i 7 (concatD [prt 0 mfun])
+      EOperator operator -> prPrec i 7 (concatD [doc (showString "("), prt 0 operator, doc (showString ")")])
+      EInt n -> prPrec i 7 (concatD [prt 0 n])
+      EReal d -> prPrec i 7 (concatD [prt 0 d])
+      EChar c -> prPrec i 7 (concatD [prt 0 c])
+      EString str -> prPrec i 7 (concatD [prt 0 str])
+      EWild -> prPrec i 7 (concatD [doc (showString "_")])
+      EApply expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, prt 7 expr2])
 
 instance Print LetDef where
   prt i e =

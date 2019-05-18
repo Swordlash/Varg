@@ -253,9 +253,6 @@ Expr : 'let' '{' ListLetDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'matching' '{' ListMatchClause '}' { AbsVarg.ELambdaMatch $3 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
      | 'unify' Expr 'with' Expr 'in' Expr { AbsVarg.EUnify $2 $4 $6 }
-     | Expr1 ':' Expr { AbsVarg.ECons $1 $3 }
-     | Expr1 '::' Expr { AbsVarg.ESCons $1 $3 }
-     | Expr1 '||' Expr1 { AbsVarg.EOr $1 $3 }
      | Expr1 { $1 }
 ListLetDef :: { [LetDef] }
 ListLetDef : LetDef { (:[]) $1 }
@@ -268,8 +265,8 @@ ListMatchClause : MatchClause { (:[]) $1 }
                 | MatchClause ';' ListMatchClause { (:) $1 $3 }
 MatchClause :: { MatchClause }
 MatchClause : Expr '->' Expr { AbsVarg.IMatchClause $1 $3 }
-Expr6 :: { Expr }
-Expr6 : '(' '\\' ListArgDef ':' TypeDef '->' Expr ')' { AbsVarg.ELambda (reverse $3) $5 $7 }
+Expr7 :: { Expr }
+Expr7 : '(' '\\' ListArgDef ':' TypeDef '->' Expr ')' { AbsVarg.ELambda (reverse $3) $5 $7 }
       | '(' '\\' ListArgDef '->' Expr ')' { AbsVarg.EInferredLambda (reverse $3) $5 }
       | '[' ListListElem ']' { AbsVarg.EList $2 }
       | '[]' { AbsVarg.EEmptyList }
@@ -295,33 +292,38 @@ ListListElem : ListElem { (:[]) $1 }
              | ListElem ',' ListListElem { (:) $1 $3 }
 Expr1 :: { Expr }
 Expr1 : Expr1 '$' Expr2 { AbsVarg.EAppl $1 $3 }
-      | Expr1 Op Expr2 { AbsVarg.EOp $1 $2 $3 }
-      | Expr1 '==' Expr2 { AbsVarg.EEq $1 $3 }
-      | Expr1 '/=' Expr2 { AbsVarg.ENeq $1 $3 }
-      | Expr2 'mod' Expr2 { AbsVarg.EMod $1 $3 }
-      | 'not' Expr2 { AbsVarg.ENot $2 }
-      | Expr2 '&&' Expr2 { AbsVarg.EAnd $1 $3 }
-      | Expr2 '<' Expr2 { AbsVarg.ELt $1 $3 }
-      | Expr2 '>' Expr2 { AbsVarg.EGt $1 $3 }
-      | Expr2 '<=' Expr2 { AbsVarg.ELeq $1 $3 }
-      | Expr2 '>=' Expr2 { AbsVarg.EGeq $1 $3 }
+      | Expr2 '||' Expr2 { AbsVarg.EOr $1 $3 }
       | Expr2 { $1 }
 Expr2 :: { Expr }
-Expr2 : Expr2 '+' Expr3 { AbsVarg.EAdd $1 $3 }
-      | Expr2 '-' Expr3 { AbsVarg.ESub $1 $3 }
+Expr2 : Expr3 ':' Expr2 { AbsVarg.ECons $1 $3 }
+      | Expr3 '::' Expr2 { AbsVarg.ESCons $1 $3 }
+      | Expr3 '==' Expr3 { AbsVarg.EEq $1 $3 }
+      | Expr4 '/=' Expr3 { AbsVarg.ENeq $1 $3 }
+      | Expr3 'mod' Expr3 { AbsVarg.EMod $1 $3 }
+      | 'not' Expr3 { AbsVarg.ENot $2 }
+      | Expr3 '&&' Expr3 { AbsVarg.EAnd $1 $3 }
+      | Expr3 '<' Expr3 { AbsVarg.ELt $1 $3 }
+      | Expr3 '>' Expr3 { AbsVarg.EGt $1 $3 }
+      | Expr3 '<=' Expr3 { AbsVarg.ELeq $1 $3 }
+      | Expr3 '>=' Expr3 { AbsVarg.EGeq $1 $3 }
       | Expr3 { $1 }
 Expr3 :: { Expr }
-Expr3 : Expr3 '*' Expr4 { AbsVarg.EMul $1 $3 }
-      | Expr3 '/' Expr4 { AbsVarg.EDiv $1 $3 }
+Expr3 : Expr3 Op Expr4 { AbsVarg.EOp $1 $2 $3 }
+      | Expr3 '+' Expr4 { AbsVarg.EAdd $1 $3 }
+      | Expr3 '-' Expr4 { AbsVarg.ESub $1 $3 }
       | Expr4 { $1 }
 Expr4 :: { Expr }
-Expr4 : Expr5 '^' Expr4 { AbsVarg.EPow $1 $3 }
-      | Expr5 ' . ' Expr4 { AbsVarg.ECompose $1 $3 }
+Expr4 : Expr4 '*' Expr5 { AbsVarg.EMul $1 $3 }
+      | Expr4 '/' Expr5 { AbsVarg.EDiv $1 $3 }
       | Expr5 { $1 }
 Expr5 :: { Expr }
-Expr5 : '-' Expr6 { AbsVarg.ENeg $2 }
-      | Expr5 Expr6 { AbsVarg.EApply $1 $2 }
+Expr5 : Expr6 '^' Expr5 { AbsVarg.EPow $1 $3 }
+      | Expr6 ' . ' Expr5 { AbsVarg.ECompose $1 $3 }
       | Expr6 { $1 }
+Expr6 :: { Expr }
+Expr6 : '-' Expr7 { AbsVarg.ENeg $2 }
+      | Expr6 Expr7 { AbsVarg.EApply $1 $2 }
+      | Expr7 { $1 }
 Boolean :: { Boolean }
 Boolean : 'true' { AbsVarg.ETrue } | 'false' { AbsVarg.EFalse }
 {
