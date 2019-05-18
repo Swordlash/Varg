@@ -218,6 +218,10 @@ parseExpression lookupFun expr =
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
       return $ EEq p1 p2
+    Abs.EAppl expr1 expr2 -> do
+      p1 <- parseExpression lookupFun expr1
+      p2 <- parseExpression lookupFun expr2
+      return $ EApply p1 p2
     Abs.ENeq expr1 expr2 -> do
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2

@@ -1,6 +1,0 @@
-import "Std.Overture"
-
-#BŁĄD: dzielenie przez 0
-
-class Main where
-    static function main args = let lista = List.replicate 100 1 ++ [0] in lista.map ((/) 1)

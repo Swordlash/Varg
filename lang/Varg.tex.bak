@@ -72,11 +72,11 @@ The symbols used in Varg are the following: \\
 {\symb{?}} &{\symb{[}} &{\symb{]}} \\
 {\symb{(}} &{\symb{)}} &{\symb{,}} \\
 {\symb{:}} &{\symb{\{}} &{\symb{\}}} \\
-{\symb{}} &{\symb{;}} &{\symb{{$=$}}} \\
-{\symb{{$+$}}} &{\symb{{$-$}}} &{\symb{*}} \\
-{\symb{/}} &{\symb{{\textasciicircum}}} &{\symb{{$<$}}} \\
-{\symb{{$>$}}} &{\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} \\
-{\symb{{$=$}{$=$}}} &{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} \\
+{\symb{;}} &{\symb{{$=$}}} &{\symb{{$+$}}} \\
+{\symb{{$-$}}} &{\symb{*}} &{\symb{/}} \\
+{\symb{{\textasciicircum}}} &{\symb{{$<$}}} &{\symb{{$>$}}} \\
+{\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
+{\symb{\$}} &{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} \\
 {\symb{[]}} &{\symb{..}} &{\symb{/{$=$}}} \\
 {\symb{{$|$}{$|$}}} &{\symb{\&\&}} &{\symb{ . }} \\
 {\symb{\_}} & & \\
@@ -218,7 +218,7 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{DerivationDef}} & {\arrow}  &{\terminal{derives}} {\nonterminal{UIdent}}  \\
- & {\delimit}  &{\terminal{}}  \\
+ & {\delimit}  &{\emptyP} \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -255,6 +255,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{{$>$}{$=$}}}  \\
  & {\delimit}  &{\terminal{{$=$}{$=$}}}  \\
  & {\delimit}  &{\terminal{:}}  \\
+ & {\delimit}  &{\terminal{\$}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -373,13 +374,8 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr5}} & {\arrow}  &{\terminal{{$-$}}} {\nonterminal{Expr6}}  \\
- & {\delimit}  &{\nonterminal{Expr5}} {\nonterminal{Expr6}}  \\
- & {\delimit}  &{\nonterminal{Expr6}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{Expr1}} & {\arrow}  &{\nonterminal{Expr1}} {\nonterminal{Op}} {\nonterminal{Expr2}}  \\
+{\nonterminal{Expr1}} & {\arrow}  &{\nonterminal{Expr1}} {\terminal{\$}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr1}} {\nonterminal{Op}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{{$=$}{$=$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{/{$=$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr2}} {\terminal{mod}} {\nonterminal{Expr2}}  \\
@@ -409,6 +405,12 @@ All other symbols are terminals.\\
 {\nonterminal{Expr4}} & {\arrow}  &{\nonterminal{Expr5}} {\terminal{{\textasciicircum}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr5}} {\terminal{ . }} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr5}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{Expr5}} & {\arrow}  &{\terminal{{$-$}}} {\nonterminal{Expr6}}  \\
+ & {\delimit}  &{\nonterminal{Expr5}} {\nonterminal{Expr6}}  \\
+ & {\delimit}  &{\nonterminal{Expr6}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}

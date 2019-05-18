@@ -9,8 +9,8 @@ module LexVarg where
 
 
 import qualified Data.Bits
-import           Data.Char       (ord)
-import           Data.Word       (Word8)
+import Data.Word (Word8)
+import Data.Char (ord)
 
 #if __GLASGOW_HASKELL__ >= 603
 #include "ghcconfig.h"
@@ -18,10 +18,10 @@ import           Data.Word       (Word8)
 #include "config.h"
 #endif
 #if __GLASGOW_HASKELL__ >= 503
-import           Data.Array
-import           Data.Array.Base (unsafeAt)
+import Data.Array
+import Data.Array.Base (unsafeAt)
 #else
-import           Array
+import Array
 #endif
 alex_tab_size :: Int
 alex_tab_size = 8
@@ -118,7 +118,7 @@ alex_table = listArray (0 :: Int, 4036)
   , 50
   , 22
   , 34
-  , 50
+  , 43
   , 50
   , 52
   , 13
@@ -8346,12 +8346,12 @@ data Token =
 
 tokenPos :: [Token] -> String
 tokenPos (PT (Pn _ l _) _ :_) = "line " ++ show l
-tokenPos (Err (Pn _ l _) :_)  = "line " ++ show l
-tokenPos _                    = "end of file"
+tokenPos (Err (Pn _ l _) :_) = "line " ++ show l
+tokenPos _ = "end of file"
 
 tokenPosn :: Token -> Posn
 tokenPosn (PT p _) = p
-tokenPosn (Err p)  = p
+tokenPosn (Err p) = p
 
 tokenLineCol :: Token -> (Int, Int)
 tokenLineCol = posLineCol . tokenPosn
@@ -8364,16 +8364,16 @@ mkPosToken t@(PT p _) = (posLineCol p, prToken t)
 
 prToken :: Token -> String
 prToken t = case t of
-  PT _ (TS s _)     -> s
-  PT _ (TL s)       -> show s
-  PT _ (TI s)       -> s
-  PT _ (TV s)       -> s
-  PT _ (TD s)       -> s
-  PT _ (TC s)       -> s
+  PT _ (TS s _) -> s
+  PT _ (TL s)   -> show s
+  PT _ (TI s)   -> s
+  PT _ (TV s)   -> s
+  PT _ (TD s)   -> s
+  PT _ (TC s)   -> s
   PT _ (T_UIdent s) -> s
   PT _ (T_LIdent s) -> s
-  PT _ (T_MFun s)   -> s
-  PT _ (T_Op s)     -> s
+  PT _ (T_MFun s) -> s
+  PT _ (T_Op s) -> s
 
 
 data BTree = N | B String Tok BTree BTree deriving (Show)
@@ -8387,7 +8387,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "false" 33 (b "=" 17 (b "->" 9 (b "*" 5 (b "(" 3 (b "&&" 2 (b " . " 1 N N) N) (b ")" 4 N N)) (b "," 7 (b "+" 6 N N) (b "-" 8 N N))) (b ":" 13 (b "/" 11 (b ".." 10 N N) (b "/=" 12 N N)) (b "<" 15 (b ";" 14 N N) (b "<=" 16 N N)))) (b "]" 25 (b "?" 21 (b ">" 19 (b "==" 18 N N) (b ">=" 20 N N)) (b "[]" 23 (b "[" 22 N N) (b "\\" 24 N N))) (b "class" 29 (b "_" 27 (b "^" 26 N N) (b "abstract" 28 N N)) (b "deriving" 31 (b "derives" 30 N N) (b "else" 32 N N))))) (b "not" 50 (b "interface" 42 (b "implement" 38 (b "has" 36 (b "function" 35 (b "final" 34 N N) N) (b "if" 37 N N)) (b "import" 40 (b "implementing" 39 N N) (b "in" 41 N N))) (b "matching" 46 (b "let" 44 (b "internal" 43 N N) (b "match" 45 N N)) (b "module" 48 (b "mod" 47 N N) (b "native" 49 N N)))) (b "true" 58 (b "super" 54 (b "static" 52 (b "sealed" 51 N N) (b "struct" 53 N N)) (b "then" 56 (b "template" 55 N N) (b "this" 57 N N))) (b "with" 62 (b "unique" 60 (b "unify" 59 N N) (b "where" 61 N N)) (b "||" 64 (b "{" 63 N N) (b "}" 65 N N)))))
+resWords = b "false" 34 (b "<=" 17 (b "-" 9 (b ")" 5 (b "&&" 3 (b "$" 2 (b " . " 1 N N) N) (b "(" 4 N N)) (b "+" 7 (b "*" 6 N N) (b "," 8 N N))) (b "/=" 13 (b ".." 11 (b "->" 10 N N) (b "/" 12 N N)) (b ";" 15 (b ":" 14 N N) (b "<" 16 N N)))) (b "]" 26 (b "?" 22 (b ">" 20 (b "==" 19 (b "=" 18 N N) N) (b ">=" 21 N N)) (b "[]" 24 (b "[" 23 N N) (b "\\" 25 N N))) (b "class" 30 (b "_" 28 (b "^" 27 N N) (b "abstract" 29 N N)) (b "deriving" 32 (b "derives" 31 N N) (b "else" 33 N N))))) (b "not" 51 (b "interface" 43 (b "implement" 39 (b "has" 37 (b "function" 36 (b "final" 35 N N) N) (b "if" 38 N N)) (b "import" 41 (b "implementing" 40 N N) (b "in" 42 N N))) (b "matching" 47 (b "let" 45 (b "internal" 44 N N) (b "match" 46 N N)) (b "module" 49 (b "mod" 48 N N) (b "native" 50 N N)))) (b "true" 59 (b "super" 55 (b "static" 53 (b "sealed" 52 N N) (b "struct" 54 N N)) (b "then" 57 (b "template" 56 N N) (b "this" 58 N N))) (b "with" 63 (b "unique" 61 (b "unify" 60 N N) (b "where" 62 N N)) (b "||" 65 (b "{" 64 N N) (b "}" 66 N N)))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 
@@ -8395,11 +8395,11 @@ unescapeInitTail :: String -> String
 unescapeInitTail = id . unesc . tail . id where
   unesc s = case s of
     '\\':c:cs | elem c ['\"', '\\', '\''] -> c : unesc cs
-    '\\':'n':cs                           -> '\n' : unesc cs
-    '\\':'t':cs                           -> '\t' : unesc cs
-    '"':[]                                -> []
-    c:cs                                  -> c : unesc cs
-    _                                     -> []
+    '\\':'n':cs  -> '\n' : unesc cs
+    '\\':'t':cs  -> '\t' : unesc cs
+    '"':[]    -> []
+    c:cs      -> c : unesc cs
+    _         -> []
 
 -------------------------------------------------------------------
 -- Alex wrapper code.
@@ -8469,16 +8469,16 @@ utf8Encode = map fromIntegral . go . ord
                         , 0x80 + oc Data.Bits..&. 0x3f
                         ]
 
-alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
-alex_action_4 =  tok (\p s -> PT p (eitherResIdent (T_UIdent . share) s))
-alex_action_5 =  tok (\p s -> PT p (eitherResIdent (T_LIdent . share) s))
-alex_action_6 =  tok (\p s -> PT p (eitherResIdent (T_MFun . share) s))
-alex_action_7 =  tok (\p s -> PT p (eitherResIdent (T_Op . share) s))
-alex_action_8 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
-alex_action_9 =  tok (\p s -> PT p (TL $ share $ unescapeInitTail s))
-alex_action_10 =  tok (\p s -> PT p (TC $ share s))
-alex_action_11 =  tok (\p s -> PT p (TI $ share s))
-alex_action_12 =  tok (\p s -> PT p (TD $ share s))
+alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s)) 
+alex_action_4 =  tok (\p s -> PT p (eitherResIdent (T_UIdent . share) s)) 
+alex_action_5 =  tok (\p s -> PT p (eitherResIdent (T_LIdent . share) s)) 
+alex_action_6 =  tok (\p s -> PT p (eitherResIdent (T_MFun . share) s)) 
+alex_action_7 =  tok (\p s -> PT p (eitherResIdent (T_Op . share) s)) 
+alex_action_8 =  tok (\p s -> PT p (eitherResIdent (TV . share) s)) 
+alex_action_9 =  tok (\p s -> PT p (TL $ share $ unescapeInitTail s)) 
+alex_action_10 =  tok (\p s -> PT p (TC $ share s))  
+alex_action_11 =  tok (\p s -> PT p (TI $ share s))    
+alex_action_12 =  tok (\p s -> PT p (TD $ share s)) 
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE
@@ -8711,7 +8711,7 @@ alexPrevCharIsOneOf arr _ input__ _ _ = arr ! alexInputPrevChar input__
 alexRightContext (sc) user__ _ _ input__ =
      case alex_scan_tkn user__ input__ (0) input__ sc AlexNone of
           (AlexNone, _) -> False
-          _             -> True
+          _ -> True
         -- TODO: there's no need to find the longest
         -- match when checking the right context, just
         -- the first match will do.

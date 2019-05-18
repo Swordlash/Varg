@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6a4b5be5f28b462e55cdad20d2e931213ce1727fdad2e53cfd099676e541f2a3
+-- hash: 03be81b23d680ce01a9cb02d49e5685e56ba97ac4d9c55374b13bf34f878f9f0
 
 name:           VargInterpreter
 version:        1.0
@@ -48,6 +48,7 @@ library
       TestVarg
       Typechecking
       TypeDefParser
+      TypeDefs
       Types
   other-modules:
       Paths_VargInterpreter

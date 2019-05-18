@@ -88,7 +88,6 @@ FFunction.    FunctionName ::= LIdent ;
 FOperator.    FunctionName ::= "(" Operator ")" ;
 FOperatorDef. FunctionName ::= "(" Op ")";
 
-
 Op_plus.  Operator ::= "+" ;
 Op_minus. Operator ::= "-" ;
 Op_mul.   Operator ::= "*" ;
@@ -100,6 +99,7 @@ Op_leq.   Operator ::= "<=";
 Op_geq.   Operator ::= ">=";
 Op_eq.    Operator ::= "==";
 Op_cons.  Operator ::= ":" ;
+Op_appl.  Operator ::= "$" ;
 
 AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" FunctionName FunTemplateParams [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
 AbsReturnType.               AbsRetType ::= ":" "abstract" FreeTypeDef ;
@@ -146,14 +146,14 @@ ERange.             Expr6 ::= "[" Integer ".." Integer "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
-ENeg.               Expr5  ::= "-" Expr6 ;
+EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr  ::= Expr1 ":"   Expr;
 EOp.                Expr1  ::= Expr1 Op Expr2;
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
 ENeq.               Expr1  ::= Expr1  "/=" Expr2 ;
 EMod.               Expr1  ::= Expr2 "mod" Expr2;
 ENot.               Expr1  ::= "not" Expr2;
-EOr.                Expr1  ::= Expr2 "||" Expr2;
+EOr.                Expr   ::= Expr1 "||" Expr1;
 EAnd.               Expr1  ::= Expr2 "&&" Expr2;
 ELt.                Expr1  ::= Expr2 "<"  Expr2 ;
 EGt.                Expr1  ::= Expr2 ">"  Expr2 ;
@@ -165,6 +165,7 @@ EMul.               Expr3 ::= Expr3 "*"  Expr4 ;
 EDiv.               Expr3 ::= Expr3 "/"  Expr4 ;
 EPow.               Expr4 ::= Expr5 "^"  Expr4 ;
 ECompose.           Expr4 ::= Expr5 " . " Expr4;
+ENeg.               Expr5  ::= "-" Expr6 ;
 
 EBoolean.           Expr6 ::= Boolean ;
 ETrue.              Boolean  ::= "true" ;

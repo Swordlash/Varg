@@ -1,4 +1,4 @@
-module Types where
+module Types (module TypeDefs, module Types) where
 
 import qualified AbsVarg    as AV
 import           Data.List  (intercalate)
@@ -7,14 +7,13 @@ import           Data.Maybe
 import qualified Data.Set   as S
 import           Instances
 import           PrintVarg
-
-type TypeName = String
+import           TypeDefs
 
 type MemberName = String
-
 type Instance = Inst Function Type Expr
-
 type Mapping a = M.Map String a
+
+--------------------------------- Instance definitions --------------------------------------
 
 showTr :: Mapping Instance -> String
 showTr env = intercalate ", " (map (\(s, i) -> s ++ " = " ++ show' i) $ M.toList env)
@@ -40,7 +39,7 @@ instance Show Instance where
   show (CharInstance val) = "'" ++ show val ++ "'"
   show (BoolInstance val) = show val
   show (FunctionInstance expr clos) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
-  show (ThunkInstance expr _) = show expr
+  show (ThunkInstance expr clos) = "thunk "++show expr ++" of closure "++showTr clos
   show t@(TypeInstance base var params flds) =
     case qualifiedTypeName base of
       "List" -> show (instanceListToList t)
@@ -51,6 +50,8 @@ instance Show Instance where
                   Just (CharInstance ch) -> ch) :
                show (fromJust $ lookup "tail" flds)
       name -> name ++ "." ++ var ++ " (" ++ intercalate ")(" (map show params) ++ ") " ++ unwords (map show flds)
+
+---------------------------------- Expression definitions --------------------------------------
 
 data Expr
   = Unparsed AV.Expr
@@ -80,6 +81,7 @@ data Expr
                 Expr
   | EMatch Expr
            [(Expr, Expr)]
+
   | ECons Expr
           Expr
   | EMod Expr
@@ -181,77 +183,8 @@ instance Show Expr where
   show ESuper = "super"
   show EEmpty = "EMPTY"
 
-data TypeDef
-  = AnyType
-  | InferredType String
-                 [TypeParamConstraint]
-                 [TypeParamConstraint]
-  | ConcreteType TypeName
-                 [TypeParamConstraint]
-  deriving (Eq, Ord)
+------------------------------------- Function, Variant & Type --------------------------------
 
-voidTypeDef :: TypeDef
-voidTypeDef = ConcreteType "Void" []
-
-instance Show TypeDef where
-  show AnyType = "?"
-  show (InferredType str mainconstrs constrs)
-    | null constrs =
-      if null mainconstrs
-        then str
-        else str ++ " " ++ intercalate "," (map show mainconstrs)
-    | null mainconstrs = "[" ++ str ++ " " ++ intercalate "," (map show constrs) ++ "]"
-    | otherwise =
-      "[(" ++ str ++ " " ++ intercalate "," (map show mainconstrs) ++ ") " ++ intercalate "," (map show constrs) ++ "]"
-  show (ConcreteType str constrs) =
-    if null constrs
-      then str
-      else str ++ " (" ++ intercalate ") (" (map show constrs) ++ ")"
-
-data TypeParamConstraint
-  = Any
-  | Exact TypeDef
-  | Super TypeDef
-  | Deriving TypeDef
-  deriving (Eq, Ord)
-
-instance Show TypeParamConstraint where
-  show Any                = "?"
-  show (Exact typedef)    = show typedef
-  show (Super typedef)    = "super " ++ show typedef
-  show (Deriving typedef) = "deriving " ++ show typedef
-
-data TypeModifier
-  = ModuleType
-  | InterfaceType
-  | SealedType
-  | NativeType
-  deriving (Eq)
-
-instance Show TypeModifier where
-  show ModuleType    = "module"
-  show InterfaceType = "interface"
-  show SealedType    = "sealed"
-  show NativeType    = "native"
-
-data MemberModifier
-  = StaticMember
-  | InternalMember
-  | ImplementMember
-  | FinalMember
-  | UniqueMember
-  | NativeMember
-  | ClassMember
-  deriving (Eq, Ord)
-
-instance Show MemberModifier where
-  show StaticMember    = "static"
-  show InternalMember  = "internal"
-  show ImplementMember = "implement"
-  show FinalMember     = "final"
-  show UniqueMember    = "unique"
-  show NativeMember    = "native"
-  show ClassMember     = "<<class>>"
 
 data Function = Function
   { functionModifiers  :: [MemberModifier]
@@ -278,22 +211,6 @@ showFunctionHeader (Function modifs name int outt b) =
 instance Show Function where
   show fn@Function {functionBody = b} = showFunctionHeader fn ++ " = " ++ show b
 
-data DerivationKind
-  = Unbound String
-  | Concrete TypeName
-             [DerivationKind]
-  deriving (Eq, Ord)
-
-instance Show DerivationKind where
-  show (Unbound v) = v
-  show (Concrete name []) = name
-  show (Concrete name kinds) = name ++ " (" ++ intercalate ") (" (show <$> kinds) ++ ")"
-
-voidDerivation :: DerivationKind
-voidDerivation = Concrete "Void" []
-
-functorialDerivation :: TypeName -> DerivationKind
-functorialDerivation typename = Concrete "Function" [voidDerivation, Concrete typename []]
 
 data Variant = Variant
   { variantName   :: TypeName

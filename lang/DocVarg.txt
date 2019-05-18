@@ -68,9 +68,9 @@ The symbols used in Varg are the following:
   | } | ; | = | +
   | - | * | / | ^
   | < | > | <= | >=
-  | == | -> | \ | []
-  | .. | /= | || | &&
-  |  .  | _ |  | 
+  | == | $ | -> | \
+  | [] | .. | /= | ||
+  | && |  .  | _ | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #{ and }#.
@@ -157,6 +157,7 @@ All other symbols are terminals.
   |  |  **|**  | ``>=`` 
   |  |  **|**  | ``==`` 
   |  |  **|**  | ``:`` 
+  |  |  **|**  | ``$`` 
   | //AbsRetType// | -> | ``:`` ``abstract`` //FreeTypeDef// 
   |  |  **|**  | **eps**
   | //FunTemplateParams// | -> | **eps**
@@ -189,6 +190,7 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
   |  |  **|**  | ``unify`` //Expr// ``with`` //Expr// ``in`` //Expr// 
   |  |  **|**  | //Expr1// ``:`` //Expr// 
+  |  |  **|**  | //Expr1// ``||`` //Expr1// 
   |  |  **|**  | //Expr1// 
   | //[LetDef]// | -> | //LetDef// 
   |  |  **|**  | //LetDef// ``;`` //[LetDef]// 
@@ -218,15 +220,12 @@ All other symbols are terminals.
   | //ListElem// | -> | //Expr// 
   | //[ListElem]// | -> | //ListElem// 
   |  |  **|**  | //ListElem// ``,`` //[ListElem]// 
-  | //Expr5// | -> | ``-`` //Expr6// 
-  |  |  **|**  | //Expr5// //Expr6// 
-  |  |  **|**  | //Expr6// 
-  | //Expr1// | -> | //Expr1// //Op// //Expr2// 
+  | //Expr1// | -> | //Expr1// ``$`` //Expr2// 
+  |  |  **|**  | //Expr1// //Op// //Expr2// 
   |  |  **|**  | //Expr1// ``==`` //Expr2// 
   |  |  **|**  | //Expr1// ``/=`` //Expr2// 
   |  |  **|**  | //Expr2// ``mod`` //Expr2// 
   |  |  **|**  | ``not`` //Expr2// 
-  |  |  **|**  | //Expr2// ``||`` //Expr2// 
   |  |  **|**  | //Expr2// ``&&`` //Expr2// 
   |  |  **|**  | //Expr2// ``<`` //Expr2// 
   |  |  **|**  | //Expr2// ``>`` //Expr2// 
@@ -242,6 +241,9 @@ All other symbols are terminals.
   | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
   |  |  **|**  | //Expr5// `` . `` //Expr4// 
   |  |  **|**  | //Expr5// 
+  | //Expr5// | -> | ``-`` //Expr6// 
+  |  |  **|**  | //Expr5// //Expr6// 
+  |  |  **|**  | //Expr6// 
   | //Boolean// | -> | ``true`` 
   |  |  **|**  | ``false`` 
 

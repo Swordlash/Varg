@@ -65,10 +65,10 @@ The reserved words used in Varg are the following:
 The symbols used in Varg are the following:
   | ? | [ | ] | (
   | ) | , | : | {
-  | } |  | ; | =
-  | + | - | * | /
-  | ^ | < | > | <=
-  | >= | == | -> | \
+  | } | ; | = | +
+  | - | * | / | ^
+  | < | > | <= | >=
+  | == | $ | -> | \
   | [] | .. | /= | ||
   | && |  .  | _ | 
 
@@ -135,7 +135,7 @@ All other symbols are terminals.
   | //MemberDef// | -> | //UIdent// //DerivationDef// 
   |  |  **|**  | //UIdent// //DerivationDef// ``has`` ``{`` //[ClassField]// ``}`` 
   | //DerivationDef// | -> | ``derives`` //UIdent// 
-  |  |  **|**  | ```` 
+  |  |  **|**  | **eps**
   | //[MemberDef]// | -> | **eps**
   |  |  **|**  | //MemberDef// 
   |  |  **|**  | //MemberDef// ``;`` //[MemberDef]// 
@@ -157,6 +157,7 @@ All other symbols are terminals.
   |  |  **|**  | ``>=`` 
   |  |  **|**  | ``==`` 
   |  |  **|**  | ``:`` 
+  |  |  **|**  | ``$`` 
   | //AbsRetType// | -> | ``:`` ``abstract`` //FreeTypeDef// 
   |  |  **|**  | **eps**
   | //FunTemplateParams// | -> | **eps**
@@ -218,10 +219,8 @@ All other symbols are terminals.
   | //ListElem// | -> | //Expr// 
   | //[ListElem]// | -> | //ListElem// 
   |  |  **|**  | //ListElem// ``,`` //[ListElem]// 
-  | //Expr5// | -> | ``-`` //Expr6// 
-  |  |  **|**  | //Expr5// //Expr6// 
-  |  |  **|**  | //Expr6// 
-  | //Expr1// | -> | //Expr1// //Op// //Expr2// 
+  | //Expr1// | -> | //Expr1// ``$`` //Expr2// 
+  |  |  **|**  | //Expr1// //Op// //Expr2// 
   |  |  **|**  | //Expr1// ``==`` //Expr2// 
   |  |  **|**  | //Expr1// ``/=`` //Expr2// 
   |  |  **|**  | //Expr2// ``mod`` //Expr2// 
@@ -242,6 +241,9 @@ All other symbols are terminals.
   | //Expr4// | -> | //Expr5// ``^`` //Expr4// 
   |  |  **|**  | //Expr5// `` . `` //Expr4// 
   |  |  **|**  | //Expr5// 
+  | //Expr5// | -> | ``-`` //Expr6// 
+  |  |  **|**  | //Expr5// //Expr6// 
+  |  |  **|**  | //Expr6// 
   | //Boolean// | -> | ``true`` 
   |  |  **|**  | ``false`` 
 
