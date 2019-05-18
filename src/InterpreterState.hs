@@ -13,6 +13,7 @@ data InterpreterState = InterpreterState
   { hierarchy   :: ClassHierarchy
   , lambdaIndex :: Int
   , pushName    :: String
+  --, thunkCache  :: M.Map Instance Instance
   }
 
 data InterpreterRuntime = InterpreterRuntime
@@ -35,6 +36,8 @@ pushLambdaName name st = st {pushName = name}
 saveRealType :: Updater Type InterpreterRuntime
 saveRealType typ runt = runt {realType = typ}
 
+--memoize :: Updater (Instance, Instance) InterpreterState
+--memoize (thunk, forced) st = st {thunkCache = M.insert thunk forced $ thunkCache st}
 incrLambdaIdx :: Notifier InterpreterState
 incrLambdaIdx st =
   if pushName st == ""

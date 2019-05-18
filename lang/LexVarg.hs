@@ -68,9 +68,9 @@ alex_base = listArray (0 :: Int, 59)
   , 0
   , 143
   , 151
-  , -30
+  , 82
   , 2599
-  , -73
+  , -84
   , 2845
   , 0
   , 3091
@@ -111,7 +111,7 @@ alex_table = listArray (0 :: Int, 4036)
   , 59
   , 59
   , 59
-  , 45
+  , 0
   , 0
   , 0
   , 0
@@ -212,7 +212,7 @@ alex_table = listArray (0 :: Int, 4036)
   , 51
   , 38
   , 22
-  , 0
+  , 45
   , 0
   , 0
   , 0
@@ -231,7 +231,7 @@ alex_table = listArray (0 :: Int, 4036)
   , 0
   , 0
   , 0
-  , 0
+  , 45
   , 2
   , 59
   , 59
@@ -4141,7 +4141,7 @@ alex_check = listArray (0 :: Int, 4036)
   , 39
   , 45
   , 32
-  , 39
+  , 93
   , 48
   , 49
   , 50
@@ -4152,7 +4152,7 @@ alex_check = listArray (0 :: Int, 4036)
   , 55
   , 56
   , 57
-  , 93
+  , -1
   , -1
   , -1
   , -1
@@ -4253,7 +4253,7 @@ alex_check = listArray (0 :: Int, 4036)
   , 126
   , 35
   , 34
-  , -1
+  , 39
   , -1
   , -1
   , -1
@@ -4272,7 +4272,7 @@ alex_check = listArray (0 :: Int, 4036)
   , -1
   , -1
   , -1
-  , -1
+  , 58
   , 92
   , 48
   , 49
@@ -8391,7 +8391,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "else" 34 (b "<" 17 (b "-" 9 (b ")" 5 (b "&&" 3 (b "$" 2 (b " . " 1 N N) N) (b "(" 4 N N)) (b "+" 7 (b "*" 6 N N) (b "," 8 N N))) (b "/=" 13 (b ".." 11 (b "->" 10 N N) (b "/" 12 N N)) (b ":'" 15 (b ":" 14 N N) (b ";" 16 N N)))) (b "\\" 26 (b ">=" 22 (b "==" 20 (b "=" 19 (b "<=" 18 N N) N) (b ">" 21 N N)) (b "[" 24 (b "?" 23 N N) (b "[]" 25 N N))) (b "abstract" 30 (b "^" 28 (b "]" 27 N N) (b "_" 29 N N)) (b "derives" 32 (b "class" 31 N N) (b "deriving" 33 N N))))) (b "native" 51 (b "in" 43 (b "if" 39 (b "function" 37 (b "final" 36 (b "false" 35 N N) N) (b "has" 38 N N)) (b "implementing" 41 (b "implement" 40 N N) (b "import" 42 N N))) (b "match" 47 (b "internal" 45 (b "interface" 44 N N) (b "let" 46 N N)) (b "mod" 49 (b "matching" 48 N N) (b "module" 50 N N)))) (b "true" 60 (b "super" 56 (b "static" 54 (b "sealed" 53 (b "not" 52 N N) N) (b "struct" 55 N N)) (b "then" 58 (b "template" 57 N N) (b "this" 59 N N))) (b "with" 64 (b "unique" 62 (b "unify" 61 N N) (b "where" 63 N N)) (b "||" 66 (b "{" 65 N N) (b "}" 67 N N)))))
+resWords = b "else" 35 (b "<" 18 (b "-" 9 (b ")" 5 (b "&&" 3 (b "$" 2 (b " . " 1 N N) N) (b "(" 4 N N)) (b "+" 7 (b "*" 6 N N) (b "," 8 N N))) (b ":" 14 (b "/" 12 (b ".." 11 (b "->" 10 N N) N) (b "/=" 13 N N)) (b "::" 16 (b ":'" 15 N N) (b ";" 17 N N)))) (b "\\" 27 (b ">=" 23 (b "==" 21 (b "=" 20 (b "<=" 19 N N) N) (b ">" 22 N N)) (b "[" 25 (b "?" 24 N N) (b "[]" 26 N N))) (b "abstract" 31 (b "^" 29 (b "]" 28 N N) (b "_" 30 N N)) (b "derives" 33 (b "class" 32 N N) (b "deriving" 34 N N))))) (b "native" 52 (b "in" 44 (b "if" 40 (b "function" 38 (b "final" 37 (b "false" 36 N N) N) (b "has" 39 N N)) (b "implementing" 42 (b "implement" 41 N N) (b "import" 43 N N))) (b "match" 48 (b "internal" 46 (b "interface" 45 N N) (b "let" 47 N N)) (b "mod" 50 (b "matching" 49 N N) (b "module" 51 N N)))) (b "true" 61 (b "super" 57 (b "static" 55 (b "sealed" 54 (b "not" 53 N N) N) (b "struct" 56 N N)) (b "then" 59 (b "template" 58 N N) (b "this" 60 N N))) (b "with" 65 (b "unique" 63 (b "unify" 62 N N) (b "where" 64 N N)) (b "||" 67 (b "{" 66 N N) (b "}" 68 N N)))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

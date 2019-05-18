@@ -123,7 +123,13 @@ parseExpression lookupFun expr =
     Abs.EList lelems -> do
       let elems = reverse $ map (\(Abs.EListElem expr) -> expr) lelems
       foldM (makeList lookupFun) (EMember (EClass "List") "Empty") elems
-    Abs.ERange beg end -> parseExpression lookupFun $ Abs.EList $ map (Abs.EListElem . Abs.EInt) [beg .. end]
+    Abs.ERange beg end -> do
+      bege <- parseExpression lookupFun beg
+      ende <- parseExpression lookupFun end
+      return $ ERange bege ende
+    Abs.ERangeFr beg -> do
+      bege <- parseExpression lookupFun beg
+      return $ ERange bege EWild
     Abs.EEmptyList -> pure $ EMember (EClass "List") "Empty"
     Abs.EIfThenElse expr1 expr2 expr3 -> do
       pe1 <- parseExpression lookupFun expr1

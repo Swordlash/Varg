@@ -78,8 +78,8 @@ The symbols used in Varg are the following: \\
 {\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
 {\symb{:'}} &{\symb{\$}} &{\symb{{$-$}{$>$}}} \\
 {\symb{$\backslash$}} &{\symb{[]}} &{\symb{..}} \\
-{\symb{/{$=$}}} &{\symb{{$|$}{$|$}}} &{\symb{\&\&}} \\
-{\symb{ . }} &{\symb{\_}} & \\
+{\symb{::}} &{\symb{/{$=$}}} &{\symb{{$|$}{$|$}}} \\
+{\symb{\&\&}} &{\symb{ . }} &{\symb{\_}} \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -322,7 +322,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{if}} {\nonterminal{Expr}} {\terminal{then}} {\nonterminal{Expr}} {\terminal{else}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\terminal{unify}} {\nonterminal{Expr}} {\terminal{with}} {\nonterminal{Expr}} {\terminal{in}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{:}} {\nonterminal{Expr}}  \\
- & {\delimit}  &{\nonterminal{Expr1}} {\terminal{:'}} {\nonterminal{Expr}}  \\
+ & {\delimit}  &{\nonterminal{Expr1}} {\terminal{::}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\nonterminal{Expr1}} {\terminal{{$|$}{$|$}}} {\nonterminal{Expr1}}  \\
  & {\delimit}  &{\nonterminal{Expr1}}  \\
 \end{tabular}\\
@@ -351,7 +351,8 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{(}} {\terminal{$\backslash$}} {\nonterminal{ListArgDef}} {\terminal{{$-$}{$>$}}} {\nonterminal{Expr}} {\terminal{)}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{ListListElem}} {\terminal{]}}  \\
  & {\delimit}  &{\terminal{[]}}  \\
- & {\delimit}  &{\terminal{[}} {\nonterminal{Integer}} {\terminal{..}} {\nonterminal{Integer}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\nonterminal{Expr}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\terminal{]}}  \\
  & {\delimit}  &{\nonterminal{Boolean}}  \\
  & {\delimit}  &{\terminal{this}}  \\
  & {\delimit}  &{\terminal{super}}  \\

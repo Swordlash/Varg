@@ -68,9 +68,10 @@ The symbols used in Varg are the following:
   | } | ; | = | +
   | - | * | / | ^
   | < | > | <= | >=
-  | == | $ | -> | \
-  | [] | .. | /= | ||
-  | && |  .  | _ | 
+  | == | :' | $ | ->
+  | \ | [] | .. | ::
+  | /= | || | && |  . 
+  | _ |  |  | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #{ and }#.
@@ -157,6 +158,7 @@ All other symbols are terminals.
   |  |  **|**  | ``>=`` 
   |  |  **|**  | ``==`` 
   |  |  **|**  | ``:`` 
+  |  |  **|**  | ``:'`` 
   |  |  **|**  | ``$`` 
   | //AbsRetType// | -> | ``:`` ``abstract`` //FreeTypeDef// 
   |  |  **|**  | **eps**
@@ -190,6 +192,7 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
   |  |  **|**  | ``unify`` //Expr// ``with`` //Expr// ``in`` //Expr// 
   |  |  **|**  | //Expr1// ``:`` //Expr// 
+  |  |  **|**  | //Expr1// ``::`` //Expr// 
   |  |  **|**  | //Expr1// ``||`` //Expr1// 
   |  |  **|**  | //Expr1// 
   | //[LetDef]// | -> | //LetDef// 
@@ -203,7 +206,7 @@ All other symbols are terminals.
   |  |  **|**  | ``(`` ``\`` //[ArgDef]// ``->`` //Expr// ``)`` 
   |  |  **|**  | ``[`` //[ListElem]// ``]`` 
   |  |  **|**  | ``[]`` 
-  |  |  **|**  | ``[`` //Integer// ``..`` //Integer// ``]`` 
+  |  |  **|**  | ``[`` //Expr// ``..`` //Expr// ``]`` 
   |  |  **|**  | //Boolean// 
   |  |  **|**  | ``this`` 
   |  |  **|**  | ``super`` 

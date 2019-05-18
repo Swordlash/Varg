@@ -124,6 +124,8 @@ data Expr
   | EClass String
   | EComp Expr
           Expr
+  | ERange Expr
+           Expr
   | EBool Bool
   | EInt Integer
   | EChar Char
@@ -155,7 +157,7 @@ instance Show Expr where
     where
       conds = concatMap (\(e, v) -> show e ++ " -> " ++ show v ++ "\n") table
   show (ECons e1 e2) = show e1 ++ " : " ++ show e2
-  show (ESCons e1 e2) = show e1 ++ " :' " ++ show e2
+  show (ESCons e1 e2) = show e1 ++ " :: " ++ show e2
   show (EMod e1 e2) = show e1 ++ " mod " ++ show e2
   show (EAdd e1 e2) = show e1 ++ " + " ++ show e2
   show (ESub e1 e2) = show e1 ++ " - " ++ show e2
@@ -180,6 +182,7 @@ instance Show Expr where
   show (EFunctor val) = "@" ++ show val
   show (EOperator av) = "(" ++ show av ++ ")"
   show (EComp e1 e2) = show e1 ++ " . " ++ show e2
+  show (ERange e1 e2) = "[" ++ show e1 ++ " .. " ++ show e2 ++ "]"
   show EWild = "_"
   show ENative = "native"
   show EAbstract = "abstract"

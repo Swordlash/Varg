@@ -143,13 +143,14 @@ EInferredLambda.    Expr6 ::= "(" "\\" [ArgDef] "->" Expr ")" ;
 
 EList.              Expr6 ::= "[" [ListElem] "]" ;
 EEmptyList.         Expr6 ::= "[]" ;
-ERange.             Expr6 ::= "[" Integer ".." Integer "]" ;
+ERange.             Expr6 ::= "[" Expr ".." Expr "]" ;
+ERangeFr.           Expr6 ::= "[" Expr ".." "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr  ::= Expr1 ":"   Expr;
-ESCons.             Expr  ::= Expr1 ":'" Expr;
+ESCons.             Expr  ::= Expr1 "::" Expr;
 EOp.                Expr1  ::= Expr1 Op Expr2;
 EEq.                Expr1  ::= Expr1  "==" Expr2 ;
 ENeq.               Expr1  ::= Expr1  "/=" Expr2 ;

@@ -497,11 +497,16 @@ instance Print Expr where
              ])
       EList listelems -> prPrec i 6 (concatD [doc (showString "["), prt 0 listelems, doc (showString "]")])
       EEmptyList -> prPrec i 6 (concatD [doc (showString "[]")])
-      ERange n1 n2 ->
-        prPrec i 6 (concatD [doc (showString "["), prt 0 n1, doc (showString ".."), prt 0 n2, doc (showString "]")])
+      ERange expr1 expr2 ->
+        prPrec
+          i
+          6
+          (concatD [doc (showString "["), prt 0 expr1, doc (showString ".."), prt 0 expr2, doc (showString "]")])
+      ERangeFr expr ->
+        prPrec i 6 (concatD [doc (showString "["), prt 0 expr, doc (showString ".."), doc (showString "]")])
       EAppl expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "$"), prt 2 expr2])
       ECons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString ":"), prt 0 expr2])
-      ESCons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString ":'"), prt 0 expr2])
+      ESCons expr1 expr2 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "::"), prt 0 expr2])
       EOp expr1 op expr2 -> prPrec i 1 (concatD [prt 1 expr1, prt 0 op, prt 2 expr2])
       EEq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "=="), prt 2 expr2])
       ENeq expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "/="), prt 2 expr2])

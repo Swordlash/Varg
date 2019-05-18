@@ -34,7 +34,7 @@ runInterpreter (main, list) hier =
   (\f -> do
      liftIO $ logg $ functionBody f
      evalStateT
-       (runReaderT (interpretExpression (supplyArgs (functionBody f)) >>= forceDeepEval) (emptyRuntime list))
+       (runReaderT (interpretExpression (supplyArgs (functionBody f)) >>= deepForce) (emptyRuntime list))
        (emptyState hier))
 
 emptyState :: ClassHierarchy -> InterpreterState
@@ -62,13 +62,19 @@ interpretBinaryArithmetic ::
   -> InterpreterMonad Instance
 interpretBinaryArithmetic whole name expr1 expr2 intfun dblfun boolfun = do
   env <- asks environment
-  p1 <- forceEval =<< interpretExpression expr1
-  p2 <- forceEval =<< interpretExpression expr2
+  p1 <- interpretExpression expr1
+  p2 <- interpretExpression expr2
   rethrow
     (case (p1, p2) of
        (IntInstance v1, IntInstance v2) -> intfun v1 v2
        (DoubleInstance v1, DoubleInstance v2) -> dblfun v1 v2
        (BoolInstance v1, BoolInstance v2) -> boolfun v1 v2
+       (v1@ThunkInstance {}, _) -> do
+         fv1 <- force v1
+         interpretBinaryArithmetic whole name (EInterpreted fv1) expr2 intfun dblfun boolfun
+       (_, v2@ThunkInstance {}) -> do
+         fv2 <- force v2
+         interpretBinaryArithmetic whole name expr1 (EInterpreted fv2) intfun dblfun boolfun
        (TypeInstance {}, _) -> interpretExpression $ EApply (EMember (EInterpreted p1) name) (EInterpreted p2)
        _ -> throw whole ("You want to " ++ name ++ " numbers " ++ show p1 ++ " and " ++ show p2 ++ ". Are they though?"))
     ("Call: " ++ show whole ++ "\nBound variables: " ++ showTr env ++ "\n")
@@ -134,24 +140,48 @@ findNativeMethod obj name = do
     "call" -> interpretExpression $ EApply (EMember (EClass "Function") "call") $ EInterpreted obj
     _ -> throwException' $ "Nonexistent native method " ++ name
 
-forceDeepEval :: Instance -> InterpreterMonad Instance
-forceDeepEval =
+deepForce :: Instance -> InterpreterMonad Instance
+deepForce =
   \case
-    ThunkInstance expr clos -> local (exchangeEnvironment clos) (interpretExpression expr >>= forceDeepEval)
+    ThunkInstance expr clos -> local (exchangeEnvironment clos) (interpretExpression expr >>= deepForce)
     t@TypeInstance {fields = flds} -> do
       let (names, insts) = unzip flds
-      forcedInsts <- mapM forceDeepEval insts
+      forcedInsts <- mapM deepForce insts
       return $ t {fields = zip names forcedInsts}
     a -> pure a
 
-forceEval :: Instance -> InterpreterMonad Instance
-forceEval =
+force :: Instance -> InterpreterMonad Instance
+force =
   \case
-    ThunkInstance expr clos -> local (exchangeEnvironment clos) (interpretExpression expr >>= forceEval)
+    ThunkInstance expr clos -> local (exchangeEnvironment clos) (interpretExpression expr >>= force)
     a -> pure a
 
+delay :: Expr -> InterpreterMonad Instance
+delay expr = do
+  islazy <- liftIO isVargLazy
+  if islazy
+    then ThunkInstance expr <$> asks environment
+    else interpretExpression expr
+
+deepEq :: Instance -> Instance -> InterpreterMonad Bool
+deepEq inst1 inst2 = do
+  inst1f <- force inst1
+  inst2f <- force inst2
+  case (inst1f, inst2f) of
+    (IntInstance v1, IntInstance v2) -> pure $ v1 == v2
+    (DoubleInstance v1, DoubleInstance v2) -> pure $ v1 == v2
+    (CharInstance c1, CharInstance c2) -> pure $ c1 == c2
+    (BoolInstance b1, BoolInstance b2) -> pure $ b1 == b2
+    (FunctionInstance f1 c1, FunctionInstance f2 c2) -> pure $ (f1 == f2) && (c1 == c2)
+    (TypeInstance typ1 var1 _ f1, TypeInstance typ2 var2 _ f2) ->
+      if typ1 /= typ2 || var1 /= var2
+        then pure False
+        else foldM (\acc (i1, i2) -> deepEq i1 i2 >>= \r -> return $ acc && r) True (zip (map snd f1) (map snd f2))
+    _ -> pure False
+
 getMember :: Instance -> String -> InterpreterMonad Instance
-getMember obj name =
+getMember obj name = do
+  hier <- gets hierarchy
   case obj of
     TypeInstance {baseType = t, fields = f} ->
       if qualifiedTypeName t == "Void"
@@ -168,8 +198,20 @@ getMember obj name =
                        rethrow
                          (getMember (obj {baseType = supert}) name)
                          ("Call to nonexistent field " ++ name ++ " of class " ++ show obj))
+    IntInstance {} -> do
+      intcl <- lookupTypeFromClassHierarchy "Integer" hier
+      getMember (TypeInstance intcl "" [] []) name
+    DoubleInstance {} -> do
+      dblcl <- lookupTypeFromClassHierarchy "Double" hier
+      getMember (TypeInstance dblcl "" [] []) name
+    BoolInstance {} -> do
+      boolcl <- lookupTypeFromClassHierarchy "Bool" hier
+      getMember (TypeInstance boolcl "" [] []) name
+    CharInstance {} -> do
+      charcl <- lookupTypeFromClassHierarchy "Char" hier
+      getMember (TypeInstance charcl "" [] []) name
     th@ThunkInstance {} -> do
-      forced <- forceEval th
+      forced <- force th
       getMember forced name
     other -> rethrow (findNativeMethod obj name) ("Call to member `" ++ name ++ "` on primitive type " ++ show other)
 
@@ -182,21 +224,18 @@ appFun :: Instance -> Instance -> Expr -> InterpreterMonad Instance
 appFun inst argval expr =
   case inst of
     FunctionInstance Function {functionName = name, functionBody = ELambda argname _ _ body} envf ->
-      local (exchangeEnvironment $ M.insert argname argval envf) (makeLazy body)
+      local (exchangeEnvironment $ M.insert argname argval envf) (delay body)
     th@ThunkInstance {} -> do
-      forced <- forceEval th
+      forced <- force th
       appFun forced argval expr
     funval -> do
       env <- asks environment
-      funvalf <- forceDeepEval funval
-      argvalf <- forceDeepEval argval
+      funvalf <- deepForce funval
+      argvalf <- deepForce argval
       throw
         expr
         ("One does not simply apply argument to a non-function. Functor: (=" ++
          show funvalf ++ "), argument: (=" ++ show argvalf ++ ")\nBound variables: " ++ showTr env ++ "\n")
-
-makeLazy :: Expr -> InterpreterMonad Instance
-makeLazy expr = ThunkInstance expr <$> asks environment
 
 interpretExpression :: Expr -> InterpreterMonad Instance
 interpretExpression expr = do
@@ -221,7 +260,7 @@ interpretExpression expr = do
       case M.lookup name env of
         Nothing -> throwe (name ++ "? I have never seen this man in my life!\n I know only that " ++ showTr env)
         Just th@ThunkInstance {} ->
-          rethrow (forceEval th) ("Evaluating thunk " ++ show expr ++ "\nBound variables: " ++ showTr env ++ "\n")
+          rethrow (force th) ("Evaluating thunk " ++ show expr ++ "\nBound variables: " ++ showTr env ++ "\n")
         Just val -> return val
     ELambda _ int out _ ->
       modify incrLambdaIdx >> gets nextLambdaName >>= \lname ->
@@ -234,13 +273,13 @@ interpretExpression expr = do
     EApply fun arg ->
       rethrow
         (do funval <- interpretExpression fun
-            argval <- makeLazy arg
+            argval <- delay arg
             appFun funval argval expr)
         ("Call apply: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ showTr env ++ "\n")
     ELet name expr1 _ expr2 -- TODO: try to actually care about types
      ->
       let nenv = M.insert name (ThunkInstance expr1 nenv) env -- bind as thunk, eval when needed as var, recursive def
-       in local (exchangeEnvironment nenv) (makeLazy expr2)
+       in local (exchangeEnvironment nenv) (delay expr2)
     EMember (EClass tname) name -> do
       t <- lookupTypeFromClassHierarchy tname hier
       if isUpper (head name) -- call constructor
@@ -248,7 +287,7 @@ interpretExpression expr = do
           Variant _ supervar fieldsEx <- lookupVariantFromType name t
           let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
           let nargs = map (EVar . fst) argstypes
-          makeLazy $
+          delay $
             fst $
             foldr
               (\(narg, typ) (expr, typename) ->
@@ -263,7 +302,7 @@ interpretExpression expr = do
                Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
     EMember expr name ->
       rethrow
-        (interpretExpression expr >>= forceEval >>= \obj ->
+        (interpretExpression expr >>= force >>= \obj ->
            let t = baseType obj
             in local (saveRealType (baseType obj) . bindVariable ("this", obj)) (getMember obj name))
         ("Computing member " ++ show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ showTr env ++ "\n")
@@ -271,16 +310,16 @@ interpretExpression expr = do
      -> do
       typ <- lookupTypeFromClassHierarchy tname hier
       Variant _ supervar fieldsEx <- lookupVariantFromType var typ
-      vals <- mapM makeLazy flds
+      vals <- mapM delay flds
       return $ TypeInstance typ var [] $ zip (map fst fieldsEx) vals
     -- arithmetic ops
     ENeg expr ->
-      interpretExpression expr >>= \case
+      interpretExpression expr >>= force >>= \case
         IntInstance val -> pure $ IntInstance $ -val
         DoubleInstance val -> pure $ DoubleInstance $ -val
         _ -> throwException "You can only (-Int) or (-Double) dude."
     ENot expr ->
-      interpretExpression expr >>= \case
+      interpretExpression expr >>= force >>= \case
         BoolInstance val -> pure $ BoolInstance $ not val
         _ -> throwe ("You can only negate bools, change my mind\nTrying to negate " ++ show expr)
     EMod expr1 expr2 -> binary "mod" expr1 expr2 (ifn mod) (dfn mod') (efn "Roll safe, is moduling booleans ok?" expr)
@@ -310,20 +349,25 @@ interpretExpression expr = do
     ELeq expr1 expr2 -> binary "<=" expr1 expr2 (bfn (<=)) (bfn (<=)) (efn "Roll safe, is comparing booleans ok?" expr)
     EGeq expr1 expr2 -> binary ">=" expr1 expr2 (bfn (>=)) (bfn (>=)) (efn "Roll safe, is comparing booleans ok?" expr)
     EEq expr1 expr2 -> do
-      p1 <- forceEval =<< interpretExpression expr1
-      p2 <- forceEval =<< interpretExpression expr2
-      return $ BoolInstance (p1 == p2) -- FIXME: fix equality to deepEq, to compare as deep as needed
+      p1 <- delay expr1
+      p2 <- delay expr2
+      eq <- deepEq p1 p2
+      return $ BoolInstance eq
     ENeq expr1 expr2 -> do
-      p1 <- forceEval =<< interpretExpression expr1
-      p2 <- forceEval =<< interpretExpression expr2
-      return $ BoolInstance $ p1 /= p2
+      BoolInstance val <- interpretExpression $ EEq expr1 expr2
+      return $ BoolInstance $ not val
     ECons expr1 expr2 -> do
-      p1 <- makeLazy expr1
-      p2 <- makeLazy expr2
+      p1 <- delay expr1
+      p2 <- delay expr2
       list <- lookupTypeFromClassHierarchy "List" hier
       return $ TypeInstance list "Cons" [] [("head", p1), ("tail", p2)] -- FIXME: hardcoded List.Cons, but can we do better?
-    ESCons expr1 expr2 -> makeLazy $ EApply (EMember expr2 ":") expr1 --strict cons
-    EComp expr1 expr2 -> makeLazy $ EApply (EApply (EMember (EClass "Function") "compose") expr1) expr2
+    ESCons expr1 expr2 -> delay $ EApply (EMember expr2 ":") expr1 --strict cons
+    EComp expr1 expr2 -> delay $ EApply (EApply (EMember (EClass "Function") "compose") expr1) expr2
+    ERange expr1 expr2 ->
+      delay $
+      if expr2 == EWild
+        then EMember expr1 "rangeFrom"
+        else EApply (EMember expr1 "rangeTo") expr2
     EOperator op ->
       return $
       (case op of

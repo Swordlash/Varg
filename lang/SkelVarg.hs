@@ -212,7 +212,8 @@ transExpr x =
     EInferredLambda argdefs expr  -> failure x
     EList listelems               -> failure x
     EEmptyList                    -> failure x
-    ERange integer1 integer2      -> failure x
+    ERange expr1 expr2            -> failure x
+    ERangeFr expr                 -> failure x
     EAppl expr1 expr2             -> failure x
     ECons expr1 expr2             -> failure x
     ESCons expr1 expr2            -> failure x

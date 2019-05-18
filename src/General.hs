@@ -74,11 +74,15 @@ logg obj =
     Just _ -> print obj
 
 usage :: String
-usage = "Invalid arguments given. Usage: Varg [-h] [-v] [-dN] <program>"
+usage = "Invalid arguments given. Usage: Varg [-h, --help] [-v, --verbose] [-s, --strict] [-dN] <program>"
 
 parse :: String -> IO ()
 parse "-h" = putStrLn usage >> exitSuccess
+parse "--help" = parse "-h"
 parse "-v" = setEnv "VargVerbosity" "1"
+parse "--verbose" = parse "-v"
+parse "-s" = setEnv "VargStrictness" "True"
+parse "--strict" = parse "-s"
 parse s =
   if take 2 s == "-d"
     then setEnv "VargTraceDepth" (drop 2 s)
@@ -89,6 +93,15 @@ program =
   lookupEnv "VargProg" >>= \case
     Nothing -> pure "Main"
     Just prog -> pure prog
+
+isVargLazy :: IO Bool
+isVargLazy =
+  lookupEnv "VargStrictness" >>= \case
+    Nothing -> pure True
+    Just strs ->
+      case readMaybe strs :: Maybe Bool of
+        Just str -> pure $ not str
+        Nothing -> pure True
 
 defaultTraceDepth :: IO Int
 defaultTraceDepth =

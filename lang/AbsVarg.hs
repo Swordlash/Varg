@@ -218,8 +218,9 @@ data Expr
                     Expr
   | EList [ListElem]
   | EEmptyList
-  | ERange Integer
-           Integer
+  | ERange Expr
+           Expr
+  | ERangeFr Expr
   | EAppl Expr
           Expr
   | ECons Expr

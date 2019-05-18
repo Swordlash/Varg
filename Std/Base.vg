@@ -4,3 +4,14 @@ class Void where
 interface template Function a b where
     static function call (f: Function a b) (x:a) : b = f x
     static function compose <a, b, c> (f: Function b c) (g: Function a b) : Function a c = (\x -> f (g x))
+
+template Enumerable a where
+    unique function rangeTo (other : a) : List a = if this <= other then this : this.incr.rangeTo other else List.Empty
+    unique function rangeFrom : List a = this : this.incr.rangeFrom
+    unique function incr : abstract a
+
+class Integer deriving Enumerable Integer where
+    implement function incr = this + 1
+
+class Double deriving Enumerable Integer where
+    implement function incr = this + 1.0
