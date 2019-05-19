@@ -7,8 +7,10 @@ class String deriving List Char where
         tail : String
 
     function (:) (ch:Char) : String = String.Cons ch this # we must shadow (:) from List to avoid implicit cast on List
+    function (++) (other : String) : String = if this.null then other else String.Cons $ this.head $ this.tail ++ other # we use Cons, because lazy (:) erases type
 
     function null : Bool = this == String.Empty
     function empty : String = ""
 
+    function toString : String = this
     static function unwords (words : List String) : String = if words.null then "" else words.head ++ " " ++ String.unwords (words.tail)

@@ -8,7 +8,7 @@ token UIdent (upper (letter | digit)*);
 token LIdent (lower (letter | digit)*);
 
 token MFun ('.' (letter | digit)*);
-token Op ( '!' | '#' | '$' | '%' | '&' | '*' | '+' | '.' | '/' | '<' | '=' | '>' | '?' | '@' | '\\' | '^' | '|' | '-' | '~' )+ ;
+token Op (( '!' | '#' | '$' | '%' | '&' | '*' | '+' | '.' | '/' | '<' | '=' | '>' | '?' | '@' | '\\' | '^' | '|' | '-' | '~' )+);
 
 entrypoints ProgramDef;
 
@@ -88,19 +88,20 @@ FFunction.    FunctionName ::= LIdent ;
 FOperator.    FunctionName ::= "(" Operator ")" ;
 FOperatorDef. FunctionName ::= "(" Op ")";
 
-Op_plus.  Operator ::= "+" ;
-Op_minus. Operator ::= "-" ;
-Op_mul.   Operator ::= "*" ;
-Op_div.   Operator ::= "/" ;
-Op_pow.   Operator ::= "^" ;
-Op_less.  Operator ::= "<" ;
-Op_gr.    Operator ::= ">" ;
-Op_leq.   Operator ::= "<=";
-Op_geq.   Operator ::= ">=";
-Op_eq.    Operator ::= "==";
-Op_cons.  Operator ::= ":" ;
-Op_scons. Operator ::= ":'";
-Op_appl.  Operator ::= "$" ;
+Op_plus.   Operator ::= "+" ;
+Op_minus.  Operator ::= "-" ;
+Op_mul.    Operator ::= "*" ;
+Op_div.    Operator ::= "/" ;
+Op_pow.    Operator ::= "^" ;
+Op_less.   Operator ::= "<" ;
+Op_gr.     Operator ::= ">" ;
+Op_leq.    Operator ::= "<=";
+Op_geq.    Operator ::= ">=";
+Op_eq.     Operator ::= "==";
+Op_cons.   Operator ::= ":" ;
+Op_scons.  Operator ::= ":'";
+Op_appl.   Operator ::= "$" ;
+Op_append. Operator ::= "++";
 
 AbstractFunctionDefinition.  FunDef ::= [FunctionModifier] "function" FunctionName FunTemplateParams [ArgDef] AbsRetType ; -- abstract function, to be implemented in subclasses
 AbsReturnType.               AbsRetType ::= ":" "abstract" FreeTypeDef ;
@@ -151,6 +152,7 @@ separator nonempty  ListElem ",";
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr2  ::= Expr3 ":"   Expr2;
 ESCons.             Expr2  ::= Expr3 "::" Expr2;
+EAppend.            Expr2  ::= Expr3 "++" Expr2;
 EOp.                Expr3  ::= Expr3 Op Expr4;
 EEq.                Expr2  ::= Expr3  "==" Expr3 ;
 ENeq.               Expr2  ::= Expr4  "/=" Expr3 ;

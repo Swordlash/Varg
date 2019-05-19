@@ -1,5 +1,6 @@
 module Types
   ( module TypeDefs
+  , module Instances
   , module Types
   ) where
 
@@ -40,20 +41,26 @@ show' inst = ntake 100 $ show inst
 instance Show Instance where
   show (IntInstance val _) = show val
   show (DoubleInstance val _) = show val
-  show (CharInstance val _) = "'" ++ show val ++ "'"
+  show (CharInstance val _) = show val
   show (BoolInstance val _) = show val
   show (FunctionInstance expr clos _) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
   show (ThunkInstance expr clos mem) =
     "thunk " ++ show expr ++ " of closure " ++ showTr clos ++ " address: " ++ show mem
   show t@(TypeInstance base var params flds _) =
     case qualifiedTypeName base of
-      "List" -> show (instanceListToList t)
+      "List" -> "Why do we use native method to show List? Anyway, " ++ show (instanceListToList t)
       "String" ->
         if var == "Empty"
           then ""
           else (case lookup "head" flds of
-                  Just (CharInstance ch _) -> ch) :
+                  Just (CharInstance ch _) -> ch
+                  _                        -> '?') :
                show (fromJust $ lookup "tail" flds)
+      "Integer" -> show (fromJust $ lookup "value" flds)
+      "Double" -> show (fromJust $ lookup "value" flds)
+      "Bool" -> show (fromJust $ lookup "value" flds)
+      "Char" -> show (fromJust $ lookup "value" flds)
+      "Function" -> show (fromJust $ lookup "value" flds)
       name -> name ++ "." ++ var ++ unwords (map show flds) {-" (" ++ intercalate ")(" (map show params) ++ ") " ++-}
 
 ---------------------------------- Expression definitions --------------------------------------
@@ -127,6 +134,8 @@ data Expr
           Expr
   | ERange Expr
            Expr
+  | EAppend Expr
+            Expr
   | EBool Bool
   | EInt Integer
   | EChar Char
@@ -184,6 +193,7 @@ instance Show Expr where
   show (EOperator av) = "(" ++ show av ++ ")"
   show (EComp e1 e2) = show e1 ++ " . " ++ show e2
   show (ERange e1 e2) = "[" ++ show e1 ++ " .. " ++ show e2 ++ "]"
+  show (EAppend e1 e2) = show e1 ++ "++" ++ show e2
   show EWild = "_"
   show ENative = "native"
   show EAbstract = "abstract"

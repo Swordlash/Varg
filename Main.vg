@@ -2,5 +2,4 @@ import "Std.Overture"
 import "Std.Queue"
 
 class Main where
-    static function main args =
-        let q = Queue.fromList [1,2,3,4] in q.push 3
+    static function main args = String.unwords ["de", "ja", "vu"] #[1,2,3,4]

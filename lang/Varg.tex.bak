@@ -76,10 +76,11 @@ The symbols used in Varg are the following: \\
 {\symb{{$-$}}} &{\symb{*}} &{\symb{/}} \\
 {\symb{{\textasciicircum}}} &{\symb{{$<$}}} &{\symb{{$>$}}} \\
 {\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
-{\symb{:'}} &{\symb{\$}} &{\symb{{$-$}{$>$}}} \\
-{\symb{$\backslash$}} &{\symb{[]}} &{\symb{..}} \\
-{\symb{::}} &{\symb{/{$=$}}} &{\symb{{$|$}{$|$}}} \\
-{\symb{\&\&}} &{\symb{ . }} &{\symb{\_}} \\
+{\symb{:'}} &{\symb{\$}} &{\symb{{$+$}{$+$}}} \\
+{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} &{\symb{[]}} \\
+{\symb{..}} &{\symb{::}} &{\symb{/{$=$}}} \\
+{\symb{{$|$}{$|$}}} &{\symb{\&\&}} &{\symb{ . }} \\
+{\symb{\_}} & & \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -257,6 +258,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{:}}  \\
  & {\delimit}  &{\terminal{:'}}  \\
  & {\delimit}  &{\terminal{\$}}  \\
+ & {\delimit}  &{\terminal{{$+$}{$+$}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -383,7 +385,6 @@ All other symbols are terminals.\\
 \begin{tabular}{lll}
 {\nonterminal{Expr2}} & {\arrow}  &{\nonterminal{Expr3}} {\terminal{:}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{::}} {\nonterminal{Expr2}}  \\
- & {\delimit}  &{\nonterminal{Expr2}} {\nonterminal{Op}} {\nonterminal{Expr3}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$=$}{$=$}}} {\nonterminal{Expr3}}  \\
  & {\delimit}  &{\nonterminal{Expr4}} {\terminal{/{$=$}}} {\nonterminal{Expr3}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{mod}} {\nonterminal{Expr3}}  \\
@@ -397,7 +398,9 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr3}} & {\arrow}  &{\nonterminal{Expr3}} {\terminal{{$+$}}} {\nonterminal{Expr4}}  \\
+{\nonterminal{Expr3}} & {\arrow}  &{\nonterminal{Expr4}} {\terminal{{$+$}{$+$}}} {\nonterminal{Expr3}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\nonterminal{Op}} {\nonterminal{Expr4}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$+$}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$-$}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr4}}  \\
 \end{tabular}\\

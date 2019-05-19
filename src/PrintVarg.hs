@@ -347,19 +347,20 @@ instance Print FunctionName where
 instance Print Operator where
   prt i e =
     case e of
-      Op_plus  -> prPrec i 0 (concatD [doc (showString "+")])
-      Op_minus -> prPrec i 0 (concatD [doc (showString "-")])
-      Op_mul   -> prPrec i 0 (concatD [doc (showString "*")])
-      Op_div   -> prPrec i 0 (concatD [doc (showString "/")])
-      Op_pow   -> prPrec i 0 (concatD [doc (showString "^")])
-      Op_less  -> prPrec i 0 (concatD [doc (showString "<")])
-      Op_gr    -> prPrec i 0 (concatD [doc (showString ">")])
-      Op_leq   -> prPrec i 0 (concatD [doc (showString "<=")])
-      Op_geq   -> prPrec i 0 (concatD [doc (showString ">=")])
-      Op_eq    -> prPrec i 0 (concatD [doc (showString "==")])
-      Op_cons  -> prPrec i 0 (concatD [doc (showString ":")])
-      Op_scons -> prPrec i 0 (concatD [doc (showString ":'")])
-      Op_appl  -> prPrec i 0 (concatD [doc (showString "$")])
+      Op_plus   -> prPrec i 0 (concatD [doc (showString "+")])
+      Op_minus  -> prPrec i 0 (concatD [doc (showString "-")])
+      Op_mul    -> prPrec i 0 (concatD [doc (showString "*")])
+      Op_div    -> prPrec i 0 (concatD [doc (showString "/")])
+      Op_pow    -> prPrec i 0 (concatD [doc (showString "^")])
+      Op_less   -> prPrec i 0 (concatD [doc (showString "<")])
+      Op_gr     -> prPrec i 0 (concatD [doc (showString ">")])
+      Op_leq    -> prPrec i 0 (concatD [doc (showString "<=")])
+      Op_geq    -> prPrec i 0 (concatD [doc (showString ">=")])
+      Op_eq     -> prPrec i 0 (concatD [doc (showString "==")])
+      Op_cons   -> prPrec i 0 (concatD [doc (showString ":")])
+      Op_scons  -> prPrec i 0 (concatD [doc (showString ":'")])
+      Op_appl   -> prPrec i 0 (concatD [doc (showString "$")])
+      Op_append -> prPrec i 0 (concatD [doc (showString "++")])
 
 instance Print AbsRetType where
   prt i e =
@@ -507,6 +508,7 @@ instance Print Expr where
       EAppl expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "$"), prt 2 expr2])
       ECons expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString ":"), prt 2 expr2])
       ESCons expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "::"), prt 2 expr2])
+      EAppend expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "++"), prt 2 expr2])
       EOp expr1 op expr2 -> prPrec i 3 (concatD [prt 3 expr1, prt 0 op, prt 4 expr2])
       EEq expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "=="), prt 3 expr2])
       ENeq expr1 expr2 -> prPrec i 2 (concatD [prt 4 expr1, doc (showString "/="), prt 3 expr2])

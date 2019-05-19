@@ -131,3 +131,32 @@ rethrow inst trace =
          throwError $ VargException (reason ++ "---------- SOME MORE TRACE HIDDEN ----------" ++ "\n") 0
        VargException reason 0 -> throwError $ VargException reason 0
        VargException reason v -> throwError $ VargException (reason ++ trace ++ "\n") (v - 1))
+
+numType = ConcreteType "Num" []
+
+funType a b = ConcreteType "Function" [Exact a, Exact b]
+
+anyType = AnyType
+
+listAny = ConcreteType "List" [Any]
+
+anyop op n =
+  FunctionInstance
+    (Function [] n AnyType (funType AnyType AnyType) $
+     ELambda "x" AnyType (funType AnyType AnyType) $ ELambda "y" AnyType AnyType $ op (EVar "x") (EVar "y"))
+
+numop op n =
+  FunctionInstance
+    (Function [] n numType (funType numType numType) $
+     ELambda "x" numType (funType numType numType) $ ELambda "y" numType numType $ op (EVar "x") (EVar "y"))
+
+listop op n =
+  FunctionInstance
+    (Function [] n listAny (funType listAny listAny) $
+     ELambda "x" listAny (funType AnyType listAny) $ ELambda "y" listAny listAny $ op (EVar "x") (EVar "y"))
+
+funop n =
+  FunctionInstance
+    (Function [] n (funType AnyType AnyType) (funType AnyType AnyType) $
+     ELambda "f" (funType AnyType AnyType) (funType AnyType AnyType) $
+     ELambda "x" AnyType AnyType $ EApply (EVar "f") (EVar "x"))

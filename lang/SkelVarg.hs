@@ -146,19 +146,20 @@ transFunctionName x =
 transOperator :: Operator -> Result
 transOperator x =
   case x of
-    Op_plus  -> failure x
-    Op_minus -> failure x
-    Op_mul   -> failure x
-    Op_div   -> failure x
-    Op_pow   -> failure x
-    Op_less  -> failure x
-    Op_gr    -> failure x
-    Op_leq   -> failure x
-    Op_geq   -> failure x
-    Op_eq    -> failure x
-    Op_cons  -> failure x
-    Op_scons -> failure x
-    Op_appl  -> failure x
+    Op_plus   -> failure x
+    Op_minus  -> failure x
+    Op_mul    -> failure x
+    Op_div    -> failure x
+    Op_pow    -> failure x
+    Op_less   -> failure x
+    Op_gr     -> failure x
+    Op_leq    -> failure x
+    Op_geq    -> failure x
+    Op_eq     -> failure x
+    Op_cons   -> failure x
+    Op_scons  -> failure x
+    Op_appl   -> failure x
+    Op_append -> failure x
 
 transAbsRetType :: AbsRetType -> Result
 transAbsRetType x =
@@ -217,6 +218,7 @@ transExpr x =
     EAppl expr1 expr2             -> failure x
     ECons expr1 expr2             -> failure x
     ESCons expr1 expr2            -> failure x
+    EAppend expr1 expr2           -> failure x
     EOp expr1 op expr2            -> failure x
     EEq expr1 expr2               -> failure x
     ENeq expr1 expr2              -> failure x

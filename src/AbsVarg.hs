@@ -159,6 +159,7 @@ data Operator
   | Op_cons
   | Op_scons
   | Op_appl
+  | Op_append
   deriving (Eq, Ord, Show, Read)
 
 data AbsRetType
@@ -227,6 +228,8 @@ data Expr
           Expr
   | ESCons Expr
            Expr
+  | EAppend Expr
+            Expr
   | EOp Expr
         Op
         Expr

@@ -1,9 +1,8 @@
 module InterpreterState where
 
 import qualified Data.Map as M
-import Instances
+import General
 import PreprocessingState
-import Types
 
 type Environment = Closure
 
@@ -65,13 +64,18 @@ malloc val = do
   modify $ putValue (newloc, val)
   return newloc
 
-deref :: Int -> InterpreterMonad Instance
+deref :: Loc -> InterpreterMonad Instance
 deref loc =
   gets (M.lookup loc . memory) >>= \case
     Just val -> pure val
     Nothing -> do
       mem <- gets (M.toList . memory)
       throwException' $ "Dereferencing nonexistent location " ++ show loc ++ "\nMemory: " ++ show mem
+
+resolveEnv :: Environment -> InterpreterMonad (Mapping Instance)
+resolveEnv env = do
+  mem <- gets memory
+  return $ M.mapMaybe (`M.lookup` mem) env
 
 updateChunks :: Updater [Int] InterpreterState
 updateChunks chunks stat = stat {freeChunks = chunks}
@@ -85,8 +89,6 @@ pushLambdaName name st = st {pushName = name}
 saveRealType :: Updater Type InterpreterRuntime
 saveRealType typ runt = runt {realType = typ}
 
---memoize :: Updater (Instance, Instance) InterpreterState
---memoize (thunk, forced) st = st {thunkCache = M.insert thunk forced $ thunkCache st}
 incrLambdaIdx :: Notifier InterpreterState
 incrLambdaIdx st =
   if pushName st == ""
@@ -98,3 +100,22 @@ nextLambdaName st =
   if pushName st == ""
     then "lambda@" ++ show (lambdaIndex st)
     else pushName st
+
+----------------------------------- some type functions ---------------------------------
+intType :: InterpreterMonad Type
+intType = gets hierarchy >>= lookupTypeFromClassHierarchy "Integer"
+
+dblType :: InterpreterMonad Type
+dblType = gets hierarchy >>= lookupTypeFromClassHierarchy "Double"
+
+boolType :: InterpreterMonad Type
+boolType = gets hierarchy >>= lookupTypeFromClassHierarchy "Bool"
+
+charType :: InterpreterMonad Type
+charType = gets hierarchy >>= lookupTypeFromClassHierarchy "Char"
+
+functionType :: InterpreterMonad Type
+functionType = gets hierarchy >>= lookupTypeFromClassHierarchy "Function"
+
+strType :: InterpreterMonad Type
+strType = gets hierarchy >>= lookupTypeFromClassHierarchy "String"

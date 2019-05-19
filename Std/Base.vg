@@ -1,5 +1,15 @@
 class Void where
-    unique function toString : abstract String
+    Void
+
+class Bool where
+    True
+    False
+
+class Char where
+    function toString : String = String.Cons this $ String.Empty
+    
+class Native where
+    static function toString (obj : Void) : String = obj.toString
 
 interface template Function a b where
 	function flip <a, b, c> (x:a) (y:b) : c = this y x

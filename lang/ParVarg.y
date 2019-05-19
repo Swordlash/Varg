@@ -20,67 +20,68 @@ import ErrM
   ')' { PT _ (TS _ 5) }
   '*' { PT _ (TS _ 6) }
   '+' { PT _ (TS _ 7) }
-  ',' { PT _ (TS _ 8) }
-  '-' { PT _ (TS _ 9) }
-  '->' { PT _ (TS _ 10) }
-  '..' { PT _ (TS _ 11) }
-  '/' { PT _ (TS _ 12) }
-  '/=' { PT _ (TS _ 13) }
-  ':' { PT _ (TS _ 14) }
-  ':\'' { PT _ (TS _ 15) }
-  '::' { PT _ (TS _ 16) }
-  ';' { PT _ (TS _ 17) }
-  '<' { PT _ (TS _ 18) }
-  '<=' { PT _ (TS _ 19) }
-  '=' { PT _ (TS _ 20) }
-  '==' { PT _ (TS _ 21) }
-  '>' { PT _ (TS _ 22) }
-  '>=' { PT _ (TS _ 23) }
-  '?' { PT _ (TS _ 24) }
-  '[' { PT _ (TS _ 25) }
-  '[]' { PT _ (TS _ 26) }
-  '\\' { PT _ (TS _ 27) }
-  ']' { PT _ (TS _ 28) }
-  '^' { PT _ (TS _ 29) }
-  '_' { PT _ (TS _ 30) }
-  'abstract' { PT _ (TS _ 31) }
-  'class' { PT _ (TS _ 32) }
-  'derives' { PT _ (TS _ 33) }
-  'deriving' { PT _ (TS _ 34) }
-  'else' { PT _ (TS _ 35) }
-  'false' { PT _ (TS _ 36) }
-  'final' { PT _ (TS _ 37) }
-  'function' { PT _ (TS _ 38) }
-  'has' { PT _ (TS _ 39) }
-  'if' { PT _ (TS _ 40) }
-  'implement' { PT _ (TS _ 41) }
-  'implementing' { PT _ (TS _ 42) }
-  'import' { PT _ (TS _ 43) }
-  'in' { PT _ (TS _ 44) }
-  'interface' { PT _ (TS _ 45) }
-  'internal' { PT _ (TS _ 46) }
-  'let' { PT _ (TS _ 47) }
-  'match' { PT _ (TS _ 48) }
-  'matching' { PT _ (TS _ 49) }
-  'mod' { PT _ (TS _ 50) }
-  'module' { PT _ (TS _ 51) }
-  'native' { PT _ (TS _ 52) }
-  'not' { PT _ (TS _ 53) }
-  'sealed' { PT _ (TS _ 54) }
-  'static' { PT _ (TS _ 55) }
-  'struct' { PT _ (TS _ 56) }
-  'super' { PT _ (TS _ 57) }
-  'template' { PT _ (TS _ 58) }
-  'then' { PT _ (TS _ 59) }
-  'this' { PT _ (TS _ 60) }
-  'true' { PT _ (TS _ 61) }
-  'unify' { PT _ (TS _ 62) }
-  'unique' { PT _ (TS _ 63) }
-  'where' { PT _ (TS _ 64) }
-  'with' { PT _ (TS _ 65) }
-  '{' { PT _ (TS _ 66) }
-  '||' { PT _ (TS _ 67) }
-  '}' { PT _ (TS _ 68) }
+  '++' { PT _ (TS _ 8) }
+  ',' { PT _ (TS _ 9) }
+  '-' { PT _ (TS _ 10) }
+  '->' { PT _ (TS _ 11) }
+  '..' { PT _ (TS _ 12) }
+  '/' { PT _ (TS _ 13) }
+  '/=' { PT _ (TS _ 14) }
+  ':' { PT _ (TS _ 15) }
+  ':\'' { PT _ (TS _ 16) }
+  '::' { PT _ (TS _ 17) }
+  ';' { PT _ (TS _ 18) }
+  '<' { PT _ (TS _ 19) }
+  '<=' { PT _ (TS _ 20) }
+  '=' { PT _ (TS _ 21) }
+  '==' { PT _ (TS _ 22) }
+  '>' { PT _ (TS _ 23) }
+  '>=' { PT _ (TS _ 24) }
+  '?' { PT _ (TS _ 25) }
+  '[' { PT _ (TS _ 26) }
+  '[]' { PT _ (TS _ 27) }
+  '\\' { PT _ (TS _ 28) }
+  ']' { PT _ (TS _ 29) }
+  '^' { PT _ (TS _ 30) }
+  '_' { PT _ (TS _ 31) }
+  'abstract' { PT _ (TS _ 32) }
+  'class' { PT _ (TS _ 33) }
+  'derives' { PT _ (TS _ 34) }
+  'deriving' { PT _ (TS _ 35) }
+  'else' { PT _ (TS _ 36) }
+  'false' { PT _ (TS _ 37) }
+  'final' { PT _ (TS _ 38) }
+  'function' { PT _ (TS _ 39) }
+  'has' { PT _ (TS _ 40) }
+  'if' { PT _ (TS _ 41) }
+  'implement' { PT _ (TS _ 42) }
+  'implementing' { PT _ (TS _ 43) }
+  'import' { PT _ (TS _ 44) }
+  'in' { PT _ (TS _ 45) }
+  'interface' { PT _ (TS _ 46) }
+  'internal' { PT _ (TS _ 47) }
+  'let' { PT _ (TS _ 48) }
+  'match' { PT _ (TS _ 49) }
+  'matching' { PT _ (TS _ 50) }
+  'mod' { PT _ (TS _ 51) }
+  'module' { PT _ (TS _ 52) }
+  'native' { PT _ (TS _ 53) }
+  'not' { PT _ (TS _ 54) }
+  'sealed' { PT _ (TS _ 55) }
+  'static' { PT _ (TS _ 56) }
+  'struct' { PT _ (TS _ 57) }
+  'super' { PT _ (TS _ 58) }
+  'template' { PT _ (TS _ 59) }
+  'then' { PT _ (TS _ 60) }
+  'this' { PT _ (TS _ 61) }
+  'true' { PT _ (TS _ 62) }
+  'unify' { PT _ (TS _ 63) }
+  'unique' { PT _ (TS _ 64) }
+  'where' { PT _ (TS _ 65) }
+  'with' { PT _ (TS _ 66) }
+  '{' { PT _ (TS _ 67) }
+  '||' { PT _ (TS _ 68) }
+  '}' { PT _ (TS _ 69) }
 
 L_quoted { PT _ (TL $$) }
 L_integ  { PT _ (TI $$) }
@@ -211,6 +212,7 @@ Operator : '+' { AbsVarg.Op_plus }
          | ':' { AbsVarg.Op_cons }
          | ':\'' { AbsVarg.Op_scons }
          | '$' { AbsVarg.Op_appl }
+         | '++' { AbsVarg.Op_append }
 AbsRetType :: { AbsRetType }
 AbsRetType : ':' 'abstract' FreeTypeDef { AbsVarg.AbsReturnType $3 }
            | {- empty -} { AbsVarg.AbsInferredReturnType }
@@ -297,6 +299,7 @@ Expr1 : Expr1 '$' Expr2 { AbsVarg.EAppl $1 $3 }
 Expr2 :: { Expr }
 Expr2 : Expr3 ':' Expr2 { AbsVarg.ECons $1 $3 }
       | Expr3 '::' Expr2 { AbsVarg.ESCons $1 $3 }
+      | Expr3 '++' Expr2 { AbsVarg.EAppend $1 $3 }
       | Expr3 '==' Expr3 { AbsVarg.EEq $1 $3 }
       | Expr4 '/=' Expr3 { AbsVarg.ENeq $1 $3 }
       | Expr3 'mod' Expr3 { AbsVarg.EMod $1 $3 }

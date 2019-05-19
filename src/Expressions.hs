@@ -7,17 +7,19 @@ import qualified AbsVarg            as Abs
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 
-nshow Abs.Op_plus  = "+"
-nshow Abs.Op_minus = "-"
-nshow Abs.Op_mul   = "*"
-nshow Abs.Op_div   = "/"
-nshow Abs.Op_pow   = "^"
-nshow Abs.Op_less  = "<"
-nshow Abs.Op_gr    = ">"
-nshow Abs.Op_leq   = "<="
-nshow Abs.Op_geq   = ">="
-nshow Abs.Op_eq    = "=="
-nshow Abs.Op_cons  = ":"
+nshow Abs.Op_plus   = "+"
+nshow Abs.Op_minus  = "-"
+nshow Abs.Op_mul    = "*"
+nshow Abs.Op_div    = "/"
+nshow Abs.Op_pow    = "^"
+nshow Abs.Op_less   = "<"
+nshow Abs.Op_gr     = ">"
+nshow Abs.Op_leq    = "<="
+nshow Abs.Op_geq    = ">="
+nshow Abs.Op_eq     = "=="
+nshow Abs.Op_cons   = ":"
+nshow Abs.Op_appl   = "$"
+nshow Abs.Op_append = "++"
 
 {-
 parseFunctorial :: LookupFunction -> Abs.Functorial -> HierarchyMonad Expr
@@ -131,6 +133,10 @@ parseExpression lookupFun expr =
       bege <- parseExpression lookupFun beg
       return $ ERange bege EWild
     Abs.EEmptyList -> pure $ EMember (EClass "List") "Empty"
+    Abs.EAppend e1 e2 -> do
+      p1 <- parseExpression lookupFun e1
+      p2 <- parseExpression lookupFun e2
+      return $ EAppend p1 p2
     Abs.EIfThenElse expr1 expr2 expr3 -> do
       pe1 <- parseExpression lookupFun expr1
       pe2 <- parseExpression lookupFun expr2
