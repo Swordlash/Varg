@@ -13,7 +13,7 @@ import qualified Data.Set as S
 
 import qualified AbsVarg as Abs
 import Control.Exception.Base (SomeException, evaluate, try)
-import Data.Char (isUpper)
+import Data.Char (chr, isUpper, ord)
 import Data.Maybe
 
 nats = 0 : [n + 1 | n <- nats]
@@ -128,14 +128,28 @@ getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not impl
 findNativeMethod :: Instance -> String -> InterpreterMonad Instance
 findNativeMethod obj name = do
   realtyp <- asks realType
-  case name of
-    "toString" -> do
-      forced <- force obj
-      nativeStringToInstance
-        (case forced of
-           TypeInstance {} -> show $ forced {baseType = realtyp}
-           _ -> show forced)
-    _ -> throwException' $ "Nonexistent native method " ++ name ++ "\n"
+  case obj of
+    TypeInstance {} ->
+      case name of
+        "toString" -> nativeStringToInstance (show $ obj {baseType = realtyp})
+        "toUTFCode" ->
+          case lookup "value" (fields obj) of
+            Just (CharInstance val _) -> register $ IntInstance (toInteger $ ord val)
+            _ -> throwException' "Call of toUTFCode on non-character"
+        "codeToChar" ->
+          case lookup "value" (fields obj) of
+            Just (IntInstance val _) -> register $ CharInstance (chr $ fromInteger val)
+            _ -> throwException' "Call to codeToChar on non-integer"
+        "floor" ->
+          case lookup "value" (fields obj) of
+            Just (DoubleInstance val _) -> register $ IntInstance (floor val)
+            _ -> throwException' "Call to floor on non-real type"
+        "toReal" ->
+          case lookup "value" (fields obj) of
+            Just (IntInstance val _) -> register $ DoubleInstance (fromIntegral val)
+            _ -> throwException' "Call to toReal on non-integer"
+        _ -> throwException' $ "Nonexistent native method " ++ name ++ "\n"
+    _ -> throwException' "Interpreter error: findNativeMethod called on primitive / thunk"
 
 deepForce :: Instance -> InterpreterMonad Instance
 deepForce =
@@ -192,6 +206,7 @@ getMember :: Instance -> String -> InterpreterMonad Instance
 getMember obj name = do
   hier <- gets hierarchy
   typ <- getBaseType obj
+  rtyp <- asks realType
   rethrow
     (case obj of
        TypeInstance {baseType = t, fields = f} ->
@@ -207,11 +222,12 @@ getMember obj name = do
                       pure
                       (do supert <- getTypeFromDerivation $ supertype t
                           getMember (obj {baseType = supert}) name)
-       IntInstance {} -> do
-         intcl <- lookupTypeFromClassHierarchy "Integer" hier
+       IntInstance {} -- Actual boxing
+        -> do
+         intcl <- lookupTypeFromClassHierarchy "Int" hier
          getMember (TypeInstance intcl "" [] [("value", obj)] (-1)) name
        DoubleInstance {} -> do
-         dblcl <- lookupTypeFromClassHierarchy "Double" hier
+         dblcl <- lookupTypeFromClassHierarchy "Real" hier
          getMember (TypeInstance dblcl "" [] [("value", obj)] (-1)) name
        BoolInstance {} -> do
          boolcl <- lookupTypeFromClassHierarchy "Bool" hier
@@ -225,7 +241,9 @@ getMember obj name = do
        th@ThunkInstance {} -> do
          forced <- force th
          getMember forced name)
-    ("Call to member `" ++ name ++ "` on object " ++ show obj)
+    ("Call to member `" ++
+     qualifiedTypeName rtyp ++
+     "." ++ name ++ "` in (possibly base) type " ++ qualifiedTypeName typ ++ " on object " ++ show obj)
 
 fmapMaybe m f err =
   case m of
@@ -388,8 +406,9 @@ interpretExpression expr = do
       p1 <- delay expr1
       p2 <- delay expr2
       list <- lookupTypeFromClassHierarchy "List" hier
-      register $ TypeInstance list "Cons" [] [("head", p1), ("tail", p2)] -- FIXME: hardcoded List.Cons, but can we do better?
-    ESCons expr1 expr2 -> delay $ EApply (EMember expr2 ":") expr1 --strict cons
+      register $ TypeInstance list "Cons" [] [("head", p1), ("tail", p2)]
+        -- FIXME: Hardcoded List.Cons erases types, but can we do better in lazy eval? See: ESCons
+    ESCons expr1 expr2 -> delay $ EApply (EMember expr2 ":") expr1 -- Strict cons
     EComp expr1 expr2 -> delay $ EApply (EApply (EMember (EClass "Function") "composeI") expr1) expr2
     ERange expr1 expr2 ->
       delay $

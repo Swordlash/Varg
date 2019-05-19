@@ -103,10 +103,10 @@ nextLambdaName st =
 
 ----------------------------------- some type functions ---------------------------------
 intType :: InterpreterMonad Type
-intType = gets hierarchy >>= lookupTypeFromClassHierarchy "Integer"
+intType = gets hierarchy >>= lookupTypeFromClassHierarchy "Int"
 
 dblType :: InterpreterMonad Type
-dblType = gets hierarchy >>= lookupTypeFromClassHierarchy "Double"
+dblType = gets hierarchy >>= lookupTypeFromClassHierarchy "Real"
 
 boolType :: InterpreterMonad Type
 boolType = gets hierarchy >>= lookupTypeFromClassHierarchy "Bool"

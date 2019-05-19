@@ -2,4 +2,4 @@ import "Std.Overture"
 import "Std.Queue"
 
 class Main where
-    static function main args = String.unwords ["de", "ja", "vu"] #[1,2,3,4]
+    static function main args = String.fromCharList ['a'..'z']

@@ -13,4 +13,6 @@ class String deriving List Char where
     function empty : String = ""
 
     function toString : String = this
+
+    static function fromCharList (l : List Char) = if l.null then String.Empty else String.Cons $ l.head $ String.fromCharList (l.tail)
     static function unwords (words : List String) : String = if words.null then "" else words.head ++ " " ++ String.unwords (words.tail)

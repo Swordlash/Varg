@@ -56,8 +56,8 @@ instance Show Instance where
                   Just (CharInstance ch _) -> ch
                   _                        -> '?') :
                show (fromJust $ lookup "tail" flds)
-      "Integer" -> show (fromJust $ lookup "value" flds)
-      "Double" -> show (fromJust $ lookup "value" flds)
+      "Int" -> show (fromJust $ lookup "value" flds)
+      "Real" -> show (fromJust $ lookup "value" flds)
       "Bool" -> show (fromJust $ lookup "value" flds)
       "Char" -> show (fromJust $ lookup "value" flds)
       "Function" -> show (fromJust $ lookup "value" flds)
