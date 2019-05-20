@@ -5,5 +5,5 @@ import "Std.Overture"
 class Main where
     static function main args =
         let funkcje = List.replicate 10 ((+) 1)
-            zaaplikowane = funkcje.zipWith (Function.call) [1..10]
-            in (zaaplikowane.head) (1)
+            zaaplikowane = funkcje.zipWith (\f -> f.call) [1..10]
+            in zaaplikowane.head $ 2

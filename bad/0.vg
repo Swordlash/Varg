@@ -1,4 +1,4 @@
 #błąd składniowy - f. abstrakcyjna nie może mieć ciała
 
 class Main where
-    function fun x : abstract Int = 10*x
+    function fun x : abstract Int = 10 * x
