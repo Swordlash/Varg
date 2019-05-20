@@ -40,6 +40,5 @@ template List a implementing Collection a where
 
     function intersperse (elem:a) : List a = if this.tail == [] then this else (this.head) : elem : (this.tail.intersperse elem)
 
-    function tString : String = if this.null then "]" else if this.tail.null then this.head.toString ++ "]" else this.head.toString ++ (String.Cons ',' $ this.tail.tString)
-    function toString : String = String.Cons '[' $ this.tString
+    function toString : String = "[" ++ ((this.map $ Native.toString).intersperse ", ").foldr (++) (String.Empty) ++ "]"
     static function replicate (amount:Int) (elem:a) : List a = if amount == 0 then List.empty else elem : List.replicate (amount-1) elem
