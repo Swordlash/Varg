@@ -64,6 +64,8 @@ logStderr str =
     Nothing -> pure ()
     Just _ -> hPutStr stderr str
 
+putStrErr = hPutStr stderr
+
 printErr :: (Show s) => s -> IO ()
 printErr = logStderr . show
 
@@ -83,6 +85,8 @@ parse "-v" = setEnv "VargVerbosity" "1"
 parse "--verbose" = parse "-v"
 parse "-s" = setEnv "VargStrictness" "True"
 parse "--strict" = parse "-s"
+parse "-m" = setEnv "VargMemoryUsage" "True"
+parse "--memory" = parse "-m"
 parse s =
   if take 2 s == "-d"
     then setEnv "VargTraceDepth" (drop 2 s)
@@ -111,6 +115,15 @@ defaultTraceDepth =
       case readMaybe val :: Maybe Int of
         Just ival -> pure ival
         Nothing -> pure 20
+
+isTracingMemory :: IO Bool
+isTracingMemory =
+  lookupEnv "VargMemoryUsage" >>= \case
+    Nothing -> pure False
+    Just strs ->
+      case readMaybe strs :: Maybe Bool of
+        Just str -> pure str
+        Nothing -> pure False
 
 throw offending message =
   throwException

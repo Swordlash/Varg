@@ -41,8 +41,7 @@ interpretMain body =
   let supplied = supplyArgs body
    in do interpreted <- deepForce =<< interpretExpression supplied
          liftIO $ logStderr $ "[[Raw result]]\n" ++ show interpreted ++ "\n\n"
-         usage <- gets (M.size . memory)
-         liftIO $ logStderr $ "[[Memory usage]]\t " ++ show usage ++ " entries.\n\n"
+         memoryUsage
          interpretExpression (EMember (EInterpreted interpreted) "toString") >>= deepForce
 
 emptyState :: Type -> ClassHierarchy -> InterpreterState
@@ -116,6 +115,25 @@ getBaseType =
     FunctionInstance {} -> functionType
     TypeInstance {baseType = t} -> pure t
     th@ThunkInstance {} -> force th >>= getBaseType
+
+memoryUsage :: InterpreterMonad ()
+memoryUsage =
+  liftIO isTracingMemory >>= \case
+    True -> do
+      mem <- gets memory
+      let toTypes = map snd $ M.toList mem
+      mapped <-
+        foldM
+          (\mp inst -> do
+             t <- getBaseType inst
+             let name = qualifiedTypeName t
+             return $ M.insertWith (\_ v -> v + 1) name 1 mp)
+          M.empty
+          toTypes
+      liftIO $ putStrErr "[[Memory Usage]]\n"
+      liftIO $ putStrErr $ concatMap (\(name, val) -> name ++ ": " ++ show val ++ " references\n") (M.toList mapped)
+      liftIO $ putStrErr "\n"
+    False -> pure ()
 
 nativeStringToInstance :: String -> InterpreterMonad Instance
 nativeStringToInstance str = do
@@ -262,7 +280,7 @@ appFun :: Instance -> Instance -> Expr -> InterpreterMonad Instance
 appFun inst argval expr =
   case inst of
     FunctionInstance Function {functionName = name, functionBody = ELambda argname _ _ body} envf _ ->
-      local (exchangeEnvironment $ M.insert argname (address argval) envf) (delay body)
+      local (exchangeEnvironment $ M.insert argname (address argval) envf) (interpretExpression body)
     th@ThunkInstance {} -> do
       forced <- force th
       appFun forced argval expr
@@ -340,14 +358,14 @@ interpretExpression expr = do
           Variant _ supervar fieldsEx <- lookupVariantFromType name t
           let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
           let nargs = map (EVar . fst) argstypes
-          delay $
-            fst $
-            foldr
-              (\(narg, typ) (expr, typename) ->
-                 let ftype = ConcreteType "Function" [Exact typ, Exact typename]
-                  in (ELambda narg typ ftype expr, ftype))
-              (EConstructor tname name nargs, ConcreteType tname [])
-              argstypes
+          interpretExpression
+            (fst $
+             foldr
+               (\(narg, typ) (expr, typename) ->
+                  let ftype = ConcreteType "Function" [Exact typ, Exact typename]
+                   in (ELambda narg typ ftype expr, ftype))
+               (EConstructor tname name nargs, ConcreteType tname [])
+               argstypes)
         else case M.lookup name (typeMembers t) of
                Just (Function _ fname _ _ body) -> do
                  modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
