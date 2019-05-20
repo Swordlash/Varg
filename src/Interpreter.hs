@@ -156,7 +156,7 @@ deepForce :: Instance -> InterpreterMonad Instance
 deepForce =
   \case
     ThunkInstance expr clos loc -> do
-      forced <- local (exchangeEnvironment clos) (interpretExpression expr)
+      forced <- local (exchangeEnvironment clos) (interpretExpression expr >>= force)
       modify $ putValue (loc, forced)
       deepForce forced
     t@TypeInstance {fields = flds, memoryLocation = loc} -> do
@@ -182,17 +182,6 @@ delay expr =
     True -> do
       addr <- nextFreeLoc
       env <- asks environment
-      let thunk = ThunkInstance expr env addr
-      modify $ putValue (addr, thunk)
-      return thunk
-    False -> interpretExpression expr
-
-delayBind :: Expr -> String -> InterpreterMonad Instance
-delayBind expr name =
-  liftIO isVargLazy >>= \case
-    True -> do
-      addr <- nextFreeLoc
-      env <- asks (M.insert name addr . environment)
       let thunk = ThunkInstance expr env addr
       modify $ putValue (addr, thunk)
       return thunk
@@ -338,8 +327,10 @@ interpretExpression expr = do
         ("Call apply: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ show (M.toList mem) ++ "\n")
     ELet name expr1 _ expr2 -- TODO: try to actually care about types
      -> do
-      th <- delayBind expr1 name
-      local (bindVariable (name, address th)) (delay expr2)
+      addr <- nextFreeLoc
+      let nenv = M.insert name addr env -- bind as thunk, eval when needed as var, recursive def
+      modify $ putValue (addr, ThunkInstance expr1 nenv addr)
+      local (exchangeEnvironment nenv) (delay expr2)
     EMember (EClass tname) name -> do
       t <- lookupTypeFromClassHierarchy tname hier
       if isUpper (head name) -- call constructor

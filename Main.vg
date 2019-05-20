@@ -2,4 +2,5 @@ import "Std.Overture"
 import "Std.Queue"
 
 class Main where
-    static function main args = let fibs = 0 : 1 : fibs.zipWith (+) (fibs.tail) in fibs.take 12
+    static function main args = let fib n = if n<=1 then n else fib (n-1) + fib (n-2) in ([1..].map fib).take 20 
+    #let fibs = 0 : 1 : fibs.zipWith (+) (fibs.tail) in fibs.take 20 takes too long
