@@ -83,6 +83,9 @@ updateChunks chunks stat = stat {freeChunks = chunks}
 bindVariable :: Updater (String, Loc) InterpreterRuntime
 bindVariable (name, loc) runt = runt {environment = M.insert name loc $ environment runt}
 
+unbindVariable :: Updater String InterpreterRuntime
+unbindVariable name runt = runt {environment = M.delete name $ environment runt}
+
 pushLambdaName :: Updater String InterpreterState
 pushLambdaName name st = st {pushName = name}
 

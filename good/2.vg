@@ -2,4 +2,4 @@ import "Std.Overture"
 
 class Main where
     static function main args =
-        let nats = [0..] in nats.take 1000
+        let nats = [1..] in (nats.take 10000).foldl (+) 0

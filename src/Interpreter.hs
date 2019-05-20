@@ -9,6 +9,7 @@ import PreprocessingState
 import Data.Fixed (mod')
 import Data.List
 import qualified Data.Map as M
+import Data.Sequence hiding (lookup, reverse, unzip, zip)
 import qualified Data.Set as S
 
 import qualified AbsVarg as Abs
@@ -186,8 +187,23 @@ delay expr =
       return thunk
     False -> interpretExpression expr
 
+delayBind :: Expr -> String -> InterpreterMonad Instance
+delayBind expr name =
+  liftIO isVargLazy >>= \case
+    True -> do
+      addr <- nextFreeLoc
+      env <- asks (M.insert name addr . environment)
+      let thunk = ThunkInstance expr env addr
+      modify $ putValue (addr, thunk)
+      return thunk
+    False -> interpretExpression expr
+
 deepEq :: Instance -> Instance -> InterpreterMonad Bool
-deepEq inst1 inst2 = do
+deepEq i1 i2 = deepEq' $ singleton (i1, i2)
+
+deepEq' :: Seq (Instance, Instance) -> InterpreterMonad Bool -- BFS deepEquality on Sequence as Queue
+deepEq' Empty = pure True
+deepEq' ((inst1, inst2) :<| t) = do
   inst1f <- force inst1
   inst2f <- force inst2
   case (inst1f, inst2f) of
@@ -199,7 +215,8 @@ deepEq inst1 inst2 = do
     (TypeInstance typ1 var1 _ f1 _, TypeInstance typ2 var2 _ f2 _) ->
       if typ1 /= typ2 || var1 /= var2
         then pure False
-        else foldM (\acc (i1, i2) -> deepEq i1 i2 >>= \r -> return $ acc && r) True (zip (map snd f1) (map snd f2))
+        else let tocheck = fromList $ zip (map snd f1) (map snd f2)
+              in deepEq' (t >< tocheck)
     _ -> pure False
 
 getMember :: Instance -> String -> InterpreterMonad Instance
@@ -215,7 +232,7 @@ getMember obj name = do
            else case M.lookup name (typeMembers t) of
                   Just (Function _ fname _ _ body) -> do
                     modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
-                    rethrow (interpretExpression body) ("Call: " ++ fname)
+                    rethrow (delay body) ("Call: " ++ fname)
                   Nothing ->
                     fmapMaybe
                       (lookup name f)
@@ -321,10 +338,8 @@ interpretExpression expr = do
         ("Call apply: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ show (M.toList mem) ++ "\n")
     ELet name expr1 _ expr2 -- TODO: try to actually care about types
      -> do
-      addr <- nextFreeLoc
-      let nenv = M.insert name addr env -- bind as thunk, eval when needed as var, recursive def
-      modify $ putValue (addr, ThunkInstance expr1 nenv addr)
-      local (exchangeEnvironment nenv) (delay expr2)
+      th <- delayBind expr1 name
+      local (bindVariable (name, address th)) (delay expr2)
     EMember (EClass tname) name -> do
       t <- lookupTypeFromClassHierarchy tname hier
       if isUpper (head name) -- call constructor
@@ -343,7 +358,7 @@ interpretExpression expr = do
         else case M.lookup name (typeMembers t) of
                Just (Function _ fname _ _ body) -> do
                  modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
-                 rethrow (interpretExpression body) ("Call: " ++ fname)
+                 rethrow (local (unbindVariable "this") (interpretExpression body)) ("Call: " ++ fname)
                Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
     EMember expr name ->
       rethrow

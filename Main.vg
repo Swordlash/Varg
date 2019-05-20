@@ -2,4 +2,4 @@ import "Std.Overture"
 import "Std.Queue"
 
 class Main where
-    static function main args = let nats = 0 : nats.map ((+) 1) in nats.take 1000
+    static function main args = let fibs = 0 : 1 : fibs.zipWith (+) (fibs.tail) in fibs.take 12
