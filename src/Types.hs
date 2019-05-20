@@ -48,7 +48,7 @@ instance Show Instance where
     "thunk " ++ show expr ++ " of closure " ++ showTr clos ++ " address: " ++ show mem
   show t@(TypeInstance base var params flds _) =
     case qualifiedTypeName base of
-      "List" -> "Why do we use native method to show List? Anyway, " ++ show (instanceListToList t)
+      "List" -> "Native List: " ++ show (instanceListToList t)
       "String" ->
         if var == "Empty"
           then ""

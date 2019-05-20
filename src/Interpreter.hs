@@ -40,7 +40,9 @@ interpretMain :: Expr -> InterpreterMonad Instance
 interpretMain body =
   let supplied = supplyArgs body
    in do interpreted <- deepForce =<< interpretExpression supplied
-         liftIO $ logg interpreted
+         liftIO $ logStderr $ "[[Raw result]]\n" ++ show interpreted ++ "\n\n"
+         usage <- gets (M.size . memory)
+         liftIO $ logStderr $ "[[Memory usage]]\t " ++ show usage ++ " entries.\n\n"
          interpretExpression (EMember (EInterpreted interpreted) "toString") >>= deepForce
 
 emptyState :: Type -> ClassHierarchy -> InterpreterState
@@ -349,7 +351,9 @@ interpretExpression expr = do
         else case M.lookup name (typeMembers t) of
                Just (Function _ fname _ _ body) -> do
                  modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
-                 rethrow (local (unbindVariable "this") (interpretExpression body)) ("Call: " ++ fname)
+                 rethrow
+                   (local (unbindVariable "super" . unbindVariable "this") (interpretExpression body))
+                   ("Call: " ++ fname)
                Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
     EMember expr name ->
       rethrow
