@@ -16,22 +16,20 @@ instance Show TypeParam where
 
 type Loc = Int
 
-type Closure = M.Map String Loc
+type Obj = Either Loc
+
+type Clos inst = M.Map String (Obj inst)
 
 data Inst f t e
   = IntInstance Integer
-                Loc
   | DoubleInstance Double
-                   Loc
   | CharInstance Char
-                 Loc
   | BoolInstance Bool
-                 Loc
   | FunctionInstance f
-                     Closure
+                     (Clos (Inst f t e))
                      Loc
   | ThunkInstance e
-                  Closure
+                  (Clos (Inst f t e))
                   Loc
   | TypeInstance { baseType        :: t
                  , typeVariantName :: String
@@ -39,6 +37,21 @@ data Inst f t e
                  , fields          :: [(String, Inst f t e)]
                  , memoryLocation  :: Loc }
   deriving (Eq, Ord)
+
+isManaged :: Inst f t e -> Bool
+isManaged TypeInstance {}     = True
+isManaged ThunkInstance {}    = True
+isManaged FunctionInstance {} = True
+isManaged _                   = False
+
+address :: Inst f t e -> Int
+address IntInstance {}             = undefined
+address DoubleInstance {}          = undefined
+address CharInstance {}            = undefined
+address BoolInstance {}            = undefined
+address (FunctionInstance _ _ loc) = loc
+address (ThunkInstance _ _ loc)    = loc
+address t@TypeInstance {}          = memoryLocation t
 
 instanceMember :: String -> Inst f t e -> Maybe (Inst f t e)
 instanceMember name inst@TypeInstance {} = lookup name (fields inst)

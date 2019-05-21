@@ -17,11 +17,9 @@ type MemberName = String
 
 type Instance = Inst Function Type Expr
 
-type Mapping a = M.Map String a
+type Object = Obj Instance
 
---------------------------------- Instance definitions --------------------------------------
-showTr :: M.Map String Loc -> String
-showTr env = intercalate ", " (map (\(s, i) -> s ++ " -> " ++ show i) $ M.toList env)
+type Mapping a = M.Map String a
 
 typeof :: Instance -> String
 typeof IntInstance {}              = "Int"
@@ -39,13 +37,12 @@ ntake n (h:t) = h : ntake (n - 1) t
 show' inst = ntake 100 $ show inst
 
 instance Show Instance where
-  show (IntInstance val _) = show val
-  show (DoubleInstance val _) = show val
-  show (CharInstance val _) = show val
-  show (BoolInstance val _) = show val
+  show (IntInstance val) = show val
+  show (DoubleInstance val) = show val
+  show (CharInstance val) = show val
+  show (BoolInstance val) = show val
   show (FunctionInstance expr clos _) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
-  show (ThunkInstance expr clos mem) =
-    "thunk " ++ show expr ++ " of closure " ++ showTr clos ++ " address: " ++ show mem
+  show (ThunkInstance expr clos mem) = "thunk " ++ show expr ++ " address: " ++ show mem
   show t@(TypeInstance base var params flds _) =
     case qualifiedTypeName base of
       "List" -> "Native List: " ++ show (instanceListToList t)
@@ -53,8 +50,8 @@ instance Show Instance where
         if var == "Empty"
           then ""
           else (case lookup "head" flds of
-                  Just (CharInstance ch _) -> ch
-                  _                        -> '?') :
+                  Just (CharInstance ch) -> ch
+                  _                      -> '?') :
                show (fromJust $ lookup "tail" flds)
       "Int" -> show (fromJust $ lookup "value" flds)
       "Real" -> show (fromJust $ lookup "value" flds)

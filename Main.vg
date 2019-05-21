@@ -2,6 +2,6 @@ import "Std.Overture"
 import "Std.Queue"
 
 class Main where
-    static function main args =  
-        #let fibs = 0 : 1 : fibs.zipWith (+) (fibs.tail) in fibs.take 2 #takes too long for n>15
-        let nats = 1 : nats.map (\i -> i.incr) in nats.take 30
+    static function main args = 
+        let nats = [1..] in (nats.take 10000).foldl (+) 0
+        #let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 9

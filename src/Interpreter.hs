@@ -45,11 +45,11 @@ interpretMain body =
          interpretExpression (EMember (EInterpreted interpreted) "toString") >>= deepForce
 
 emptyState :: Type -> ClassHierarchy -> InterpreterState
-emptyState listtype hier = InterpreterState hier 0 "Main.main" (M.insert 0 (emptyArgs listtype) M.empty) [1 ..]
+emptyState listtype hier = InterpreterState hier 0 "Main.main" (M.insert 0 (emptyArgs listtype) M.empty) M.empty [1 ..]
 
 emptyRuntime :: InterpreterRuntime
 emptyRuntime =
-  let env = M.insert "args" 0 M.empty
+  let env = M.insert "args" (Left 0) M.empty
    in InterpreterRuntime env voidType False
 
 supplyArgs :: Expr -> Expr
@@ -68,15 +68,14 @@ interpretBinaryArithmetic ::
   -> (Bool -> Bool -> InterpreterMonad Instance)
   -> InterpreterMonad Instance
 interpretBinaryArithmetic whole name expr1 expr2 intfun dblfun boolfun = do
-  env <- asks environment
-  mem <- resolveEnv env
   p1 <- interpretExpression expr1
   p2 <- interpretExpression expr2
+  env <- resolveEnv =<< asks environment
   rethrow
     (case (p1, p2) of
-       (IntInstance v1 _, IntInstance v2 _) -> intfun v1 v2
-       (DoubleInstance v1 _, DoubleInstance v2 _) -> dblfun v1 v2
-       (BoolInstance v1 _, BoolInstance v2 _) -> boolfun v1 v2
+       (IntInstance v1, IntInstance v2) -> intfun v1 v2
+       (DoubleInstance v1, DoubleInstance v2) -> dblfun v1 v2
+       (BoolInstance v1, BoolInstance v2) -> boolfun v1 v2
        (v1@ThunkInstance {}, _) -> do
          fv1 <- force v1
          interpretBinaryArithmetic whole name (EInterpreted fv1) expr2 intfun dblfun boolfun
@@ -85,23 +84,23 @@ interpretBinaryArithmetic whole name expr1 expr2 intfun dblfun boolfun = do
          interpretBinaryArithmetic whole name expr1 (EInterpreted fv2) intfun dblfun boolfun
        (TypeInstance {}, _) -> interpretExpression $ EApply (EMember (EInterpreted p1) name) (EInterpreted p2)
        _ -> throw whole ("You want to " ++ name ++ " numbers " ++ show p1 ++ " and " ++ show p2 ++ ". Are they though?"))
-    ("Call: " ++ show whole ++ "\nBound variables: " ++ show (M.toList mem) ++ "\n")
+    ("Call: " ++ show whole ++ "\nBound variables: " ++ show (M.toList env) ++ "\n")
 
 -- auxiliary functions
 intFun e f v1 v2 =
   liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Integer)) >>= \case
     Left expr -> throw e (show expr)
-    Right val -> register $ IntInstance val
+    Right val -> return $ IntInstance val
 
 doubleFun e f v1 v2 =
   liftIO (try (evaluate $ f v1 v2) :: IO (Either SomeException Double)) >>= \case
     Left expr -> throw e (show expr)
-    Right val -> register $ DoubleInstance val
+    Right val -> return $ DoubleInstance val
 
 boolFun e f b1 b2 =
   liftIO (try (evaluate $ f b1 b2) :: IO (Either SomeException Bool)) >>= \case
     Left expr -> throw e (show expr)
-    Right val -> register $ BoolInstance val
+    Right val -> return $ BoolInstance val
 
 errFun e str _ _ = throw e str
 
@@ -138,7 +137,7 @@ memoryUsage =
 nativeStringToInstance :: String -> InterpreterMonad Instance
 nativeStringToInstance str = do
   strtp <- strType
-  chars <- mapM (register . CharInstance) str
+  let chars = map CharInstance str
   empty <- register $ TypeInstance strtp "Empty" [] []
   foldM (\inst ch -> register $ TypeInstance strtp "Cons" [] [("head", ch), ("tail", inst)]) empty (reverse chars)
 
@@ -155,19 +154,19 @@ findNativeMethod obj name = do
         "toString" -> nativeStringToInstance (show $ obj {baseType = realtyp})
         "toUTFCode" ->
           case lookup "value" (fields obj) of
-            Just (CharInstance val _) -> register $ IntInstance (toInteger $ ord val)
+            Just (CharInstance val) -> return $ IntInstance (toInteger $ ord val)
             _ -> throwException' "Call of toUTFCode on non-character"
         "codeToChar" ->
           case lookup "value" (fields obj) of
-            Just (IntInstance val _) -> register $ CharInstance (chr $ fromInteger val)
+            Just (IntInstance val) -> return $ CharInstance (chr $ fromInteger val)
             _ -> throwException' "Call to codeToChar on non-integer"
         "floor" ->
           case lookup "value" (fields obj) of
-            Just (DoubleInstance val _) -> register $ IntInstance (floor val)
+            Just (DoubleInstance val) -> return $ IntInstance (floor val)
             _ -> throwException' "Call to floor on non-real type"
         "toReal" ->
           case lookup "value" (fields obj) of
-            Just (IntInstance val _) -> register $ DoubleInstance (fromIntegral val)
+            Just (IntInstance val) -> return $ DoubleInstance (fromIntegral val)
             _ -> throwException' "Call to toReal on non-integer"
         _ -> throwException' $ "Nonexistent native method " ++ name ++ "\n"
     _ -> throwException' "Interpreter error: findNativeMethod called on primitive / thunk"
@@ -216,10 +215,10 @@ deepEq' ((inst1, inst2) :<| t) = do
   inst1f <- force inst1
   inst2f <- force inst2
   case (inst1f, inst2f) of
-    (IntInstance v1 _, IntInstance v2 _) -> pure $ v1 == v2
-    (DoubleInstance v1 _, DoubleInstance v2 _) -> pure $ v1 == v2
-    (CharInstance c1 _, CharInstance c2 _) -> pure $ c1 == c2
-    (BoolInstance b1 _, BoolInstance b2 _) -> pure $ b1 == b2
+    (IntInstance v1, IntInstance v2) -> pure $ v1 == v2
+    (DoubleInstance v1, DoubleInstance v2) -> pure $ v1 == v2
+    (CharInstance c1, CharInstance c2) -> pure $ c1 == c2
+    (BoolInstance b1, BoolInstance b2) -> pure $ b1 == b2
     (FunctionInstance f1 c1 _, FunctionInstance f2 c2 _) -> pure $ (f1 == f2) && (c1 == c2)
     (TypeInstance typ1 var1 _ f1 _, TypeInstance typ2 var2 _ f2 _) ->
       if typ1 /= typ2 || var1 /= var2
@@ -280,18 +279,20 @@ appFun :: Instance -> Instance -> Expr -> InterpreterMonad Instance
 appFun inst argval expr =
   case inst of
     FunctionInstance Function {functionName = name, functionBody = ELambda argname _ _ body} envf _ ->
-      local (exchangeEnvironment $ M.insert argname (address argval) envf) (interpretExpression body)
+      if isManaged argval
+        then local (exchangeEnvironment $ M.insert argname (Left $ address argval) envf) (interpretExpression body)
+        else local (exchangeEnvironment $ M.insert argname (Right argval) envf) (interpretExpression body)
     th@ThunkInstance {} -> do
       forced <- force th
       appFun forced argval expr
     funval -> do
-      env <- asks environment
+      env <- resolveEnv =<< asks environment
       funvalf <- deepForce funval
       argvalf <- deepForce argval
       throw
         expr
         ("One does not simply apply argument to a non-function. Functor: (=" ++
-         show funvalf ++ "), argument: (=" ++ show argvalf ++ ")\nBound variables: " ++ showTr env ++ "\n")
+         show funvalf ++ "), argument: (=" ++ show argvalf ++ ")\nBound variables: " ++ show (M.toList env) ++ "\n")
 
 interpretExpression :: Expr -> InterpreterMonad Instance
 interpretExpression expr = do
@@ -302,84 +303,96 @@ interpretExpression expr = do
       bfn = boolFun expr
       efn = errFun expr
   env <- asks environment
-  mem <- resolveEnv env
+  resolved <- resolveEnv env
   hier <- gets hierarchy
   case expr of
     EAbstract -> throwe "Call to an abstract function"
     EInterpreted inst -> pure inst
-    EInt val -> register $ IntInstance val
-    EDouble val -> register $ DoubleInstance val
-    EBool val -> register $ BoolInstance val
-    EChar val -> register $ CharInstance val
+    EInt val -> return $ IntInstance val
+    EDouble val -> return $ DoubleInstance val
+    EBool val -> return $ BoolInstance val
+    EChar val -> return $ CharInstance val
     EString val -> nativeStringToInstance val
     EThis ->
       asks (M.lookup "this" . environment) >>= \case
         Nothing -> throwe "Referencing this from a static context"
-        Just loc -> deref loc
+        Just (Left loc) -> deref loc
+        Just (Right val) -> pure val
     ESuper ->
       asks (M.lookup "super" . environment) >>= \case
         Nothing -> throwe "Referencing super from a static context"
-        Just loc -> deref loc
+        Just (Left loc) -> deref loc
+        Just (Right val) -> pure val
     EVar name ->
       asks (M.lookup name . environment) >>= \case
         Nothing ->
-          throwe (name ++ "? I have never seen this man in my life!\n I know only that " ++ show (M.toList mem))
-        Just loc ->
+          throwe
+            (name ++ "? I have never seen this man in my life!\n I know only that " ++ show (M.toList resolved) ++ "\n")
+        Just (Left loc) ->
           deref loc >>= \case
             th@ThunkInstance {} ->
               rethrow
                 (force th)
-                ("Evaluating thunk " ++ show expr ++ "\nBound variables: " ++ show (M.toList mem) ++ "\n")
+                ("Evaluating thunk " ++ show expr ++ "\nBound variables: " ++ show (M.toList resolved) ++ "\n")
             val -> return val
+        Just (Right val) -> pure val
     ELambda _ int out _ ->
       modify incrLambdaIdx >> gets nextLambdaName >>= \lname ->
         register $ FunctionInstance (Function [] lname int out expr) env
     EIfThenElse ife thene elsee ->
       rethrow (interpretExpression ife >>= force) ("Computing if condition " ++ show (show expr)) >>= \case
-        BoolInstance True _ -> rethrow (interpretExpression thene) ("Computing then expression " ++ show (show thene))
-        BoolInstance False _ -> rethrow (interpretExpression elsee) ("Computing else expression " ++ show (show elsee))
+        BoolInstance True -> rethrow (interpretExpression thene) ("Computing then expression " ++ show (show thene))
+        BoolInstance False -> rethrow (interpretExpression elsee) ("Computing else expression " ++ show (show elsee))
         res -> throwe ("Usage of invalid type (" ++ typeof res ++ ") in if clause")
     EApply fun arg ->
       rethrow
         (do funval <- interpretExpression fun
             argval <- delay arg
             appFun funval argval expr)
-        ("Call apply: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ show (M.toList mem) ++ "\n")
+        ("Call apply: " ++ show fun ++ "(" ++ show arg ++ ")\nBound variables: " ++ show (M.toList resolved) ++ "\n")
     ELet name expr1 _ expr2 -- TODO: try to actually care about types
      -> do
       addr <- nextFreeLoc
-      let nenv = M.insert name addr env -- bind as thunk, eval when needed as var, recursive def
+      let nenv = M.insert name (Left addr) env -- bind as thunk, eval when needed as var, recursive def
       modify $ putValue (addr, ThunkInstance expr1 nenv addr)
       local (exchangeEnvironment nenv) (delay expr2)
-    EMember (EClass tname) name -> do
-      t <- lookupTypeFromClassHierarchy tname hier
-      if isUpper (head name) -- call constructor
-        then do
-          Variant _ supervar fieldsEx <- lookupVariantFromType name t
-          let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
-          let nargs = map (EVar . fst) argstypes
-          interpretExpression
-            (fst $
-             foldr
-               (\(narg, typ) (expr, typename) ->
-                  let ftype = ConcreteType "Function" [Exact typ, Exact typename]
-                   in (ELambda narg typ ftype expr, ftype))
-               (EConstructor tname name nargs, ConcreteType tname [])
-               argstypes)
-        else case M.lookup name (typeMembers t) of
-               Just (Function _ fname _ _ body) -> do
-                 modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
-                 rethrow
-                   (local (unbindVariable "super" . unbindVariable "this") (interpretExpression body))
-                   ("Call: " ++ fname)
-               Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
+    EMember (EClass tname) name ->
+      gets (M.lookup (tname ++ "." ++ name) . evaluatedStaticMembers) >>= \case
+        (Just val) -> deref val
+        Nothing -> do
+          t <- lookupTypeFromClassHierarchy tname hier
+          evaluated <-
+            if isUpper (head name) -- call constructor
+              then do
+                Variant _ supervar fieldsEx <- lookupVariantFromType name t
+                let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
+                let nargs = map (EVar . fst) argstypes
+                interpretExpression
+                  (fst $
+                   foldr
+                     (\(narg, typ) (expr, typename) ->
+                        let ftype = ConcreteType "Function" [Exact typ, Exact typename]
+                         in (ELambda narg typ ftype expr, ftype))
+                     (EConstructor tname name nargs, ConcreteType tname [])
+                     argstypes)
+              else case M.lookup name (typeMembers t) of
+                     Just (Function _ fname _ _ body) -> do
+                       modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
+                       rethrow
+                         (local (unbindVariable "super" . unbindVariable "this") (interpretExpression body))
+                         ("Call: " ++ fname)
+                     Nothing -> throwe ("Call to nonexistent static method " ++ name ++ " of class " ++ tname)
+          modify $ registerEvaluatedStaticMember (tname ++ "." ++ name, address evaluated)
+          return evaluated
     EMember expr name ->
       rethrow
         (do obj <- force =<< interpretExpression expr
             typ <- getBaseType obj
-            local (saveRealType typ . bindVariable ("this", address obj)) (getMember obj name))
+            if isManaged obj
+              then local (saveRealType typ . bindVariableLoc ("this", address obj)) (getMember obj name)
+              else local (saveRealType typ . bindVariable ("this", obj)) (getMember obj name))
         ("Computing member " ++
-         show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ show (M.toList mem) ++ "\n")
+         show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ show (M.toList resolved) ++ "\n")
     EConstructor tname var flds -- FIXME: It creates instances with no type params
      -> do
       typ <- lookupTypeFromClassHierarchy tname hier
@@ -389,12 +402,12 @@ interpretExpression expr = do
     -- arithmetic ops
     ENeg expr ->
       interpretExpression expr >>= force >>= \case
-        IntInstance val _ -> register $ IntInstance (-val)
-        DoubleInstance val _ -> register $ DoubleInstance (-val)
+        IntInstance val -> return $ IntInstance (-val)
+        DoubleInstance val -> return $ DoubleInstance (-val)
         _ -> throwException "You can only (-Int) or (-Double) dude."
     ENot expr ->
       interpretExpression expr >>= force >>= \case
-        BoolInstance val _ -> register $ BoolInstance (not val)
+        BoolInstance val -> return $ BoolInstance (not val)
         _ -> throwe ("You can only negate bools, change my mind\nTrying to negate " ++ show expr)
     EMod expr1 expr2 -> binary "mod" expr1 expr2 (ifn mod) (dfn mod') (efn "Roll safe, is moduling booleans ok?")
     EAdd expr1 expr2 -> binary "+" expr1 expr2 (ifn (+)) (dfn (+)) (efn "Roll safe, is adding booleans ok?")
@@ -426,10 +439,10 @@ interpretExpression expr = do
       p1 <- delay expr1
       p2 <- delay expr2
       eq <- deepEq p1 p2
-      register $ BoolInstance eq
+      return $ BoolInstance eq
     ENeq expr1 expr2 -> do
-      BoolInstance val _ <- interpretExpression $ EEq expr1 expr2
-      register $ BoolInstance (not val)
+      BoolInstance val <- interpretExpression $ EEq expr1 expr2
+      return $ BoolInstance (not val)
     ECons expr1 expr2 -> do
       p1 <- delay expr1
       p2 <- delay expr2
@@ -445,21 +458,19 @@ interpretExpression expr = do
         else EApply (EMember expr1 "rangeTo") expr2
     EAppend expr1 expr2 -> delay $ EApply (EMember expr1 "++") expr2
     EOperator op ->
-      register $
-      (case op of
-         Abs.Op_plus -> numop EAdd "Num.+"
-         Abs.Op_minus -> numop ESub "Num.-"
-         Abs.Op_mul -> numop EMul "Num.*"
-         Abs.Op_div -> numop EDiv "Num./"
-         Abs.Op_pow -> numop EPow "Num.^"
-         Abs.Op_less -> numop ELt "Num.<"
-         Abs.Op_gr -> numop EGt "Num.>"
-         Abs.Op_leq -> numop ELeq "Num.<="
-         Abs.Op_geq -> numop EGeq "Num.>="
-         Abs.Op_eq -> anyop EEq "Num.=="
-         Abs.Op_cons -> listop ECons "List.:"
-         Abs.Op_scons -> listop ESCons "List.:"
-         Abs.Op_appl -> funop "Function.call"
-         Abs.Op_append -> listop EAppend "List.++")
-        env
+      case op of
+        Abs.Op_plus -> numop EAdd "Num.+"
+        Abs.Op_minus -> numop ESub "Num.-"
+        Abs.Op_mul -> numop EMul "Num.*"
+        Abs.Op_div -> numop EDiv "Num./"
+        Abs.Op_pow -> numop EPow "Num.^"
+        Abs.Op_less -> numop ELt "Num.<"
+        Abs.Op_gr -> numop EGt "Num.>"
+        Abs.Op_leq -> numop ELeq "Num.<="
+        Abs.Op_geq -> numop EGeq "Num.>="
+        Abs.Op_eq -> anyop EEq "Num.=="
+        Abs.Op_cons -> listop ECons "List.:"
+        Abs.Op_scons -> listop ESCons "List.:"
+        Abs.Op_appl -> funop "Function.call"
+        Abs.Op_append -> listop EAppend "List.++"
     _ -> throwException $ "Cannot interpret expr " ++ show expr ++ ": not implemented\n"

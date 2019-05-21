@@ -4,6 +4,8 @@ import qualified Data.Map as M
 import General
 import PreprocessingState
 
+type Closure = Clos Instance
+
 type Environment = Closure
 
 data InterpreterState = InterpreterState
@@ -11,6 +13,7 @@ data InterpreterState = InterpreterState
   , lambdaIndex :: Int
   , pushName :: String
   , memory :: M.Map Loc Instance
+  , evaluatedStaticMembers :: M.Map String Loc
   , freeChunks :: [Int]
   }
 
@@ -25,14 +28,9 @@ type InterpreterMonad a = VargStatefulMonad InterpreterRuntime InterpreterState 
 exchangeEnvironment :: Updater Environment InterpreterRuntime
 exchangeEnvironment nenv runt = runt {environment = nenv}
 
-address :: Instance -> Int
-address (IntInstance _ loc) = loc
-address (DoubleInstance _ loc) = loc
-address (CharInstance _ loc) = loc
-address (BoolInstance _ loc) = loc
-address (FunctionInstance _ _ loc) = loc
-address (ThunkInstance _ _ loc) = loc
-address t@TypeInstance {} = memoryLocation t
+registerEvaluatedStaticMember :: Updater (String, Loc) InterpreterState
+registerEvaluatedStaticMember (name, loc) st =
+  st {evaluatedStaticMembers = M.insert name loc $ evaluatedStaticMembers st}
 
 nextFreeLoc :: InterpreterMonad Int
 nextFreeLoc = do
@@ -44,7 +42,8 @@ lookupInst :: String -> InterpreterMonad (Maybe Instance)
 lookupInst name =
   asks (M.lookup name . environment) >>= \case
     Nothing -> return Nothing
-    Just loc -> gets (M.lookup loc . memory)
+    Just (Left loc) -> gets (M.lookup loc . memory)
+    Just (Right val) -> return $ Just val
 
 register constr = do
   addr <- nextFreeLoc
@@ -73,15 +72,30 @@ deref loc =
       throwException' $ "Dereferencing nonexistent location " ++ show loc ++ "\nMemory: " ++ show mem
 
 resolveEnv :: Environment -> InterpreterMonad (Mapping Instance)
-resolveEnv env = do
+resolveEnv map = do
   mem <- gets memory
-  return $ M.mapMaybe (`M.lookup` mem) env
+  let (lefts, rights) = M.mapEither id map
+  let resolvedLefts = M.mapMaybe (`M.lookup` mem) lefts
+  return $ M.union resolvedLefts rights
+
+resolveName :: String -> InterpreterMonad (Maybe Instance)
+resolveName name =
+  asks (M.lookup name . environment) >>= \case
+    Nothing -> pure Nothing
+    Just (Left loc) ->
+      gets (M.lookup loc . memory) >>= \case
+        Nothing -> return Nothing
+        val -> return val
+    Just (Right val) -> pure $ Just val
 
 updateChunks :: Updater [Int] InterpreterState
 updateChunks chunks stat = stat {freeChunks = chunks}
 
-bindVariable :: Updater (String, Loc) InterpreterRuntime
-bindVariable (name, loc) runt = runt {environment = M.insert name loc $ environment runt}
+bindVariableLoc :: Updater (String, Loc) InterpreterRuntime
+bindVariableLoc (name, loc) runt = runt {environment = M.insert name (Left loc) $ environment runt}
+
+bindVariable :: Updater (String, Instance) InterpreterRuntime
+bindVariable (name, inst) runt = runt {environment = M.insert name (Right inst) $ environment runt}
 
 unbindVariable :: Updater String InterpreterRuntime
 unbindVariable name runt = runt {environment = M.delete name $ environment runt}
@@ -122,3 +136,84 @@ functionType = gets hierarchy >>= lookupTypeFromClassHierarchy "Function"
 
 strType :: InterpreterMonad Type
 strType = gets hierarchy >>= lookupTypeFromClassHierarchy "String"
+
+numType = ConcreteType "Num" []
+
+funType a b = ConcreteType "Function" [Exact a, Exact b]
+
+anyType = AnyType
+
+listAny = ConcreteType "List" [Any]
+
+anyop op n =
+  gets (M.lookup n . evaluatedStaticMembers) >>= \case
+    Just val -> deref val
+    Nothing -> do
+      evaled <-
+        register $
+        FunctionInstance
+          (Function
+             []
+             n
+             AnyType
+             (funType AnyType AnyType)
+             (ELambda "x" AnyType (funType AnyType AnyType) $ ELambda "y" AnyType AnyType $ op (EVar "x") (EVar "y")))
+          M.empty
+      modify $ registerEvaluatedStaticMember (n, address evaled)
+      return evaled
+
+numop op n =
+  gets (M.lookup n . evaluatedStaticMembers) >>= \case
+    Just val -> deref val
+    Nothing -> do
+      env <- asks environment
+      evaled <-
+        register $
+        FunctionInstance
+          (Function
+             []
+             n
+             numType
+             (funType numType numType)
+             (ELambda "x" numType (funType numType numType) $ ELambda "y" numType numType $ op (EVar "x") (EVar "y")))
+          env
+      modify $ registerEvaluatedStaticMember (n, address evaled)
+      return evaled
+
+listop op n =
+  gets (M.lookup n . evaluatedStaticMembers) >>= \case
+    Just val -> deref val
+    Nothing -> do
+      evaled <-
+        register $
+        FunctionInstance
+          (Function
+             []
+             n
+             listAny
+             (funType listAny listAny)
+             (ELambda "x" listAny (funType AnyType listAny) $ ELambda "y" listAny listAny $ op (EVar "x") (EVar "y")))
+          M.empty
+      modify $ registerEvaluatedStaticMember (n, address evaled)
+      return evaled
+
+funop n =
+  gets (M.lookup n . evaluatedStaticMembers) >>= \case
+    Just val -> deref val
+    Nothing -> do
+      evaled <-
+        register $
+        FunctionInstance
+          (Function
+             []
+             n
+             (funType AnyType AnyType)
+             (funType AnyType AnyType)
+             (ELambda
+                "f"
+                (funType AnyType AnyType)
+                (funType AnyType AnyType)
+                (ELambda "x" AnyType AnyType (EApply (EVar "f") (EVar "x")))))
+          M.empty
+      modify $ registerEvaluatedStaticMember (n, address evaled)
+      return evaled

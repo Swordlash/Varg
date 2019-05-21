@@ -23,7 +23,7 @@ runLexer :: String -> StateT (S.Set String) VargMonad Abs.ProgramDef
 runLexer s =
   let ts = lexer s
    in case pProgramDef ts of
-        Bad s -> throwException $ "Tokens: " ++ show ts ++ "\n\nParse failed with " ++ s ++ "\n"
+        Bad s -> throwException $ "\nParse failed with " ++ s ++ "\n"
         Ok tree -> do
           liftIO $ logStderr $ "[[Abstract syntax]]\n\n" ++ show tree ++ "\n\n"
           pure tree
