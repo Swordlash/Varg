@@ -3,5 +3,5 @@ import "Std.Queue"
 
 class Main where
     static function main args = 
-        let nats = [1..] in (nats.take 10000).foldl (+) 0
+        let nats = [0..10] in nats
         #let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 9

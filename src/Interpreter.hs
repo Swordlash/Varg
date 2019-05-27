@@ -9,7 +9,7 @@ import PreprocessingState
 import Data.Fixed (mod')
 import Data.List
 import qualified Data.Map as M
-import Data.Sequence hiding (lookup, reverse, unzip, zip)
+import Data.Sequence hiding (filter, lookup, null, reverse, unzip, zip)
 import qualified Data.Set as S
 
 import qualified AbsVarg as Abs
@@ -145,31 +145,36 @@ getTypeFromDerivation :: DerivationKind -> InterpreterMonad Type
 getTypeFromDerivation (Concrete name _) = gets hierarchy >>= lookupTypeFromClassHierarchy name
 getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not implemented yet."
 
-findNativeMethod :: Instance -> String -> InterpreterMonad Instance
-findNativeMethod obj name = do
+findIfaceOrNativeMethod :: Instance -> String -> InterpreterMonad Instance
+findIfaceOrNativeMethod obj name = do
   realtyp <- asks realType
-  case obj of
-    TypeInstance {} ->
-      case name of
-        "toString" -> nativeStringToInstance (show $ obj {baseType = realtyp})
-        "toUTFCode" ->
-          case lookup "value" (fields obj) of
-            Just (CharInstance val) -> return $ IntInstance (toInteger $ ord val)
-            _ -> throwException' "Call of toUTFCode on non-character"
-        "codeToChar" ->
-          case lookup "value" (fields obj) of
-            Just (IntInstance val) -> return $ CharInstance (chr $ fromInteger val)
-            _ -> throwException' "Call to codeToChar on non-integer"
-        "floor" ->
-          case lookup "value" (fields obj) of
-            Just (DoubleInstance val) -> return $ IntInstance (floor val)
-            _ -> throwException' "Call to floor on non-real type"
-        "toReal" ->
-          case lookup "value" (fields obj) of
-            Just (IntInstance val) -> return $ DoubleInstance (fromIntegral val)
-            _ -> throwException' "Call to toReal on non-integer"
-        _ -> throwException' $ "Nonexistent native method " ++ name ++ "\n"
-    _ -> throwException' "Interpreter error: findNativeMethod called on primitive / thunk"
+  getIfaceMember realtyp name >>= \case
+    Just member -> do
+      env <- asks environment
+      register $ FunctionInstance member env
+    Nothing ->
+      case obj of
+        TypeInstance {} ->
+          case name of
+            "toString" -> nativeStringToInstance (show $ obj {baseType = realtyp})
+            "toUTFCode" ->
+              case lookup "value" (fields obj) of
+                Just (CharInstance val) -> return $ IntInstance (toInteger $ ord val)
+                _ -> throwException' "Call of toUTFCode on non-character"
+            "codeToChar" ->
+              case lookup "value" (fields obj) of
+                Just (IntInstance val) -> return $ CharInstance (chr $ fromInteger val)
+                _ -> throwException' "Call to codeToChar on non-integer"
+            "floor" ->
+              case lookup "value" (fields obj) of
+                Just (DoubleInstance val) -> return $ IntInstance (floor val)
+                _ -> throwException' "Call to floor on non-real type"
+            "toReal" ->
+              case lookup "value" (fields obj) of
+                Just (IntInstance val) -> return $ DoubleInstance (fromIntegral val)
+                _ -> throwException' "Call to toReal on non-integer"
+            _ -> throwException' $ "Nonexistent native method " ++ name ++ "\n"
+        _ -> throwException' "Interpreter error: findNativeMethod called on primitive / thunk"
 
 deepForce :: Instance -> InterpreterMonad Instance
 deepForce =
@@ -227,6 +232,24 @@ deepEq' ((inst1, inst2) :<| t) = do
               in deepEq' (t >< tocheck)
     _ -> pure False
 
+getIfaceMember :: Type -> String -> InterpreterMonad (Maybe Function)
+getIfaceMember t name =
+  if qualifiedTypeName t == "Void"
+    then pure Nothing
+    else let found = M.lookup name (typeMembers t)
+          in if isJust found && functionBody (fromJust found) /= EAbstract
+               then pure found
+               else if qualifiedTypeName t == "Function"
+                      then pure Nothing
+                      else do
+                        superIfaces <- mapM getTypeFromDerivation (implementing t)
+                        superFound <- mapM (`getIfaceMember` name) superIfaces
+                        let superNotAbstract = filter (\f -> functionBody f /= EAbstract) (catMaybes superFound)
+                        return $
+                          if null superNotAbstract
+                            then Nothing
+                            else Just $ head superNotAbstract
+
 getMember :: Instance -> String -> InterpreterMonad Instance
 getMember obj name = do
   hier <- gets hierarchy
@@ -236,7 +259,7 @@ getMember obj name = do
     (case obj of
        TypeInstance {baseType = t, fields = f} ->
          if qualifiedTypeName t == "Void"
-           then findNativeMethod obj name
+           then findIfaceOrNativeMethod obj name
            else case M.lookup name (typeMembers t) of
                   Just (Function _ fname _ _ body) -> do
                     modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
@@ -305,6 +328,16 @@ interpretExpression expr = do
   env <- asks environment
   resolved <- resolveEnv env
   hier <- gets hierarchy
+  mem <- gets memory
+  liftIO isTracingEvaluation >>= \case
+    True ->
+      liftIO $ do
+        putStrLn $ "Evaluating " ++ show expr ++ "\nBounded variables: \n"
+        print (M.toList env)
+        putStrLn $ "\nResolved: " ++ show (M.toList resolved)
+        putStrLn $ "\nStorage: " ++ show (M.toList mem)
+        void getLine
+    False -> pure ()
   case expr of
     EAbstract -> throwe "Call to an abstract function"
     EInterpreted inst -> pure inst
@@ -412,7 +445,8 @@ interpretExpression expr = do
     EMod expr1 expr2 -> binary "mod" expr1 expr2 (ifn mod) (dfn mod') (efn "Roll safe, is moduling booleans ok?")
     EAdd expr1 expr2 -> binary "+" expr1 expr2 (ifn (+)) (dfn (+)) (efn "Roll safe, is adding booleans ok?")
     ESub expr1 expr2 -> binary "-" expr1 expr2 (ifn (-)) (dfn (-)) (efn "Roll safe, is subtracting booleans ok?")
-    EOr expr1 expr2 ->
+    EOr expr1 expr2 --TODO: lazy evaluate boolean expressions (return true if first is already true etc.)
+     ->
       binary
         "||"
         expr1
@@ -444,7 +478,7 @@ interpretExpression expr = do
       BoolInstance val <- interpretExpression $ EEq expr1 expr2
       return $ BoolInstance (not val)
     ECons expr1 expr2 -> do
-      p1 <- delay expr1
+      p1 <- interpretExpression expr1
       p2 <- delay expr2
       list <- lookupTypeFromClassHierarchy "List" hier
       register $ TypeInstance list "Cons" [] [("head", p1), ("tail", p2)]

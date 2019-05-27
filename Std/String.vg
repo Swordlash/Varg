@@ -1,8 +1,8 @@
 import "Std.List"
 
 class String deriving List Char where
-    Empty
-    Cons has
+    Empty derives Empty
+    Cons derives Cons has
         head : Char
         tail : String
 

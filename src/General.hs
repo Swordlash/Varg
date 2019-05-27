@@ -83,10 +83,12 @@ parse "-h" = putStrLn usage >> exitSuccess
 parse "--help" = parse "-h"
 parse "-v" = setEnv "VargVerbosity" "1"
 parse "--verbose" = parse "-v"
-parse "-s" = setEnv "VargStrictness" "True"
+parse "-s" = setEnv "VargStrictness" "1"
 parse "--strict" = parse "-s"
-parse "-m" = setEnv "VargMemoryUsage" "True"
+parse "-m" = setEnv "VargMemoryUsage" "1"
 parse "--memory" = parse "-m"
+parse "-t" = setEnv "VargTracing" "1"
+parse "--trace" = parse "-t"
 parse s =
   if take 2 s == "-d"
     then setEnv "VargTraceDepth" (drop 2 s)
@@ -103,9 +105,9 @@ isVargLazy =
   lookupEnv "VargStrictness" >>= \case
     Nothing -> pure True
     Just strs ->
-      case readMaybe strs :: Maybe Bool of
-        Just str -> pure $ not str
-        Nothing -> pure True
+      case readMaybe strs :: Maybe Int of
+        Just 0 -> pure False
+        _ -> pure True
 
 defaultTraceDepth :: IO Int
 defaultTraceDepth =
@@ -121,9 +123,18 @@ isTracingMemory =
   lookupEnv "VargMemoryUsage" >>= \case
     Nothing -> pure False
     Just strs ->
-      case readMaybe strs :: Maybe Bool of
-        Just str -> pure str
-        Nothing -> pure False
+      case readMaybe strs :: Maybe Int of
+        Just 1 -> pure True
+        _ -> pure False
+
+isTracingEvaluation :: IO Bool
+isTracingEvaluation =
+  lookupEnv "VargTracing" >>= \case
+    Nothing -> pure False
+    Just strs ->
+      case readMaybe strs :: Maybe Int of
+        Just 1 -> pure True
+        _ -> pure False
 
 throw offending message =
   throwException
