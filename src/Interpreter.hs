@@ -189,11 +189,21 @@ deepForce =
       return forced
     a -> pure a
 
+force' :: Instance -> InterpreterMonad Instance
+force' =
+  \case
+    ThunkInstance expr clos loc -> do
+      forced <- local (exchangeEnvironment clos) (interpretExpression expr)
+      modify $ putValue (loc, forced)
+      force forced
+    a -> pure a
+
 force :: Instance -> InterpreterMonad Instance
 force =
   \case
     ThunkInstance expr clos loc -> do
-      forced <- local (exchangeEnvironment clos) (interpretExpression expr)
+      located <- deref loc
+      forced <- force' located
       modify $ putValue (loc, forced)
       force forced
     a -> pure a

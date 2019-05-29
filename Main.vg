@@ -3,5 +3,5 @@ import "Std.Queue"
 
 class Main where
     static function main args = 
-        let ones = 1:ones in ones.take 10
-        #let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 9
+        #let ones = 1:ones in ones.take 100
+        let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 200
