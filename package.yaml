@@ -24,6 +24,7 @@ dependencies:
   - array
   - mtl
   - containers
+  - ansi-terminal
 
 default-extensions:
   - LambdaCase

@@ -274,12 +274,14 @@ Expr7 : '(' '\\' ListArgDef ':' TypeDef '->' Expr ')' { AbsVarg.ELambda (reverse
       | '[]' { AbsVarg.EEmptyList }
       | '[' Expr '..' Expr ']' { AbsVarg.ERange $2 $4 }
       | '[' Expr '..' ']' { AbsVarg.ERangeFr $2 }
+      | '{' ListListElem '}' { AbsVarg.ETuple $2 }
       | Boolean { AbsVarg.EBoolean $1 }
       | 'this' { AbsVarg.EThis }
       | 'super' { AbsVarg.ESuper }
       | LIdent { AbsVarg.EVar $1 }
       | UIdent { AbsVarg.EType $1 }
       | MFun { AbsVarg.EMember $1 }
+      | '(' '^' LIdent ')' { AbsVarg.EMemberAsFun $3 }
       | '(' Operator ')' { AbsVarg.EOperator $2 }
       | Integer { AbsVarg.EInt $1 }
       | Double { AbsVarg.EReal $1 }

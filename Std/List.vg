@@ -6,7 +6,7 @@ import "Std.String"
 
 template List a implementing Collection a where
     Empty
-    Cons  has
+    Cons has
         head : a
         tail : List a
 
@@ -40,5 +40,5 @@ template List a implementing Collection a where
 
     function intersperse (elem:a) : List a = if this.null then this else if this.tail == this.empty then this else (this.head) : elem : (this.tail.intersperse elem)
 
-    function toString : String = "[" ++ ((this.map $ Native.toString).intersperse ", ").foldr (++) (String.Empty) ++ "]"
+    function toString : String = "[" ++ ((this.map (^toString)).intersperse ", ").foldr (++) (String.Empty) ++ "]"
     static function replicate (amount:Int) (elem:a) : List a = if amount == 0 then List.empty else elem : List.replicate (amount-1) elem

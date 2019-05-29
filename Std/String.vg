@@ -2,9 +2,7 @@ import "Std.List"
 
 class String deriving List Char where
     Empty derives Empty
-    Cons derives Cons has
-        head : Char
-        tail : String
+    Cons derives Cons
 
     function (:) (ch:Char) : String = String.Cons ch this # we must shadow (:) from List to avoid implicit cast on List
     function (++) (other : String) : String = if this.null then other else String.Cons $ this.head $ this.tail ++ other # we use Cons, because lazy (:) erases type

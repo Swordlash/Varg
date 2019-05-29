@@ -16,6 +16,7 @@ import qualified AbsVarg as Abs
 import Control.Exception.Base (SomeException, evaluate, try)
 import Data.Char (chr, isUpper, ord)
 import Data.Maybe
+import System.Console.ANSI (clearScreen)
 
 nats = 0 : [n + 1 | n <- nats]
 
@@ -113,6 +114,7 @@ getBaseType =
     BoolInstance {} -> boolType
     FunctionInstance {} -> functionType
     TypeInstance {baseType = t} -> pure t
+    UnboundVar {} -> undefined
     th@ThunkInstance {} -> force th >>= getBaseType
 
 memoryUsage :: InterpreterMonad ()
@@ -140,10 +142,6 @@ nativeStringToInstance str = do
   let chars = map CharInstance str
   empty <- register $ TypeInstance strtp "Empty" [] []
   foldM (\inst ch -> register $ TypeInstance strtp "Cons" [] [("head", ch), ("tail", inst)]) empty (reverse chars)
-
-getTypeFromDerivation :: DerivationKind -> InterpreterMonad Type
-getTypeFromDerivation (Concrete name _) = gets hierarchy >>= lookupTypeFromClassHierarchy name
-getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not implemented yet."
 
 findIfaceOrNativeMethod :: Instance -> String -> InterpreterMonad Instance
 findIfaceOrNativeMethod obj name = do
@@ -232,23 +230,8 @@ deepEq' ((inst1, inst2) :<| t) = do
               in deepEq' (t >< tocheck)
     _ -> pure False
 
-getIfaceMember :: Type -> String -> InterpreterMonad (Maybe Function)
-getIfaceMember t name =
-  if qualifiedTypeName t == "Void"
-    then pure Nothing
-    else let found = M.lookup name (typeMembers t)
-          in if isJust found && functionBody (fromJust found) /= EAbstract
-               then pure found
-               else if qualifiedTypeName t == "Function"
-                      then pure Nothing
-                      else do
-                        superIfaces <- mapM getTypeFromDerivation (implementing t)
-                        superFound <- mapM (`getIfaceMember` name) superIfaces
-                        let superNotAbstract = filter (\f -> functionBody f /= EAbstract) (catMaybes superFound)
-                        return $
-                          if null superNotAbstract
-                            then Nothing
-                            else Just $ head superNotAbstract
+tryUnify :: Instance -> Instance -> InterpreterMonad (Maybe Environment)
+tryUnify pattern with = pure Nothing
 
 getMember :: Instance -> String -> InterpreterMonad Instance
 getMember obj name = do
@@ -332,6 +315,7 @@ interpretExpression expr = do
   liftIO isTracingEvaluation >>= \case
     True ->
       liftIO $ do
+        clearScreen
         putStrLn $ "Evaluating " ++ show expr ++ "\nBounded variables: \n"
         print (M.toList env)
         putStrLn $ "\nResolved: " ++ show (M.toList resolved)
@@ -356,11 +340,19 @@ interpretExpression expr = do
         Nothing -> throwe "Referencing super from a static context"
         Just (Left loc) -> deref loc
         Just (Right val) -> pure val
+    EWild ->
+      asks isUnifying >>= \case
+        True -> pure $ UnboundVar "_"
+        False -> throwe "Unexpected wildcard when not unifying"
     EVar name ->
       asks (M.lookup name . environment) >>= \case
         Nothing ->
-          throwe
-            (name ++ "? I have never seen this man in my life!\n I know only that " ++ show (M.toList resolved) ++ "\n")
+          asks isUnifying >>= \case
+            False ->
+              throwe
+                (name ++
+                 "? I have never seen this man in my life!\n I know only that " ++ show (M.toList resolved) ++ "\n")
+            True -> pure $ UnboundVar name
         Just (Left loc) ->
           deref loc >>= \case
             th@ThunkInstance {} ->
@@ -397,8 +389,8 @@ interpretExpression expr = do
           evaluated <-
             if isUpper (head name) -- call constructor
               then do
-                Variant _ supervar fieldsEx <- lookupVariantFromType name t
-                let argstypes = zip argGen (map (functionOutputType . snd) fieldsEx)
+                fieldsEx <- supertypeFieldTypes tname name
+                let argstypes = zip argGen (map snd fieldsEx)
                 let nargs = map (EVar . fst) argstypes
                 interpretExpression
                   (fst $
@@ -429,7 +421,7 @@ interpretExpression expr = do
     EConstructor tname var flds -- FIXME: It creates instances with no type params
      -> do
       typ <- lookupTypeFromClassHierarchy tname hier
-      Variant _ supervar fieldsEx <- lookupVariantFromType var typ
+      fieldsEx <- supertypeFieldTypes tname var
       vals <- mapM delay flds
       register $ TypeInstance typ var [] (zip (map fst fieldsEx) vals)
     -- arithmetic ops
@@ -491,6 +483,19 @@ interpretExpression expr = do
         then EMember expr1 "rangeFrom"
         else EApply (EMember expr1 "rangeTo") expr2
     EAppend expr1 expr2 -> delay $ EApply (EMember expr1 "++") expr2
+    EUnify epattern ewith inexpr -> do
+      pattern <- delay epattern
+      with <- delay ewith
+      local (setUnifying True) (tryUnify pattern with) >>= \case
+        Nothing ->
+          throwe $
+          "Cannot unify " ++
+          show (show pattern) ++
+          " with " ++ show (show with) ++ ".\nBound variables: " ++ show (M.toList resolved) ++ "\n"
+        Just substs -> local (mergeWithEnv substs) (interpretExpression inexpr)
+    EMatch ewith [] -> throwe $ "Irrefutable pattern match with " ++ show (show ewith) ++ " failed.\n"
+    EMatch ewith ((epattern, ine):t) ->
+      catchError (interpretExpression $ EUnify epattern ewith ine) (\e -> interpretExpression $ EMatch ewith t)
     EOperator op ->
       case op of
         Abs.Op_plus -> numop EAdd "Num.+"

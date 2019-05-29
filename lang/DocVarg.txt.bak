@@ -206,12 +206,14 @@ All other symbols are terminals.
   |  |  **|**  | ``[]`` 
   |  |  **|**  | ``[`` //Expr// ``..`` //Expr// ``]`` 
   |  |  **|**  | ``[`` //Expr// ``..`` ``]`` 
+  |  |  **|**  | ``(`` //[ListElem]// ``)`` 
   |  |  **|**  | //Boolean// 
   |  |  **|**  | ``this`` 
   |  |  **|**  | ``super`` 
   |  |  **|**  | //LIdent// 
   |  |  **|**  | //UIdent// 
   |  |  **|**  | //MFun// 
+  |  |  **|**  | ``(`` ``^`` //LIdent// ``)`` 
   |  |  **|**  | ``(`` //Operator// ``)`` 
   |  |  **|**  | //Integer// 
   |  |  **|**  | //Double// 
@@ -227,6 +229,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr2// 
   | //Expr2// | -> | //Expr3// ``:`` //Expr2// 
   |  |  **|**  | //Expr3// ``::`` //Expr2// 
+  |  |  **|**  | //Expr3// ``++`` //Expr2// 
   |  |  **|**  | //Expr3// ``==`` //Expr3// 
   |  |  **|**  | //Expr4// ``/=`` //Expr3// 
   |  |  **|**  | //Expr3// ``mod`` //Expr3// 
@@ -237,8 +240,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr3// ``<=`` //Expr3// 
   |  |  **|**  | //Expr3// ``>=`` //Expr3// 
   |  |  **|**  | //Expr3// 
-  | //Expr3// | -> | //Expr4// ``++`` //Expr3// 
-  |  |  **|**  | //Expr3// //Op// //Expr4// 
+  | //Expr3// | -> | //Expr3// //Op// //Expr4// 
   |  |  **|**  | //Expr3// ``+`` //Expr4// 
   |  |  **|**  | //Expr3// ``-`` //Expr4// 
   |  |  **|**  | //Expr4// 

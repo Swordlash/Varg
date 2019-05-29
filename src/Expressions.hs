@@ -159,6 +159,12 @@ parseExpression lookupFun expr =
       p1 <- parseExpression lookupFun expr1
       p2 <- parseExpression lookupFun expr2
       return $ EApply (EMember p1 name) p2
+    Abs.EMemberAsFun (Abs.LIdent name) ->
+      parseExpression lookupFun $
+      Abs.ELambda
+        [Abs.InferredArgumentDef (Abs.LIdent "x")]
+        (Abs.ConcreteType (Abs.UIdent "Any") [])
+        (Abs.EApply (Abs.EVar $ Abs.LIdent "x") (Abs.EMember (Abs.MFun $ "." ++ name)))
     Abs.ELambdaMatch matchclauses -> do
       pclauses <-
         mapM

@@ -215,6 +215,7 @@ transExpr x =
     EEmptyList                    -> failure x
     ERange expr1 expr2            -> failure x
     ERangeFr expr                 -> failure x
+    ETuple listelems              -> failure x
     EAppl expr1 expr2             -> failure x
     ECons expr1 expr2             -> failure x
     ESCons expr1 expr2            -> failure x
@@ -243,6 +244,7 @@ transExpr x =
     EVar lident                   -> failure x
     EType uident                  -> failure x
     EMember mfun                  -> failure x
+    EMemberAsFun lident           -> failure x
     EOperator operator            -> failure x
     EInt integer                  -> failure x
     EReal double                  -> failure x

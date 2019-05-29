@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03be81b23d680ce01a9cb02d49e5685e56ba97ac4d9c55374b13bf34f878f9f0
+-- hash: 4194ca8a78d734164959e8c3bf2945b854a73b2661c37a69e1c4828b38772e70
 
 name:           VargInterpreter
 version:        1.0
@@ -56,7 +56,8 @@ library
       src
   default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
   build-depends:
-      array
+      ansi-terminal
+    , array
     , base >=4.7 && <5
     , containers
     , mtl
@@ -72,6 +73,7 @@ executable Varg
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       VargInterpreter
+    , ansi-terminal
     , array
     , base >=4.7 && <5
     , containers
@@ -89,6 +91,7 @@ test-suite Interpreter-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       VargInterpreter
+    , ansi-terminal
     , array
     , base >=4.7 && <5
     , containers

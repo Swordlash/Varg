@@ -31,6 +31,7 @@ data Inst f t e
   | ThunkInstance e
                   (Clos (Inst f t e))
                   Loc
+  | UnboundVar String
   | TypeInstance { baseType        :: t
                  , typeVariantName :: String
                  , instanceParams  :: [TypeParam]
@@ -42,6 +43,7 @@ isManaged :: Inst f t e -> Bool
 isManaged TypeInstance {}     = True
 isManaged ThunkInstance {}    = True
 isManaged FunctionInstance {} = True
+isManaged UnboundVar {}       = False
 isManaged _                   = False
 
 address :: Inst f t e -> Int
@@ -49,6 +51,7 @@ address IntInstance {}             = undefined
 address DoubleInstance {}          = undefined
 address CharInstance {}            = undefined
 address BoolInstance {}            = undefined
+address UnboundVar {}              = undefined
 address (FunctionInstance _ _ loc) = loc
 address (ThunkInstance _ _ loc)    = loc
 address t@TypeInstance {}          = memoryLocation t

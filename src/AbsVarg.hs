@@ -222,6 +222,7 @@ data Expr
   | ERange Expr
            Expr
   | ERangeFr Expr
+  | ETuple [ListElem]
   | EAppl Expr
           Expr
   | ECons Expr
@@ -271,6 +272,7 @@ data Expr
   | EVar LIdent
   | EType UIdent
   | EMember MFun
+  | EMemberAsFun LIdent
   | EOperator Operator
   | EInt Integer
   | EReal Double

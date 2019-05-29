@@ -149,6 +149,8 @@ ERangeFr.           Expr7 ::= "[" Expr ".." "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
+ETuple.             Expr7 ::= "{" [ListElem] "}";
+
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr2  ::= Expr3 ":"   Expr2;
 ESCons.             Expr2  ::= Expr3 "::" Expr2;
@@ -180,6 +182,7 @@ ESuper.             Expr7 ::= "super";
 EVar.               Expr7 ::= LIdent ;
 EType.              Expr7 ::= UIdent ;
 EMember.            Expr7 ::= MFun ;
+EMemberAsFun.       Expr7 ::= "(" "^" LIdent ")";
 EOperator.          Expr7 ::= "(" Operator ")" ;
 
 EInt.               Expr7 ::= Integer ;

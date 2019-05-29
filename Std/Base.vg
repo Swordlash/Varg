@@ -14,10 +14,6 @@ interface template Function a b where
 	function call (x:a) : b = this x
 	function compose <a, b, c> (f: Function b c) : Function a c = (\x -> f $ this x)
 
-	static function flipI <a, b, c> (f: Function a (Function b c)) (x:a) (y:b) : c = f.flip x y
-	static function callI (f: Function a b) (x:a) : b = f.call x
-	static function composeI <a, b, c> (f: Function b c) (g: Function a b) : Function a c = g.compose f
-
 interface template Enumerable a where
     unique function rangeTo (other : a) : List a = if this <= other then this : this.incr.rangeTo other else []
     unique function rangeFrom : List a = this : this.incr.rangeFrom

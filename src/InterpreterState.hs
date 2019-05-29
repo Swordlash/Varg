@@ -1,6 +1,7 @@
 module InterpreterState where
 
 import qualified Data.Map as M
+import Data.Maybe (catMaybes, fromJust, isJust)
 import General
 import PreprocessingState
 
@@ -27,6 +28,9 @@ type InterpreterMonad a = VargStatefulMonad InterpreterRuntime InterpreterState 
 
 exchangeEnvironment :: Updater Environment InterpreterRuntime
 exchangeEnvironment nenv runt = runt {environment = nenv}
+
+setUnifying :: Updater Bool InterpreterRuntime
+setUnifying isunifying runt = runt {isUnifying = isunifying}
 
 registerEvaluatedStaticMember :: Updater (String, Loc) InterpreterState
 registerEvaluatedStaticMember (name, loc) st =
@@ -100,6 +104,9 @@ bindVariable (name, inst) runt = runt {environment = M.insert name (Right inst) 
 unbindVariable :: Updater String InterpreterRuntime
 unbindVariable name runt = runt {environment = M.delete name $ environment runt}
 
+mergeWithEnv :: Updater Environment InterpreterRuntime
+mergeWithEnv nenv runt = runt {environment = M.union nenv $ environment runt}
+
 pushLambdaName :: Updater String InterpreterState
 pushLambdaName name st = st {pushName = name}
 
@@ -136,6 +143,43 @@ functionType = gets hierarchy >>= lookupTypeFromClassHierarchy "Function"
 
 strType :: InterpreterMonad Type
 strType = gets hierarchy >>= lookupTypeFromClassHierarchy "String"
+
+supertypeFieldTypes :: TypeName -> TypeName -> InterpreterMonad [(String, TypeDef)]
+supertypeFieldTypes name varname =
+  if name == "Void" || varname == ""
+    then pure []
+    else do
+      hier <- gets hierarchy
+      typ <- lookupTypeFromClassHierarchy name hier
+      supertyp <- getTypeFromDerivation (supertype typ)
+      var <- lookupVariantFromType varname typ
+      superfields <- supertypeFieldTypes (qualifiedTypeName supertyp) (supervariant var)
+      let fieldtypes = map (\(s, f) -> (s, functionOutputType f)) (variantFields var)
+      return $ superfields ++ fieldtypes
+
+supertypeFieldCount name varname = length <$> supertypeFieldTypes name varname
+
+getTypeFromDerivation :: DerivationKind -> InterpreterMonad Type
+getTypeFromDerivation (Concrete name _) = gets hierarchy >>= lookupTypeFromClassHierarchy name
+getTypeFromDerivation (Unbound _) = throwException' "Unbound derivation not implemented yet."
+
+getIfaceMember :: Type -> String -> InterpreterMonad (Maybe Function)
+getIfaceMember t name =
+  if qualifiedTypeName t == "Void"
+    then pure Nothing
+    else let found = M.lookup name (typeMembers t)
+          in if isJust found && functionBody (fromJust found) /= EAbstract
+               then pure found
+               else if qualifiedTypeName t == "Function"
+                      then pure Nothing
+                      else do
+                        superIfaces <- mapM getTypeFromDerivation (implementing t)
+                        superFound <- mapM (`getIfaceMember` name) superIfaces
+                        let superNotAbstract = filter (\f -> functionBody f /= EAbstract) (catMaybes superFound)
+                        return $
+                          if null superNotAbstract
+                            then Nothing
+                            else Just $ head superNotAbstract
 
 numType = ConcreteType "Num" []
 
@@ -217,3 +261,4 @@ funop n =
           M.empty
       modify $ registerEvaluatedStaticMember (n, address evaled)
       return evaled
+-----------------------------------------------------------------------------------------------------

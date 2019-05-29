@@ -352,12 +352,14 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{[]}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\nonterminal{Expr}} {\terminal{]}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\terminal{]}}  \\
+ & {\delimit}  &{\terminal{(}} {\nonterminal{ListListElem}} {\terminal{)}}  \\
  & {\delimit}  &{\nonterminal{Boolean}}  \\
  & {\delimit}  &{\terminal{this}}  \\
  & {\delimit}  &{\terminal{super}}  \\
  & {\delimit}  &{\nonterminal{LIdent}}  \\
  & {\delimit}  &{\nonterminal{UIdent}}  \\
  & {\delimit}  &{\nonterminal{MFun}}  \\
+ & {\delimit}  &{\terminal{(}} {\terminal{{\textasciicircum}}} {\nonterminal{LIdent}} {\terminal{)}}  \\
  & {\delimit}  &{\terminal{(}} {\nonterminal{Operator}} {\terminal{)}}  \\
  & {\delimit}  &{\nonterminal{Integer}}  \\
  & {\delimit}  &{\nonterminal{Double}}  \\
@@ -385,6 +387,7 @@ All other symbols are terminals.\\
 \begin{tabular}{lll}
 {\nonterminal{Expr2}} & {\arrow}  &{\nonterminal{Expr3}} {\terminal{:}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{::}} {\nonterminal{Expr2}}  \\
+ & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$+$}{$+$}}} {\nonterminal{Expr2}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$=$}{$=$}}} {\nonterminal{Expr3}}  \\
  & {\delimit}  &{\nonterminal{Expr4}} {\terminal{/{$=$}}} {\nonterminal{Expr3}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{mod}} {\nonterminal{Expr3}}  \\
@@ -398,8 +401,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Expr3}} & {\arrow}  &{\nonterminal{Expr4}} {\terminal{{$+$}{$+$}}} {\nonterminal{Expr3}}  \\
- & {\delimit}  &{\nonterminal{Expr3}} {\nonterminal{Op}} {\nonterminal{Expr4}}  \\
+{\nonterminal{Expr3}} & {\arrow}  &{\nonterminal{Expr3}} {\nonterminal{Op}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$+$}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr3}} {\terminal{{$-$}}} {\nonterminal{Expr4}}  \\
  & {\delimit}  &{\nonterminal{Expr4}}  \\
