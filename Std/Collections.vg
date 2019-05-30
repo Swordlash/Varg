@@ -4,7 +4,7 @@ import "Std.Functor"
 interface template Collection a implementing Functor Collection where
 	unique function null : abstract Bool
 	unique function empty : abstract Collection a
-	unique function length : abstract Int
+	unique function size : abstract Int
 	unique function map <b> (f: Function a b) : abstract Collection a
 	implement function fmap <b> : Function (Function a b) (Collection b) = this.map        
 

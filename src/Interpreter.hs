@@ -149,8 +149,8 @@ findIfaceOrNativeMethod obj name = do
   realtyp <- asks realType
   getIfaceMember realtyp name >>= \case
     Just member -> do
-      env <- asks environment
-      register $ FunctionInstance member env
+      Just o <- asks (M.lookup "this" . environment)
+      register $ FunctionInstance member (M.insert "this" o M.empty)
     Nothing ->
       case obj of
         TypeInstance {} ->
@@ -247,11 +247,16 @@ tryUnify pattern with = tryUnify' $ singleton (pattern, with)
 tryUnify' :: Seq (Instance, Instance) -> InterpreterMonad (Maybe Environment)
 tryUnify' Empty = do
   env <- asks unifyingEnv
+  resolved <- resolveEnv env
+  liftIO $ logg $ "Match successful with " ++ show (M.toList resolved)
   return $ Just env
 tryUnify' ((mpattern, mwith) :<| t) = do
   unif <- asks unifyingEnv
   pattern <- force mpattern
   with <- force mwith
+  liftIO $ logg $ "\nTry match " ++ show pattern ++ " with " ++ show with
+  resolved <- resolveEnv =<< asks environment
+  liftIO $ logg $ "Resolved: " ++ show (M.toList resolved)
   case (pattern, with) of
     (UnboundVar name, val) ->
       if name == "_"
@@ -261,35 +266,35 @@ tryUnify' ((mpattern, mwith) :<| t) = do
                Just oldval ->
                  resolve oldval >>= deepEq val >>= \case
                    True -> tryUnify' t -- match with old value, go further
-                   False -> pure Nothing -- no match with old value
+                   False -> liftIO $ logg "Unify: no match with old value" >> pure Nothing
                Nothing -> local (bindUnifiedManagedVariable (name, val)) (tryUnify' t) -- bind var, go further
     (IntInstance v1, IntInstance v2) ->
       if v1 == v2
         then tryUnify' t
-        else pure Nothing
+        else liftIO $ logg "Unify: int inequality" >> pure Nothing
     (DoubleInstance v1, DoubleInstance v2) ->
       if v1 == v2
         then tryUnify' t
-        else pure Nothing
+        else liftIO $ logg "Unify: double inequality" >> pure Nothing
     (CharInstance c1, CharInstance c2) ->
       if c1 == c2
         then tryUnify' t
-        else pure Nothing
+        else liftIO $ logg "Unify: char inequality" >> pure Nothing
     (BoolInstance b1, BoolInstance b2) ->
       if b1 == b2
         then tryUnify' t
-        else pure Nothing
+        else liftIO $ logg "Unify: bool inequality" >> pure Nothing
     (FunctionInstance f1 c1 _, FunctionInstance f2 c2 _) --maybe try to unify envs? idk
      ->
       if (f1 == f2) && (c1 == c2)
         then tryUnify' t
-        else pure Nothing
+        else liftIO $ logg "Unify: function inequality" >> pure Nothing
     (TypeInstance typ1 var1 _ f1 _, TypeInstance typ2 var2 _ f2 _) ->
       if typ1 /= typ2 || var1 /= var2
-        then pure Nothing
+        then liftIO $ logg "Unify: type inequality" >> pure Nothing
         else let tocheck = fromList $ zip (map snd f1) (map snd f2)
               in tryUnify' (t >< tocheck)
-    _ -> pure Nothing
+    _ -> liftIO $ logg "Unify: other case" >> pure Nothing
 
 getMember :: Instance -> String -> InterpreterMonad Instance
 getMember obj name = do
@@ -303,8 +308,9 @@ getMember obj name = do
            then findIfaceOrNativeMethod obj name
            else case M.lookup name (typeMembers t) of
                   Just (Function _ fname _ _ body) -> do
+                    Just o <- asks (M.lookup "this" . environment)
                     modify $ pushLambdaName $ qualifiedTypeName t ++ "." ++ name
-                    rethrow (delay body) ("Call: " ++ fname)
+                    rethrow (local (exchangeEnvironment (M.insert "this" o M.empty)) (delay body)) ("Call: " ++ fname)
                   Nothing ->
                     fmapMaybe
                       (lookup name f)
@@ -377,8 +383,10 @@ interpretExpression expr = do
         putStrLn $ "Evaluating " ++ show expr ++ "\nBounded variables: \n"
         print (M.toList env)
         putStrLn $ "\nResolved: " ++ show (M.toList resolved)
-        putStrLn $ "\nStorage: " ++ show (M.toList mem)
-        void getLine
+        comm <- getLine
+        if comm == "m"
+          then putStrLn $ "\nStorage: " ++ show (M.toList mem)
+          else pure ()
     False -> pure ()
   case expr of
     EAbstract -> throwe "Call to an abstract function"
@@ -549,13 +557,21 @@ interpretExpression expr = do
           show (show pattern) ++
           " with " ++ show (show with) ++ ".\nBound variables: " ++ show (M.toList resolved) ++ "\n"
         Just substs -> local (mergeWithEnv substs) (interpretExpression inexpr)
-    EMatch ewith [] -> throwe $ "Irrefutable pattern match with " ++ show (show ewith) ++ " failed.\n"
-    EMatch ewith ((epattern, ine):t) -> do
-      pattern <- delay epattern
-      with <- delay ewith
-      local (setUnifying True) (tryUnify pattern with) >>= \case
-        Nothing -> interpretExpression $ EMatch ewith t
-        Just substs -> local (mergeWithEnv substs) (interpretExpression ine)
+    EMatch ewith [] ->
+      throwe $
+      "Irrefutable pattern match with " ++
+      show (show ewith) ++ " failed.\nBound variables: " ++ show (M.toList resolved) ++ "\n"
+    EMatch ewith ((epattern, ine):t) ->
+      local
+        (clearUnifyingEnv)
+        (do pattern <- local (setUnifying True) (interpretExpression epattern)
+            with <- force =<< delay ewith
+            rethrow
+              (local (setUnifying True) (tryUnify pattern with) >>= \case
+                 Nothing -> interpretExpression $ EMatch ewith t
+                 Just substs -> local (mergeWithEnv substs) (interpretExpression ine))
+              ("Trying to match " ++
+               show pattern ++ " with " ++ show with ++ "\nBound variables: " ++ show (M.toList resolved) ++ "\n"))
     EOperator op ->
       case op of
         Abs.Op_plus -> numop EAdd "Num.+"

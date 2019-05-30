@@ -100,6 +100,9 @@ resolveName name =
 updateChunks :: Updater [Int] InterpreterState
 updateChunks chunks stat = stat {freeChunks = chunks}
 
+clearUnifyingEnv :: Notifier InterpreterRuntime
+clearUnifyingEnv runt = runt {unifyingEnv = M.empty}
+
 bindVariableLoc :: Updater (String, Loc) InterpreterRuntime
 bindVariableLoc (name, loc) runt = runt {environment = M.insert name (Left loc) $ environment runt}
 

@@ -43,6 +43,7 @@ instance Show Instance where
   show (BoolInstance val) = show val
   show (FunctionInstance expr clos _) = show expr -- ++ "\t Closure: [" ++ showTr clos ++"]"
   show (ThunkInstance expr clos mem) = "thunk " ++ show expr ++ " address: " ++ show mem
+  show (UnboundVar name) = "?" ++ name
   show t@(TypeInstance base var params flds _) =
     case qualifiedTypeName base of
       "List" -> "Native List: " ++ show (instanceListToList t)

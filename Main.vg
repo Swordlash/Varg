@@ -1,11 +1,9 @@
 import "Std.Overture"
 import "Std.Queue"
+import "Std.Set"
 
 class Main where
-    static function main args = match [1, [2]] with
-        h:[h1:h2:t] -> h + h1
-        h:t -> t
-        _ -> "Dziwne"
+    static function main args = (Set.fromList [4,1,3,2,7,6,4,2]).toList
         #let nats = 1: nats.map (^incr) in nats.take 100
         #let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 20
         #let ones = 1:ones in ones.take 10

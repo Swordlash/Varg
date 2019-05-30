@@ -11,7 +11,8 @@ template List a implementing Collection a where
         tail : List a
 
     implement function elemAt (i:Int) : a = if i == 0 then this.head else this.tail.elemAt (i-1)
-    implement function length : Int = if this.null then 0 else 1 + this.tail.length
+    function length : Int = if this.null then 0 else 1 + this.tail.length
+    implement function size : Int = this.length
 
     function (:) (x:a) : List a = List.Cons x this
 
