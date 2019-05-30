@@ -9,5 +9,6 @@ template Maybe a implementing Functor Maybe where
     function get : a = this.value
     
     implement function fmap <b> (f: Function a b) : Maybe b = 
-        if this == Maybe.Nothing then Maybe.Nothing
-            else Maybe.Just (f (this.value))
+        match this with
+            Maybe.Nothing -> Maybe.Nothing
+            Maybe.Just val -> Maybe.Just $ f val

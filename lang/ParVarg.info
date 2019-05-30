@@ -124,7 +124,7 @@ Grammar
 	Expr -> 'match' Expr 'with' '{' ListMatchClause '}'   (115)
 	Expr -> 'matching' '{' ListMatchClause '}'         (116)
 	Expr -> 'if' Expr 'then' Expr 'else' Expr          (117)
-	Expr -> 'unify' Expr 'with' Expr 'in' Expr         (118)
+	Expr -> 'unify' Expr 'with' '{' Expr '}' 'in' Expr   (118)
 	Expr -> Expr1                                      (119)
 	ListLetDef -> LetDef                               (120)
 	ListLetDef -> LetDef ';' ListLetDef                (121)
@@ -3926,7 +3926,7 @@ State 201
 
 State 202
 
-	Expr -> 'unify' . Expr 'with' Expr 'in' Expr        (rule 118)
+	Expr -> 'unify' . Expr 'with' '{' Expr '}' 'in' Expr    (rule 118)
 
 	'('            shift, and enter state 187
 	'-'            shift, and enter state 188
@@ -4215,7 +4215,7 @@ State 209
 
 State 210
 
-	Expr -> 'unify' Expr . 'with' Expr 'in' Expr        (rule 118)
+	Expr -> 'unify' Expr . 'with' '{' Expr '}' 'in' Expr    (rule 118)
 
 	'with'         shift, and enter state 288
 
@@ -6356,7 +6356,27 @@ State 287
 
 State 288
 
-	Expr -> 'unify' Expr 'with' . Expr 'in' Expr        (rule 118)
+	Expr -> 'unify' Expr 'with' . '{' Expr '}' 'in' Expr    (rule 118)
+
+	'{'            shift, and enter state 290
+
+
+State 289
+
+	ArgDef -> '(' LIdent ':' FreeTypeDef ')' .          (rule 41)
+
+	'('            reduce using rule 41
+	'->'           reduce using rule 41
+	':'            reduce using rule 41
+	';'            reduce using rule 41
+	'='            reduce using rule 41
+	'}'            reduce using rule 41
+	L_LIdent       reduce using rule 41
+
+
+State 290
+
+	Expr -> 'unify' Expr 'with' '{' . Expr '}' 'in' Expr    (rule 118)
 
 	'('            shift, and enter state 187
 	'-'            shift, and enter state 188
@@ -6389,7 +6409,7 @@ State 288
 	UIdent         goto state 175
 	LIdent         goto state 176
 	MFun           goto state 177
-	Expr           goto state 290
+	Expr           goto state 318
 	Expr7          goto state 179
 	Expr1          goto state 180
 	Expr2          goto state 181
@@ -6398,26 +6418,6 @@ State 288
 	Expr5          goto state 184
 	Expr6          goto state 185
 	Boolean        goto state 186
-
-State 289
-
-	ArgDef -> '(' LIdent ':' FreeTypeDef ')' .          (rule 41)
-
-	'('            reduce using rule 41
-	'->'           reduce using rule 41
-	':'            reduce using rule 41
-	';'            reduce using rule 41
-	'='            reduce using rule 41
-	'}'            reduce using rule 41
-	L_LIdent       reduce using rule 41
-
-
-State 290
-
-	Expr -> 'unify' Expr 'with' Expr . 'in' Expr        (rule 118)
-
-	'in'           shift, and enter state 318
-
 
 State 291
 
@@ -7062,65 +7062,16 @@ State 317
 
 State 318
 
-	Expr -> 'unify' Expr 'with' Expr 'in' . Expr        (rule 118)
+	Expr -> 'unify' Expr 'with' '{' Expr . '}' 'in' Expr    (rule 118)
 
-	'('            shift, and enter state 187
-	'-'            shift, and enter state 188
-	'<<'           shift, and enter state 189
-	'['            shift, and enter state 190
-	'[]'           shift, and enter state 191
-	'_'            shift, and enter state 192
-	'false'        shift, and enter state 193
-	'if'           shift, and enter state 194
-	'let'          shift, and enter state 195
-	'match'        shift, and enter state 196
-	'matching'     shift, and enter state 197
-	'not'          shift, and enter state 198
-	'super'        shift, and enter state 199
-	'this'         shift, and enter state 200
-	'true'         shift, and enter state 201
-	'unify'        shift, and enter state 202
-	L_quoted       shift, and enter state 2
-	L_integ        shift, and enter state 203
-	L_doubl        shift, and enter state 204
-	L_charac       shift, and enter state 205
-	L_UIdent       shift, and enter state 20
-	L_LIdent       shift, and enter state 33
-	L_MFun         shift, and enter state 206
+	'}'            shift, and enter state 319
 
-	String         goto state 171
-	Integer        goto state 172
-	Double         goto state 173
-	Char           goto state 174
-	UIdent         goto state 175
-	LIdent         goto state 176
-	MFun           goto state 177
-	Expr           goto state 319
-	Expr7          goto state 179
-	Expr1          goto state 180
-	Expr2          goto state 181
-	Expr3          goto state 182
-	Expr4          goto state 183
-	Expr5          goto state 184
-	Expr6          goto state 185
-	Boolean        goto state 186
 
 State 319
 
-	Expr -> 'unify' Expr 'with' Expr 'in' Expr .        (rule 118)
+	Expr -> 'unify' Expr 'with' '{' Expr '}' . 'in' Expr    (rule 118)
 
-	')'            reduce using rule 118
-	','            reduce using rule 118
-	'->'           reduce using rule 118
-	'..'           reduce using rule 118
-	';'            reduce using rule 118
-	'>>'           reduce using rule 118
-	']'            reduce using rule 118
-	'else'         reduce using rule 118
-	'in'           reduce using rule 118
-	'then'         reduce using rule 118
-	'with'         reduce using rule 118
-	'}'            reduce using rule 118
+	'in'           shift, and enter state 328
 
 
 State 320
@@ -7325,7 +7276,7 @@ State 326
 
 	Expr7 -> '(' '\\' ListArgDef ':' TypeDef '->' Expr . ')'    (rule 127)
 
-	')'            shift, and enter state 328
+	')'            shift, and enter state 330
 
 
 State 327
@@ -7338,6 +7289,69 @@ State 327
 
 
 State 328
+
+	Expr -> 'unify' Expr 'with' '{' Expr '}' 'in' . Expr    (rule 118)
+
+	'('            shift, and enter state 187
+	'-'            shift, and enter state 188
+	'<<'           shift, and enter state 189
+	'['            shift, and enter state 190
+	'[]'           shift, and enter state 191
+	'_'            shift, and enter state 192
+	'false'        shift, and enter state 193
+	'if'           shift, and enter state 194
+	'let'          shift, and enter state 195
+	'match'        shift, and enter state 196
+	'matching'     shift, and enter state 197
+	'not'          shift, and enter state 198
+	'super'        shift, and enter state 199
+	'this'         shift, and enter state 200
+	'true'         shift, and enter state 201
+	'unify'        shift, and enter state 202
+	L_quoted       shift, and enter state 2
+	L_integ        shift, and enter state 203
+	L_doubl        shift, and enter state 204
+	L_charac       shift, and enter state 205
+	L_UIdent       shift, and enter state 20
+	L_LIdent       shift, and enter state 33
+	L_MFun         shift, and enter state 206
+
+	String         goto state 171
+	Integer        goto state 172
+	Double         goto state 173
+	Char           goto state 174
+	UIdent         goto state 175
+	LIdent         goto state 176
+	MFun           goto state 177
+	Expr           goto state 329
+	Expr7          goto state 179
+	Expr1          goto state 180
+	Expr2          goto state 181
+	Expr3          goto state 182
+	Expr4          goto state 183
+	Expr5          goto state 184
+	Expr6          goto state 185
+	Boolean        goto state 186
+
+State 329
+
+	Expr -> 'unify' Expr 'with' '{' Expr '}' 'in' Expr .    (rule 118)
+
+	')'            reduce using rule 118
+	','            reduce using rule 118
+	'->'           reduce using rule 118
+	'..'           reduce using rule 118
+	';'            reduce using rule 118
+	'>>'           reduce using rule 118
+	']'            reduce using rule 118
+	'else'         reduce using rule 118
+	'in'           reduce using rule 118
+	'then'         reduce using rule 118
+	'with'         reduce using rule 118
+	'}'            reduce using rule 118
+
+
+State 330
 
 	Expr7 -> '(' '\\' ListArgDef ':' TypeDef '->' Expr ')' .    (rule 127)
 
@@ -7397,4 +7411,4 @@ Grammar Totals
 Number of rules: 182
 Number of terminals: 79
 Number of non-terminals: 64
-Number of states: 329
+Number of states: 331

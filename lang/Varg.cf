@@ -137,7 +137,7 @@ separator nonempty  MatchClause ";" ;
 IMatchClause.       MatchClause ::= Expr "->" Expr;
 
 EIfThenElse.        Expr  ::= "if" Expr "then" Expr "else" Expr ;
-EUnify.             Expr  ::= "unify" Expr "with" Expr "in" Expr;
+EUnify.             Expr  ::= "unify" Expr "with" "{" Expr "}" "in" Expr;
 
 ELambda.            Expr7 ::= "(" "\\" [ArgDef] ":" TypeDef "->" Expr ")" ; -- lambda expr
 EInferredLambda.    Expr7 ::= "(" "\\" [ArgDef] "->" Expr ")" ;

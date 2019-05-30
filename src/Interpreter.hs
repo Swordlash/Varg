@@ -43,6 +43,7 @@ interpretMain body =
    in do interpreted <- deepForce =<< interpretExpression supplied
          liftIO $ logStderr $ "[[Raw result]]\n" ++ show interpreted ++ "\n\n"
          memoryUsage
+         --return interpreted
          interpretExpression (EMember (EInterpreted interpreted) "toString") >>= deepForce
 
 emptyState :: Type -> ClassHierarchy -> InterpreterState
@@ -549,8 +550,12 @@ interpretExpression expr = do
           " with " ++ show (show with) ++ ".\nBound variables: " ++ show (M.toList resolved) ++ "\n"
         Just substs -> local (mergeWithEnv substs) (interpretExpression inexpr)
     EMatch ewith [] -> throwe $ "Irrefutable pattern match with " ++ show (show ewith) ++ " failed.\n"
-    EMatch ewith ((epattern, ine):t) ->
-      catchError (interpretExpression $ EUnify epattern ewith ine) (\e -> interpretExpression $ EMatch ewith t)
+    EMatch ewith ((epattern, ine):t) -> do
+      pattern <- delay epattern
+      with <- delay ewith
+      local (setUnifying True) (tryUnify pattern with) >>= \case
+        Nothing -> interpretExpression $ EMatch ewith t
+        Just substs -> local (mergeWithEnv substs) (interpretExpression ine)
     EOperator op ->
       case op of
         Abs.Op_plus -> numop EAdd "Num.+"

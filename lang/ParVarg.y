@@ -256,7 +256,7 @@ Expr : 'let' '{' ListLetDef '}' 'in' Expr { AbsVarg.EDefinitionsList $3 $6 }
      | 'match' Expr 'with' '{' ListMatchClause '}' { AbsVarg.EMatch $2 $5 }
      | 'matching' '{' ListMatchClause '}' { AbsVarg.ELambdaMatch $3 }
      | 'if' Expr 'then' Expr 'else' Expr { AbsVarg.EIfThenElse $2 $4 $6 }
-     | 'unify' Expr 'with' Expr 'in' Expr { AbsVarg.EUnify $2 $4 $6 }
+     | 'unify' Expr 'with' '{' Expr '}' 'in' Expr { AbsVarg.EUnify $2 $5 $8 }
      | Expr1 { $1 }
 ListLetDef :: { [LetDef] }
 ListLetDef : LetDef { (:[]) $1 }

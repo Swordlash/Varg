@@ -466,7 +466,9 @@ instance Print Expr where
              [ doc (showString "unify")
              , prt 0 expr1
              , doc (showString "with")
+             , doc (showString "{")
              , prt 0 expr2
+             , doc (showString "}")
              , doc (showString "in")
              , prt 0 expr3
              ])

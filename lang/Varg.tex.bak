@@ -77,8 +77,9 @@ The symbols used in Varg are the following: \\
 {\symb{{\textasciicircum}}} &{\symb{{$<$}}} &{\symb{{$>$}}} \\
 {\symb{{$<$}{$=$}}} &{\symb{{$>$}{$=$}}} &{\symb{{$=$}{$=$}}} \\
 {\symb{:'}} &{\symb{\$}} &{\symb{{$+$}{$+$}}} \\
-{\symb{{$-$}{$>$}}} &{\symb{$\backslash$}} &{\symb{[]}} \\
-{\symb{..}} &{\symb{::}} &{\symb{/{$=$}}} \\
+{\symb{{$-$}{$>$}}} &{\symb{\} }} &{\symb{$\backslash$}} \\
+{\symb{[]}} &{\symb{..}} &{\symb{{$<$}{$<$}}} \\
+{\symb{{$>$}{$>$}}} &{\symb{::}} &{\symb{/{$=$}}} \\
 {\symb{{$|$}{$|$}}} &{\symb{\&\&}} &{\symb{ . }} \\
 {\symb{\_}} & & \\
 \end{tabular}\\
@@ -322,7 +323,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{match}} {\nonterminal{Expr}} {\terminal{with}} {\terminal{\{}} {\nonterminal{ListMatchClause}} {\terminal{\}}}  \\
  & {\delimit}  &{\terminal{matching}} {\terminal{\{}} {\nonterminal{ListMatchClause}} {\terminal{\}}}  \\
  & {\delimit}  &{\terminal{if}} {\nonterminal{Expr}} {\terminal{then}} {\nonterminal{Expr}} {\terminal{else}} {\nonterminal{Expr}}  \\
- & {\delimit}  &{\terminal{unify}} {\nonterminal{Expr}} {\terminal{with}} {\nonterminal{Expr}} {\terminal{in}} {\nonterminal{Expr}}  \\
+ & {\delimit}  &{\terminal{unify}} {\nonterminal{Expr}} {\terminal{with}} {\terminal{\{}} {\nonterminal{Expr}} {\terminal{\} }} {\terminal{in}} {\nonterminal{Expr}}  \\
  & {\delimit}  &{\nonterminal{Expr1}}  \\
 \end{tabular}\\
 
@@ -352,7 +353,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{[]}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\nonterminal{Expr}} {\terminal{]}}  \\
  & {\delimit}  &{\terminal{[}} {\nonterminal{Expr}} {\terminal{..}} {\terminal{]}}  \\
- & {\delimit}  &{\terminal{{$<$}}} {\nonterminal{ListListElem}} {\terminal{{$>$}}}  \\
+ & {\delimit}  &{\terminal{{$<$}{$<$}}} {\nonterminal{ListListElem}} {\terminal{{$>$}{$>$}}}  \\
  & {\delimit}  &{\nonterminal{Boolean}}  \\
  & {\delimit}  &{\terminal{this}}  \\
  & {\delimit}  &{\terminal{super}}  \\
