@@ -505,7 +505,7 @@ instance Print Expr where
           (concatD [doc (showString "["), prt 0 expr1, doc (showString ".."), prt 0 expr2, doc (showString "]")])
       ERangeFr expr ->
         prPrec i 7 (concatD [doc (showString "["), prt 0 expr, doc (showString ".."), doc (showString "]")])
-      ETuple listelems -> prPrec i 7 (concatD [doc (showString "{"), prt 0 listelems, doc (showString "}")])
+      ETuple listelems -> prPrec i 7 (concatD [doc (showString "<<"), prt 0 listelems, doc (showString ">>")])
       EAppl expr1 expr2 -> prPrec i 1 (concatD [prt 1 expr1, doc (showString "$"), prt 2 expr2])
       ECons expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString ":"), prt 2 expr2])
       ESCons expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "::"), prt 2 expr2])

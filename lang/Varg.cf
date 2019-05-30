@@ -149,7 +149,7 @@ ERangeFr.           Expr7 ::= "[" Expr ".." "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
-ETuple.             Expr7 ::= "{" [ListElem] "}";
+ETuple.             Expr7 ::= "<<" [ListElem] ">>";
 
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr2  ::= Expr3 ":"   Expr2;
@@ -192,6 +192,5 @@ EString.            Expr7 ::= String ;
 EWild.              Expr7 ::= "_"     ; -- wildcard variable used for matching or saving identifiers
 
 EApply.             Expr6 ::= Expr6 Expr7 ;
---EStrictMember.      Expr5 ::= Expr6 MFun ; 
 
 coercions           Expr 7 ;

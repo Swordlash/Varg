@@ -51,7 +51,7 @@ emptyState listtype hier = InterpreterState hier 0 "Main.main" (M.insert 0 (empt
 emptyRuntime :: InterpreterRuntime
 emptyRuntime =
   let env = M.insert "args" (Left 0) M.empty
-   in InterpreterRuntime env voidType False
+   in InterpreterRuntime env voidType False M.empty
 
 supplyArgs :: Expr -> Expr
 supplyArgs main = EApply main (EVar "args")
@@ -241,7 +241,54 @@ deepEq' ((inst1, inst2) :<| t) = do
     _ -> pure False
 
 tryUnify :: Instance -> Instance -> InterpreterMonad (Maybe Environment)
-tryUnify pattern with = pure Nothing
+tryUnify pattern with = tryUnify' $ singleton (pattern, with)
+
+tryUnify' :: Seq (Instance, Instance) -> InterpreterMonad (Maybe Environment)
+tryUnify' Empty = do
+  env <- asks unifyingEnv
+  return $ Just env
+tryUnify' ((mpattern, mwith) :<| t) = do
+  unif <- asks unifyingEnv
+  pattern <- force mpattern
+  with <- force mwith
+  case (pattern, with) of
+    (UnboundVar name, val) ->
+      if name == "_"
+        then tryUnify' t
+        else asks (M.lookup name . unifyingEnv) >>= -- double use of identifier
+              \case
+               Just oldval ->
+                 resolve oldval >>= deepEq val >>= \case
+                   True -> tryUnify' t -- match with old value, go further
+                   False -> pure Nothing -- no match with old value
+               Nothing -> local (bindUnifiedManagedVariable (name, val)) (tryUnify' t) -- bind var, go further
+    (IntInstance v1, IntInstance v2) ->
+      if v1 == v2
+        then tryUnify' t
+        else pure Nothing
+    (DoubleInstance v1, DoubleInstance v2) ->
+      if v1 == v2
+        then tryUnify' t
+        else pure Nothing
+    (CharInstance c1, CharInstance c2) ->
+      if c1 == c2
+        then tryUnify' t
+        else pure Nothing
+    (BoolInstance b1, BoolInstance b2) ->
+      if b1 == b2
+        then tryUnify' t
+        else pure Nothing
+    (FunctionInstance f1 c1 _, FunctionInstance f2 c2 _) --maybe try to unify envs? idk
+     ->
+      if (f1 == f2) && (c1 == c2)
+        then tryUnify' t
+        else pure Nothing
+    (TypeInstance typ1 var1 _ f1 _, TypeInstance typ2 var2 _ f2 _) ->
+      if typ1 /= typ2 || var1 /= var2
+        then pure Nothing
+        else let tocheck = fromList $ zip (map snd f1) (map snd f2)
+              in tryUnify' (t >< tocheck)
+    _ -> pure Nothing
 
 getMember :: Instance -> String -> InterpreterMonad Instance
 getMember obj name = do
@@ -423,9 +470,7 @@ interpretExpression expr = do
       rethrow
         (do obj <- force =<< interpretExpression expr
             typ <- getBaseType obj
-            if isManaged obj
-              then local (saveRealType typ . bindVariableLoc ("this", address obj)) (getMember obj name)
-              else local (saveRealType typ . bindVariable ("this", obj)) (getMember obj name))
+            local (saveRealType typ . bindManagedVariable ("this", obj)) (getMember obj name))
         ("Computing member " ++
          show name ++ " of " ++ show (show expr) ++ "\nBound variables: " ++ show (M.toList resolved) ++ "\n")
     EConstructor tname var flds -- FIXME: It creates instances with no type params

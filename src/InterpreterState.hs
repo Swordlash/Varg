@@ -22,6 +22,7 @@ data InterpreterRuntime = InterpreterRuntime
   { environment :: Environment
   , realType :: Type
   , isUnifying :: Bool
+  , unifyingEnv :: Environment
   }
 
 type InterpreterMonad a = VargStatefulMonad InterpreterRuntime InterpreterState a
@@ -67,6 +68,10 @@ malloc val = do
   modify $ putValue (newloc, val)
   return newloc
 
+resolve :: Either Loc Instance -> InterpreterMonad Instance
+resolve (Left loc) = deref loc
+resolve (Right inst) = pure inst
+
 deref :: Loc -> InterpreterMonad Instance
 deref loc =
   gets (M.lookup loc . memory) >>= \case
@@ -100,6 +105,30 @@ bindVariableLoc (name, loc) runt = runt {environment = M.insert name (Left loc) 
 
 bindVariable :: Updater (String, Instance) InterpreterRuntime
 bindVariable (name, inst) runt = runt {environment = M.insert name (Right inst) $ environment runt}
+
+bindManagedVariable :: Updater (String, Instance) InterpreterRuntime
+bindManagedVariable (name, inst) runt =
+  runt
+    { environment =
+        M.insert
+          name
+          (if isManaged inst
+             then Left $ address inst
+             else Right inst) $
+        environment runt
+    }
+
+bindUnifiedManagedVariable :: Updater (String, Instance) InterpreterRuntime
+bindUnifiedManagedVariable (name, inst) runt =
+  runt
+    { unifyingEnv =
+        M.insert
+          name
+          (if isManaged inst
+             then Left $ address inst
+             else Right inst) $
+        unifyingEnv runt
+    }
 
 unbindVariable :: Updater String InterpreterRuntime
 unbindVariable name runt = runt {environment = M.delete name $ environment runt}
