@@ -150,7 +150,7 @@ findIfaceOrNativeMethod obj name = do
   getIfaceMember realtyp name >>= \case
     Just member -> do
       Just o <- asks (M.lookup "this" . environment)
-      register $ FunctionInstance member (M.insert "this" o M.empty)
+      local (exchangeEnvironment $ M.insert "this" o M.empty) (interpretExpression $ functionBody member)
     Nothing ->
       case obj of
         TypeInstance {} ->
