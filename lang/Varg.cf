@@ -149,7 +149,7 @@ ERangeFr.           Expr7 ::= "[" Expr ".." "]" ;
 EListElem.          ListElem ::= Expr ;
 separator nonempty  ListElem ",";
 
-ETuple.             Expr7 ::= "<<" [ListElem] ">>";
+ETuple.             Expr7 ::= "(" Expr "," [ListElem] ")";
 
 EAppl.              Expr1 ::= Expr1 "$" Expr2;
 ECons.              Expr2  ::= Expr3 ":"   Expr2;

@@ -184,6 +184,10 @@ parseExpression lookupFun expr =
              return (pe1, pe2))
           matchclauses
       return $ EMatch pm pclauses
+    Abs.ETuple front exprs -> do
+      p1 <- parseExpression lookupFun front
+      rest <- mapM (\(Abs.EListElem expr) -> parseExpression lookupFun expr) exprs
+      return $ ETuple $ p1:rest
     --arithmetic exprs
     Abs.ENot expr -> do
       p <- parseExpression lookupFun expr

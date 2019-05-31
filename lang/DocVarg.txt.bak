@@ -69,10 +69,9 @@ The symbols used in Varg are the following:
   | - | * | / | ^
   | < | > | <= | >=
   | == | :' | $ | ++
-  | -> | }  | \ | []
-  | .. | << | >> | ::
-  | /= | || | && |  . 
-  | _ |  |  | 
+  | -> | \ | [] | ..
+  | :: | /= | || | &&
+  |  .  | _ |  | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #{ and }#.
@@ -192,7 +191,7 @@ All other symbols are terminals.
   |  |  **|**  | ``match`` //Expr// ``with`` ``{`` //[MatchClause]// ``}`` 
   |  |  **|**  | ``matching`` ``{`` //[MatchClause]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr// 
-  |  |  **|**  | ``unify`` //Expr// ``with`` ``{`` //Expr// ``} `` ``in`` //Expr// 
+  |  |  **|**  | ``unify`` //Expr// ``with`` ``{`` //Expr// ``}`` ``in`` //Expr// 
   |  |  **|**  | //Expr1// 
   | //[LetDef]// | -> | //LetDef// 
   |  |  **|**  | //LetDef// ``;`` //[LetDef]// 
@@ -207,7 +206,7 @@ All other symbols are terminals.
   |  |  **|**  | ``[]`` 
   |  |  **|**  | ``[`` //Expr// ``..`` //Expr// ``]`` 
   |  |  **|**  | ``[`` //Expr// ``..`` ``]`` 
-  |  |  **|**  | ``<<`` //[ListElem]// ``>>`` 
+  |  |  **|**  | ``(`` //[ListElem]// ``)`` 
   |  |  **|**  | //Boolean// 
   |  |  **|**  | ``this`` 
   |  |  **|**  | ``super`` 

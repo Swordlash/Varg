@@ -70,8 +70,8 @@ The symbols used in Varg are the following:
   | < | > | <= | >=
   | == | :' | $ | ++
   | -> | \ | [] | ..
-  | << | >> | :: | /=
-  | || | && |  .  | _
+  | :: | /= | || | &&
+  |  .  | _ |  | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with #{ and }#.
@@ -206,7 +206,7 @@ All other symbols are terminals.
   |  |  **|**  | ``[]`` 
   |  |  **|**  | ``[`` //Expr// ``..`` //Expr// ``]`` 
   |  |  **|**  | ``[`` //Expr// ``..`` ``]`` 
-  |  |  **|**  | ``<<`` //[ListElem]// ``>>`` 
+  |  |  **|**  | ``(`` //Expr// ``,`` //[ListElem]// ``)`` 
   |  |  **|**  | //Boolean// 
   |  |  **|**  | ``this`` 
   |  |  **|**  | ``super`` 

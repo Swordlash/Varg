@@ -16,6 +16,9 @@ interface template Function a b where
 
 	static function id <a> : Function a a = (\x -> x)
 
+interface template Comparable b where
+    unique function compareTo (other : b) : abstract Int
+
 interface template Enumerable a where
     unique function rangeTo (other : a) : List a = if this <= other then this : this.incr.rangeTo other else []
     unique function rangeFrom : List a = this : this.incr.rangeFrom
@@ -28,8 +31,15 @@ class Char implementing Enumerable Char where
     function codeBefore (other : Char) : Bool = this.toUFTCode < other.toUTFCode
     function codeAfter (other : Char) : Bool = this.toUTFCode > other.toUTFCode
 
-class Int implementing Enumerable Int where
+class Int implementing Enumerable Int, Comparable Int where
     implement function incr = this + 1
+    function sgn : Int = if this < 0 then -1 else if this == 0 then 0 else 1
+    function abs : Int = this * this.sgn
+    implement function compareTo (other : Int) : Int = if this < other then -1 else if this == other then 0 else 1
 
-class Real implementing Enumerable Real where
+class Real implementing Enumerable Real, Comparable Real where
     implement function incr = this + 1.0
+    function sgn : Real = if this < 0 then -1 else if this == 0 then 0 else 1
+    function abs : Real = this * this.sgn.toReal
+    implement function compareTo (other : Real) : Int = if this < other then -1 else if this == other then 0 else 1
+

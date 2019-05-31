@@ -1,0 +1,26 @@
+import "Std.Overture"
+
+template Set [a deriving Comparable a] implementing Collection a where
+    Empty
+    Node has
+        val : a
+        left : Set a
+        right : Set a
+
+    implement function null : Bool = this == Set.Empty
+    implement function size : Int = match this with
+        Set.Empty -> 0
+        Set.Node v l r -> 1 + v.size + r.size
+
+    function foldr<b> (f: Function a (Function b b)) (acc : b) = match this with
+        Set.Empty -> acc
+        Set.Node v l r -> l.foldr f (f v $ r.foldr f acc)
+
+    function toList : List a = this.foldr (:) [] 
+
+    function insert (x : a) : Set a = match this with
+        Set.Empty -> Set.Node x $ Set.Empty $ Set.Empty
+        Set.Node v l r -> if x <= v then Set.Node v (l.insert x) r else Set.Node v l (r.insert x)
+
+    static function leaf (x : a) : Set a = Set.Node x $ Set.Empty $ Set.Empty
+    static function fromList (l : List a) : Set a = l.foldl (\s e -> s.insert e) (Set.Empty)

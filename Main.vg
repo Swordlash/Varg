@@ -1,9 +1,10 @@
 import "Std.Overture"
 import "Std.Queue"
 import "Std.Set"
+import "Std.Tuple"
 
 class Main where
-    static function main args = (Set.fromList [4,1,3,2,7,6,4,2]).toList
+    static function main args = [1,3,5,2,3,1,7].qsort
         #let nats = 1: nats.map (^incr) in nats.take 100
         #let fibs = 0:1: fibs.zipWith (+) (fibs.tail) in fibs.take 20
         #let ones = 1:ones in ones.take 10

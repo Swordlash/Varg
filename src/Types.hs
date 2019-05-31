@@ -90,6 +90,7 @@ data Expr
                 Expr
   | EMatch Expr
            [(Expr, Expr)]
+  | ETuple [Expr]
   | ECons Expr
           Expr
   | ESCons Expr
@@ -181,6 +182,7 @@ instance Show Expr where
   show (ENot e1) = "not " ++ show e1
   show (EOr e1 e2) = show e1 ++ " || " ++ show e2
   show (EAnd e1 e2) = show e1 ++ " && " ++ show e2
+  show (ETuple exprs) = "(" ++ intercalate ", " (map show exprs) ++ ")"
   show (EClass name) = name
   show (EBool val) = show val
   show (EInt val) = show val

@@ -1,0 +1,22 @@
+import "Std.Base"
+
+class Tuple where
+    Tuple2 has
+        elem0 : Void
+        elem1 : Void
+
+    Tuple3 has
+        elem0 : Void
+        elem1 : Void
+        elem2 : Void
+
+    Tuple4 has
+        elem0 : Void
+        elem1 : Void
+        elem2 : Void
+        elem3 : Void
+
+    function toString : String = match this with
+        Tuple.Tuple2 e1 e2 -> "(" ++ e1.toString ++", " ++ e2.toString ++ ")"
+        Tuple.Tuple3 e1 e2 e3 -> "(" ++ e1.toString ++", " ++ e2.toString ++ ", " ++ e3.toString ++ ")"
+        Tuple.Tuple4 e1 e2 e3 e4 -> "(" ++ e1.toString ++", " ++ e2.toString ++ ", " ++ e3.toString ++ ", " ++ e4.toString ++ ")"
