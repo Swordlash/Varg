@@ -1,17 +1,16 @@
 # Varg
 
-Varg jest językiem obiektowo - funkcyjnym, syntaktycznie podobnym do Haskella i Javy.
+Varg is a functional - objective language, syntactically similar to Haskell and Java.
 
-## Instalacja i uruchamianie
+## Installation and running
 
-Aby pobrać najnowszą wersję, warto sprawdzić `git pull`.
+Varg is shipped as a `stack` package. To install `Varg` interpreter to local bin folder, use `stack install`. 
+If you prefer Cabal, `make` builds Varg executable directly in the current directory.
 
-Polecenie `make` buduje plik wykonywalny `Varg` (i jego kopię `interpreter`) w bieżącym katalogu, 
-za pomocą systemu `Cabal`. 
-
-Plik uruchomiony bez argumentów domyślnie uruchamia plik `Main.vg`. Plik źródłowy powinien zawierać co 
-najmniej definicję klasy `Main` z funkcją `main` o jednym argumencie `args` typu `List String`, 
-zwracającą `Void`, oraz zaimportowany moduł `Std.List`. Minimalny program wygląda więc następująco:
+Varg executed with no arguments, runs `Main.vg` by default. The source code should contain at least a 
+definition of class `Main`, with a function `main`, taking one argument of type `List String` and 
+returning `Void`. To ensure that all necessary classes are loaded properly, it is encouraged to load
+`Std.Overture` module first. The minimal example program looks as follows:
 
 ```
 import "Std.Overture"
@@ -19,31 +18,19 @@ import "Std.Overture"
 class Main where
   static function main (args : List String) : Void = 0
 ```
-(ponieważ `Void` jest nadklasą wszystkich obiektów, funkcja `main` może zwracać w ten sposób cokolwiek). 
+(Because `Void` is a superclass to all objects, `main` function can in that way return anything.
+Interpreter prints the result of calling `toString` method on that value).
 
-Aby uruchomić inny plik źródłowy, należy podać jego ścieżkę bez rozszerzenia (np. `Varg examples/1`). 
-Na tym samym poziomie co interpreter powinna się znajdować biblioteka standardowa `Std`. 
-Opcja `-v, --verbose` uruchamia logi interpretera, opcja `-dN` zmienia głębokość śledzenia stosu w przypadku 
-napotkania błędu wykonania. Domyślną wartością jest `-d20`. Opcja `-s, --strict` wyłącza leniwy tryb ewaluacji.
+To run another source file, one should supply its path without extension (like `Varg good/2`).
+The standard library `Std` should be put in the current catalogue. 
 
-## Funkcjonalność
+### Runtime options
 
-Na tę chwilę Varg udostępnia standardową arytmetykę liczb całkowitych, zmiennoprzecinkowych, boolowskich, 
-wyrażenia warunkowe, funkcje i definicje rekurencyjne (jedno- i wieloargumentowe) z domknięciami, 
-funkcje anonimowe. 
+Option `-v, --verbose` enables interpreter logs.
+Option `-s, --strict` disables lazy evaluation.
+Option `-m, --memory` shows total memory usage after execution.
+Option `-t, --trace` enables step-by-step evaluation.
 
-Obiektowość wspierana jest na razie głównie bez skomplikowanego dziedziczenia (przykład - 
-klasa `String` dziedzicząca po `List Char` w stdlib). Wspierane jest tworzenie typów algebraicznych 
-i polimorficznych, jednak z racji na niezaimplementowane dopasowywanie wzorców, można z nich korzystać 
-jedynie w najprostszych przypadkach (np. klasa `List` z konstruktorem pustym `List.Empty` i `List.Cons`, 
-gdzie można sprawdzać wariant poprzez wyrażenie warunkowe 
-`if this.null then (lista pusta) else (lista niepusta)`). Definicje funkcji wyszukiwane są 
-rekurencyjnie w nadklasach aż do klasy Void, gdzie w ostateczności poszukiwane są natywne metody. 
-Każdy obiekt ma natywną metodę `toString`.
+## Examples
 
-System typów jeszcze nie istnieje, program wykonuje się dopóki nie napotka na błąd (np. dodawanie 
-liczby do funkcji, błąd arytmetyki). Rzuca wówczas wyjątek z danymi śledzenia stosu.
-
-Varg jest językiem leniwym - możliwe jest deklarowanie zmiennych typu `lista = 1:lista`, 
-które są ewaluowane tak głęboko, jak trzeba. Aby wymusić ewaluację `:`, np. w celu dobrego 
-otypowania obiektu `String` (operator `:` rzutuje na `List`), należy użyć `::`.
+All the correct and incorrect examples are contained in folders `good` and `bad`, respectively.
