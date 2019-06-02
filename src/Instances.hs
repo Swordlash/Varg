@@ -1,3 +1,5 @@
+{-  Interpreting module
+    Definitions of instance class and auxiliary functions -}
 module Instances where
 
 import           Data.List  (intercalate)

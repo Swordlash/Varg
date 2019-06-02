@@ -1,3 +1,5 @@
+{-  Interpreter module
+    Definition of InterpreterMonad and its state manipulation -}
 module InterpreterState where
 
 import qualified Data.Map as M

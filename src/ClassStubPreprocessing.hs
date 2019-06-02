@@ -1,3 +1,6 @@
+{-  Source parsing module
+    Building class definition stubs:
+    class names, template params, derivation  -}
 module ClassStubPreprocessing where
 
 import           PreprocessingState

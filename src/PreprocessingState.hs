@@ -1,3 +1,5 @@
+{-  Preprocessing module
+    Definitions of PreprocessMonad and its state manipulations -}
 module PreprocessingState
   ( module General
   , module PreprocessingState

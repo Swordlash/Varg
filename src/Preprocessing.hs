@@ -1,3 +1,5 @@
+{-  Preprocessing module
+    Recursive bnfc-parsing of imports -}
 module Preprocessing where
 
 import PreprocessingState

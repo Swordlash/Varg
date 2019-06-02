@@ -1,3 +1,5 @@
+{-  Interpreter module
+    Definitions of main runtime functions -}
 module Interpreter where
 
 import General
@@ -9,7 +11,7 @@ import PreprocessingState
 import Data.Fixed (mod')
 import Data.List
 import qualified Data.Map as M
-import Data.Sequence hiding (filter, lookup, null, reverse, unzip, zip, length)
+import Data.Sequence hiding (filter, length, lookup, null, reverse, unzip, zip)
 import qualified Data.Set as S
 
 import qualified AbsVarg as Abs
@@ -21,6 +23,7 @@ import System.Console.ANSI (clearScreen)
 nats = 0 : [n + 1 | n <- nats]
 
 argGen = map (\n -> "_arg" ++ show n) nats
+
 elemGen = map (\n -> "elem" ++ show n) nats
 
 interpret :: String -> VargMonad String
@@ -397,11 +400,12 @@ interpretExpression expr = do
     EBool val -> return $ BoolInstance val
     EChar val -> return $ CharInstance val
     EString val -> nativeStringToInstance val
-    ETuple exprs -> let n = length exprs in do
-      elems <- mapM delay exprs
-      let fields = zip elemGen elems
-      tupleType <- lookupTypeFromClassHierarchy "Tuple" hier
-      register $ TypeInstance tupleType ("Tuple"++show n) [] fields
+    ETuple exprs ->
+      let n = length exprs
+       in do elems <- mapM delay exprs
+             let fields = zip elemGen elems
+             tupleType <- lookupTypeFromClassHierarchy "Tuple" hier
+             register $ TypeInstance tupleType ("Tuple" ++ show n) [] fields
     EThis ->
       asks (M.lookup "this" . environment) >>= \case
         Nothing -> throwe "Referencing this from a static context"

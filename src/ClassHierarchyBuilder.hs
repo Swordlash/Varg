@@ -1,3 +1,5 @@
+{-  Source parsing module
+    Building class hierarchy  -}
 module ClassHierarchyBuilder where
 
 import           PreprocessingState

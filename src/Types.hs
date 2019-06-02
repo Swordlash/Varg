@@ -1,3 +1,4 @@
+{-  General definitions of types used throughout the program -}
 module Types
   ( module TypeDefs
   , module Instances

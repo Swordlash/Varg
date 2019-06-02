@@ -1,3 +1,5 @@
+{-  Source parsing module
+    Parsing class field members  -}
 module FieldParser where
 
 import           PreprocessingState

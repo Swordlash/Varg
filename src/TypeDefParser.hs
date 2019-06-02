@@ -1,3 +1,5 @@
+{-  Source parsing module
+    Parsing type definitions (deriving, super etc.) -}
 module TypeDefParser where
 
 import           PreprocessingState
@@ -17,7 +19,7 @@ readModifier Abs.ClassModifier_interface = pure InterfaceType
 readModifier Abs.ClassModifier_module    = pure ModuleType
 readModifier Abs.ClassModifier_native    = pure NativeType
 
-{- TODO FIXME LookupFunction passing is redundant, could be included in MonadReader environment
+{- TODO FIXME LookupFunction passing is redundant, could be included in the MonadReader environment
    TODO it appears here, in FunctionParser and Expressions -}
 registerConstrainedTypeName ::
      LookupFunction

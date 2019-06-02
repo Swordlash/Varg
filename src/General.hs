@@ -1,3 +1,5 @@
+{-  General definitions of types and functions
+    used throughout the program -}
 module General
   ( module Control.Monad.Except
   , module Control.Monad.Reader

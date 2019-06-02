@@ -1,6 +1,7 @@
+{-  General definitions of types used throughout the program -}
 module TypeDefs where
 
-import Data.List (intercalate)
+import           Data.List (intercalate)
 
 type TypeName = String
 
@@ -12,7 +13,6 @@ data TypeDef
   | ConcreteType TypeName
                  [TypeParamConstraint]
   deriving (Eq, Ord)
-
 
 voidTypeDef :: TypeDef
 voidTypeDef = ConcreteType "Void" []
@@ -45,8 +45,6 @@ instance Show TypeParamConstraint where
   show (Super typedef)    = "super " ++ show typedef
   show (Deriving typedef) = "deriving " ++ show typedef
 
-
-
 data TypeModifier
   = ModuleType
   | InterfaceType
@@ -78,7 +76,6 @@ instance Show MemberModifier where
   show UniqueMember    = "unique"
   show NativeMember    = "native"
   show ClassMember     = "<<class>>"
-
 
 data DerivationKind
   = Unbound String

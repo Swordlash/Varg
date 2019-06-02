@@ -1,14 +1,14 @@
-{-# LANGUAGE LambdaCase #-}
-
+{-  Source parsing module
+    Parsing functions, transforming them into nested lambdas  -}
 module FunctionParser where
 
-import qualified AbsVarg            as Abs
-import qualified Data.Map           as M
-import           Expressions
-import           PreprocessingState
+import qualified AbsVarg as Abs
+import qualified Data.Map as M
+import Expressions
+import PreprocessingState
 
-import           Data.Maybe
-import           TypeDefParser
+import Data.Maybe
+import TypeDefParser
 
 parseFunctionModifier :: Abs.FunctionModifier -> HierarchyMonad MemberModifier
 parseFunctionModifier =
@@ -64,8 +64,8 @@ parseFunction fundef = do
   let getname fname =
         case fname of
           Abs.FFunction (Abs.LIdent name) -> name
-          Abs.FOperator op                -> nshow op
-          Abs.FOperatorDef (Abs.Op str)   -> str
+          Abs.FOperator op -> nshow op
+          Abs.FOperatorDef (Abs.Op str) -> str
   case fundef of
     Abs.MemberFunctionDefinition modifs funname templateParams argdefs rettype body -> do
       f <-
