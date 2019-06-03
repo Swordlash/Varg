@@ -8,6 +8,7 @@ template Set [a deriving Comparable a] implementing Collection a where
         right : Set a
 
     implement function null : Bool = this == Set.Empty
+    implement function empty : Set = Set.Empty
     implement function size : Int = match this with
         Set.Empty -> 0
         Set.Node v l r -> 1 + v.size + r.size
@@ -19,7 +20,7 @@ template Set [a deriving Comparable a] implementing Collection a where
     function toList : List a = this.foldr (:) [] 
 
     function insert (x : a) : Set a = match this with
-        Set.Empty -> Set.Node x $ Set.Empty $ Set.Empty
+        Set.Empty -> this.leaf x
         Set.Node v l r -> if x <= v then Set.Node v (l.insert x) r else Set.Node v l (r.insert x)
 
     static function leaf (x : a) : Set a = Set.Node x $ Set.Empty $ Set.Empty

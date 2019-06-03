@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4194ca8a78d734164959e8c3bf2945b854a73b2661c37a69e1c4828b38772e70
+-- hash: f7d0883039e73517e51f2d272fc2a552e8fb6d3aecbd324438daa73ac74b7b9f
 
 name:           VargInterpreter
 version:        1.0
@@ -45,8 +45,6 @@ library
       Preprocessing
       PreprocessingState
       PrintVarg
-      TestVarg
-      Typechecking
       TypeDefParser
       TypeDefs
       Types
