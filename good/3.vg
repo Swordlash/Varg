@@ -1,0 +1,9 @@
+import "Std.Overture"
+import "Std.Set"
+
+class Main where
+    function main (args : List String) : Void =
+        let s = Set.fromList [1,2,5,4,3,4] in match (s.toList, s.peekMin) with
+            (2:_, _) -> "Bad"
+            (1:t, Maybe.Just 1) -> "Good"
+            _ -> "Not very good"

@@ -12,3 +12,7 @@ template Maybe a implementing Functor Maybe where
         match this with
             Maybe.Nothing -> Maybe.Nothing
             Maybe.Just val -> Maybe.Just $ f val
+
+    implement function toString : String = match this with
+        Maybe.Nothing -> "Nothing"
+        Maybe.Just v -> "Just " ++ v.toString

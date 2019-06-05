@@ -23,5 +23,19 @@ template Set [a deriving Comparable a] implementing Collection a where
         Set.Empty -> this.leaf x
         Set.Node v l r -> if x <= v then Set.Node v (l.insert x) r else Set.Node v l (r.insert x)
 
+    function deleteMinV : Tuple = match this with
+        Set.Empty -> (Set.Empty, Maybe.Nothing)
+        Set.Node v (Set.Empty) r -> (r, Maybe.Just v)
+        Set.Node v l r -> unify (l1, v1) with l.deleteMinV in (Set.Node v l1 r, v1)
+
+    function deleteMin : Set a = this.deleteMinV.fst
+    function peekMin : Maybe a = this.deleteMinV.snd
+
+    function find (elem : a) : Maybe a = match this with
+        Set.Empty -> Maybe.Nothing
+        Set.Node v l r -> if v == elem then Maybe.Just v else if elem < v then l.find elem else r.find elem
+
+    function contains (elem : a) : Bool = this.find elem /= Maybe.Nothing
+    
     static function leaf (x : a) : Set a = Set.Node x $ Set.Empty $ Set.Empty
     static function fromList (l : List a) : Set a = l.foldl (\s e -> s.insert e) (Set.Empty)

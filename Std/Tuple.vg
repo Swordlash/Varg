@@ -16,6 +16,11 @@ class Tuple where
         elem2 : Void
         elem3 : Void
 
+    function fst<a> : a = this.elem0
+    function snd<a> : a = this.elem1
+    function thrd<a> : a = this.elem2
+    function frth<a> : a = this.elem3 
+
     function toString : String = match this with
         Tuple.Tuple2 e1 e2 -> "(" ++ e1.toString ++", " ++ e2.toString ++ ")"
         Tuple.Tuple3 e1 e2 e3 -> "(" ++ e1.toString ++", " ++ e2.toString ++ ", " ++ e3.toString ++ ")"
