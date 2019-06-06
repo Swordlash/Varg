@@ -1,0 +1,13 @@
+import "Std.Overture"
+import "Std.Tuple"
+
+class Main where
+    static function mergeSort (a : List Int) : List Int = 
+        let merge a b = match (a, b) with
+                ([], _) -> b
+                (_, []) -> a
+                (v1:t1, v2:t2) -> if v1 <= v2 then v1 : merge t1 b else v2 : merge a t2 
+            divideInHalf a = let n = a.length in (a.take (n/2), a.drop (n/2))
+                in if a.length <= 1 then a else unify (l1, l2) with divideInHalf a in merge (Main.mergeSort l1) (Main.mergeSort l2)
+
+    static function main (args : List String) : Void = Main.mergeSort [1,5,6,7,4,3,2,5,6,2,9,8,6]
