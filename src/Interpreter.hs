@@ -258,9 +258,9 @@ tryUnify' ((mpattern, mwith) :<| t) = do
   unif <- asks unifyingEnv
   pattern <- force mpattern
   with <- force mwith
-  liftIO $ logg $ "\nTry match " ++ show pattern ++ " with " ++ show with
+  liftIO $ logStderr $ "\nTry match " ++ show pattern ++ " with " ++ show with ++ "\n"
   resolved <- resolveEnv =<< asks environment
-  liftIO $ logg $ "Resolved: " ++ show (M.toList resolved)
+  liftIO $ logStderr $ "Resolved: " ++ show (M.toList resolved) ++ "\n"
   case (pattern, with) of
     (UnboundVar name, val) ->
       if name == "_"
@@ -270,35 +270,35 @@ tryUnify' ((mpattern, mwith) :<| t) = do
                Just oldval ->
                  resolve oldval >>= deepEq val >>= \case
                    True -> tryUnify' t -- match with old value, go further
-                   False -> liftIO $ logg "Unify: no match with old value" >> pure Nothing
+                   False -> liftIO $ logStderr "Unify: no match with old value" >> pure Nothing
                Nothing -> local (bindUnifiedManagedVariable (name, val)) (tryUnify' t) -- bind var, go further
     (IntInstance v1, IntInstance v2) ->
       if v1 == v2
         then tryUnify' t
-        else liftIO $ logg "Unify: int inequality" >> pure Nothing
+        else liftIO $ logStderr "Unify: int inequality\n" >> pure Nothing
     (DoubleInstance v1, DoubleInstance v2) ->
       if v1 == v2
         then tryUnify' t
-        else liftIO $ logg "Unify: double inequality" >> pure Nothing
+        else liftIO $ logStderr "Unify: double inequality\n" >> pure Nothing
     (CharInstance c1, CharInstance c2) ->
       if c1 == c2
         then tryUnify' t
-        else liftIO $ logg "Unify: char inequality" >> pure Nothing
+        else liftIO $ logStderr "Unify: char inequality\n" >> pure Nothing
     (BoolInstance b1, BoolInstance b2) ->
       if b1 == b2
         then tryUnify' t
-        else liftIO $ logg "Unify: bool inequality" >> pure Nothing
+        else liftIO $ logStderr "Unify: bool inequality\n" >> pure Nothing
     (FunctionInstance f1 c1 _, FunctionInstance f2 c2 _) --maybe try to unify envs? idk
      ->
       if (f1 == f2) && (c1 == c2)
         then tryUnify' t
-        else liftIO $ logg "Unify: function inequality" >> pure Nothing
+        else liftIO $ logStderr "Unify: function inequality\n" >> pure Nothing
     (TypeInstance typ1 var1 _ f1 _, TypeInstance typ2 var2 _ f2 _) ->
       if typ1 /= typ2 || var1 /= var2
-        then liftIO $ logg "Unify: type inequality" >> pure Nothing
+        then liftIO $ logStderr "Unify: type inequality\n" >> pure Nothing
         else let tocheck = fromList $ zip (map snd f1) (map snd f2)
               in tryUnify' (t >< tocheck)
-    _ -> liftIO $ logg "Unify: other case" >> pure Nothing
+    _ -> liftIO $ logStderr "Unify: other case\n" >> pure Nothing
 
 getMember :: Instance -> String -> InterpreterMonad Instance
 getMember obj name = do

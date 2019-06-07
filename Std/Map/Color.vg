@@ -1,3 +1,4 @@
 class Color where
     Black
+    BlackBlack
     Red

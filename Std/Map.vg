@@ -1,93 +1,131 @@
 import "Std.Overture"
 import "Std.Map.Color"
 
-# Red-black tree map, rewritten into Varg from from github:Abhiroop/okasaki
+# Red-black tree map, rewritten into Varg from from Haskell (K.Germane/M.Might '2014 paper)
 template Map [a deriving Comparable a] b where
     Empty
+    EEmpty
     Node has
         color : Color
         left : Map a b
         value : Tuple a b
         right : Map a b
 
-    static function null : Bool = this == Map.Empty
-    static function empty<a, b> : Map a b = Map.Empty
-
-    function size : Int = if this.null then 0 else 1 + this.left.size + this.right.size
-
-    function blacken : Map a b = if this.null then this else unify Map.Node _ l v r with this in Map.Node (Color.Black) l v r
+    implement function empty<a,b> : Map a b = Map.Empty
+    implement function null : Bool = this == Map.Empty
+    implement function size : Int = if this.null then 0 else 1 + left.size + right.size
 
     function lookup (key : a) : Maybe b = match this with
         Map.Empty -> Maybe.Nothing
-        Map.Node _ l (k,v) r -> if key < k then l.lookup key else if key == k then Maybe.Just v else r.lookup key
+        Map.Node _ l val r -> unify (k,v) with val in
+            if key < k then l.lookup key
+            else if key == k then Maybe.Just v
+            else r.lookup key
 
-    function balance : Map a b = 
-        let black = Color.Black 
-            red = Color.Red 
-            node = Map.Node
-                in match this with
-                    node black (node red (node red a x b) y c) z d -> node red (node black a x b) y (node black c z d)
-                    node black (node red a x (node red b y c)) z d -> node red (node black a x b) y (node black c z d)
-                    node black a x (node red (node red b y c) z d) -> node red (node black a x b) y (node black c z d)
-                    node black a x (node red b y (node red c z d)) -> node red (node black a x b) y (node black c z d)
-                    _ -> this
+    function put (key : a) (value : b) = this.insert (a,b)
+    function erase (key : a) = this.delete (key, _)
 
-    function insert (x : Tuple a b) = let ins tree = match tree with
-        Map.Empty -> Map.Node (Color.Red) (Map.Empty) x (Map.Empty)
-        Map.Node col l (k,v) r -> unify (k1,v1) with x in
-            if k1 < k then Map.Node col (ins l) (k,v) r
-            else if k1 == k then Map.Node col l x r
-            else Map.Node col l (k,v) (ins r)
-                in (ins this).balance.blacken
+    function leastEntry : Maybe (Tuple a b) = match this with
+        Map.Empty -> Maybe.Nothing
+        _ -> Maybe.Just $ this.minDel.fst
 
-    function delete (x:Tuple a b) : Map a b = (this.del x).blacken
+    static function fromKVList (list : List (Tuple a b)) : Map a b = list.foldl (\m e -> m.insert e) (Map.Empty)
+    function toKVSortedList : List (Tuple a b) = match this with
+        Map.Node _ _ _ _ -> unify (e,t) with this.deleteMin in e : t.toKVSortedList
+        _ -> []
 
-    internal function del (x : Tuple a b) : Map a b = if this.null then this else unify ((k1,v1), Map.Node _ l (k,v) r) with (x, this) in
-        if k1 < k then this.delL x
-        else if k1 > k then this.delR x
-        else l.fuse r
+    function deleteMin : Tuple (Tuple a b) (Map a b) = unify (x, t) with this.minDel in match t with
+        Map.Node (Color.BlackBlack) l v r -> (x, Map.Node (Color.Black) l v r)
+        Map.EEmpty -> (x, Map.Empty)
+        _ -> (x,t)
 
-    internal function delL (x:Tuple a b) : Map a b = match this with
-        Map.Node _ t1 y t2 -> match t1 with
-            Tree.Node (Color.Black) _ _ _ -> (Tree.Node (Color.Black) (t1.del x) y t2).balL
-            _ -> Tree.Node (Color.Red) (t1.del x) y t2
+    internal function blacken : Map a b = 
+        let red = Color.Red
+            black = Color.Black
+            bblack = Color.BlackBlack
+            node = Map.Node in match this with
+                node red (node red a x b) y c -> node black (node red a x b) y c
+                node red (a x (node red b y c)) -> node black a x (node red b y c)
+                node bblack l v r -> node black l v r
+                _ -> this
 
-    internal function balL : Map a b = 
-        let black = Color.Black
-            red = Color.Red
-            node = Map.Node 
-                in match this with
-                    node black (node red t1 x t2) y t3 -> node red (node black t1 x t2) y t3
-                    node black t1 y (node black t2 z t3) -> (node black t1 y (node red t2 z t3)).balance
-                    node black t1 y (node red (node black t2 u t3) z t4) -> unify Map.Node black l val r with t4 in
-                        node red (node black t1 y t2) u $ (node black t3 z (node red l val r)).balance
+    internal function redden : Map a b = 
+        let red = Color.Red
+            black = Color.Black
+            node = Map.Node in match this with
+                node black (node black a x b) y (node black c z d) -> node red (node black a x b) y (node black c z d)
+                _ -> this
 
-    internal function delR (x:Tuple a b) : Map a b = match this with
-        Map.Node _ t1 y t2 -> match t2 with
-            Map.Node (Color.Black) _ _ _ -> (Map.Node (Color.Black) t1 y (t2.del x)).balR
-            _ -> Map.Node (Color.Red) t1 y (t2.del x)
-
-    internal function balR : Map a b = 
-        let black = Color.Black
-            red = Color.Red
-            node = Map.Node 
-                in match this with
-                    node black t1 y (node red t2 x t3) -> node red t1 y (node black t2 x t3)
-                    node black (node black t1 z t2) y t3 -> (node black (node red t1 z t2) y t3).balance
-                    node black (node red (node black l val r) z (node black t2 u t3)) y t4 -> node red ((node black (node red l val r) z t2).balance) u (node black t3 y t4)
+    static function balanceT (c: Color) (l: Map a b) (val : Tuple a b) (r: Map a b) : Map a b = (Map.Node c l val r).balance
+    internal function balance : Map a b = 
+        let red = Color.Red
+            black = Color.Black
+            bblack = Color.BlackBlack
+            node = Map.Node in match this with
+                node black (node red (node red a x b) y c) z d -> node red (node black a x b) y (node black c z d)
+                node black (node red a x (node red b y c)) z d -> node red (node black a x b) y (node black c z d)
+                node black a x (node red (node red b y c) z d) -> node red (node black a x b) y (node black c z d)
+                node black a x (node red b y (node red c z d)) -> node red (node black a x b) y (node black c z d)
+                node bblack a x (node red (node red b y c) z d) -> node black (node black a x b) y (node black c z d)
+                node bblack (node red a x (node red b y c)) z d -> node black (node black a x b) y (node black c z d)
+                _ -> this
         
-    internal function fuse (other : Map a b) : Map a b = 
+    internal function insert (elem : Tuple a b) : Map a b = let ins tree = unify (k,v) with elem in match tree with
+        Map.Empty -> Map.Node (Color.Red) (Map.Empty) elem (Map.Empty)
+        Map.Node col a y b -> unify (k1, v1) with y in
+            if k < k1 then Map.balanceT col (ins a) y b
+            else if k == k1 then Map.Node col a elem b
+            else Map.balanceT col a y (ins b)
+                in (ins this).blacken
+
+    internal function minDel : Tuple (Tuple a b) (Map a b) = 
         let black = Color.Black
             red = Color.Red
+            empty = Map.Empty
+            node = Map.Node in match this with
+                node red empty x empty -> (x, empty)
+                node black empty x empty -> (x, Map.EEmpty)
+                node black empty x (node red empty y empty) -> (x, node black empty y empty)
+                node col a x b -> unify (x1, a1) with a.minDel in (x1, (node col a1 x b).rotate)
+        
+
+    internal function delete (elem : Tuple a b) : Map a b = unify (k,v) with elem in
+        let red = Color.Red
+            black = Color.Black
             node = Map.Node
-                in match (this, other) with
-                    (Map.Empty, _) -> other
-                    (_, Map.Empty) -> this
-                    (node black _ _ _, node red t3 y t4) -> node red (t1.fuse t3) y t4
-                    (node red t1 x t2, node black _ _ _) -> node red t1 x (t2.fuse t3)
-                    (node red t1 x t2, node red t3 y t4) -> let s = t2.fuse t3 in match s with
-                        node red s1 z s2 -> node red (node red t1 x s1) z (node red s2 y t4)
-                        node black _ _ _ -> node red t1 x (node red s y t4)
-                    (node black t1 x t2, node black t3 y t4) -> let s = t2.fuse t3 in match s with
-                        node red s1 z s2 -> node red (node black t1 x s1) z (node black s2 y t4)
-                        node black s1 z s2 -> (node black t1 x (node black s y t4)).balL
+            empty = Map.Empty
+            eempty = Map.EEmpty in let del tree = match tree with
+                empty -> empty
+                node red empty y empty -> unify (k1,v1) with y in if k1 == k then eempty else tree
+                node black (node red empty y empty) z empty -> unify (k1,v1) with z in
+                    if k < k1 then node black (del $ node red empty y empty) z empty
+                    else if k == k1 then node black empty y empty
+                    else tree
+                node col a y b -> unify (k1,v1) with y in
+                    if k < k1 then (node col (del a) y b).rotate
+                    else if k1 == k then unify (y1,b1) with b.minDel in (node col a y1 b1).rotate
+                    else (node col a y (del b)).rotate
+                        in del (this.redden)
+            
+
+    #cala litania przypadkow na rotate ahead, hope this works
+    internal function rotate : Map a b = 
+        let black = Color.Black
+            red = Color.Red
+            bblack = Color.BlackBlack
+            empty = Map.Empty
+            eempty = Map.EEmpty
+            node = Map.Node in match this with
+                node red (node bblack a x b) y (node black c z d) -> (node black (node red (node black a x b) y c) z d).balance
+                node red eempty y (node black c z d) -> (node black (node red empty y c) z d).balance
+                node red (node black a x b) y (node bblack c z d) -> (node black a x (node red b y (node black c z d))).balance
+                node red (node black a x b) y eempty -> (node black a x (node red b y empty)).balance
+                node black (node bblack a x b) y (node black c z d) -> (node bblack (node red (node black a x b) y c) z d).balance
+                node black eempty y (node black c z d) -> (node bblack (node red empty y c) z d).balance
+                node black (node black a x b) y (node bblack c z d) -> (node bblack a x (node red b y (node black c z d))).balance
+                node black (node black a x b) y eempty -> (node bblack a x (node red b y empty)).balance
+                node black (node bblack a w b) x (node red (node black c y d) z e) -> node black ((node black (node red (node black a w b) x c) y d).balance) z e
+                node black eempty x (node red (node black c y d) z e) -> node black ((node black (node red empty x c) y d).balance) z e
+                node black (node red a w (node black b x c)) y (node bblack d z e) -> node black a w ((node black b x (node red c y (node black d z e))).balance)
+                node black (node red a w (node black b x c)) y eempty -> node black a w ((node black b x (node red c y empty)).balance)
+                _ -> this

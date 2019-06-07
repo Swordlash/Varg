@@ -180,6 +180,7 @@ instance Show Expr where
   show (EGeq e1 e2) = show e1 ++ " >= " ++ show e2
   show (EEq e1 e2) = show e1 ++ " == " ++ show e2
   show (ENeq e1 e2) = show e1 ++ " /= " ++ show e2
+  show (ENeg e1) = "-"++show e1
   show (ENot e1) = "not " ++ show e1
   show (EOr e1 e2) = show e1 ++ " || " ++ show e2
   show (EAnd e1 e2) = show e1 ++ " && " ++ show e2
