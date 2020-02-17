@@ -19,7 +19,7 @@ readPrimFreeType primType =
       case M.lookup name substs of
         Nothing -> do
           parsed <- asks currentPreparsedTypeName
-          throwException $ "In declaration of " ++ parsed ++ ": unknown template parameter " ++ name
+          throwException $ "In declaration of " ++ parsed ++ ": unknown template parameter " ++ name ++ "\n"
         Just subst -> pure $ Unbound subst
     Abs.ConcreteFreeType (Abs.UIdent name) -> pure $ Concrete name []
 
@@ -47,7 +47,7 @@ bindAndLogName :: String -> PreprocessMonad ()
 bindAndLogName name = do
   bound <- gets getLastTypeParam
   modify (bindName name)
-  --liftIO $ putStrLn $ "TypeParam `" ++ name ++ "` bound to `" ++ bound
+  liftIO $ logStderr $ "TypeParam `" ++ name ++ "` bound to `" ++ bound ++ "`\n"
 
 preparseStubTypeParam :: Abs.ConstrTypeParam -> PreprocessMonad ()
 preparseStubTypeParam param =
@@ -66,7 +66,7 @@ readClassHeaders (cl:t) = do
   stubs <- gets classStubs
   (name, paramCount, deriv, impls) <- readStubs cl
   if M.member name stubs
-    then throwException $ "Multiple definition of class " ++ name
+    then throwException $ "Multiple definition of class " ++ name ++ "\n"
     else do
       modify (registerStub (name, paramCount, deriv, impls))
       readClassHeaders t
@@ -78,14 +78,14 @@ readClassHeaders (cl:t) = do
         Abs.ClassDefinition modifs (Abs.UIdent sname) isderiving isimplementing contents ->
           local
             (setPreparsedTypeName sname)
-            (do liftIO $ logStderr $ "\nReading header of class " ++ sname
+            (do liftIO $ logStderr $ "\nReading header of class " ++ sname ++ "\n"
                 superclasses <- readDeriving isderiving
                 superifaces <- readImplementing isimplementing
                 return (sname, 0, superclasses, superifaces))
         Abs.TemplateDefinition modifs (Abs.UIdent sname) typeParams isderiving isimplementing contents ->
           local
             (setPreparsedTypeName sname)
-            (do liftIO $ logStderr $ "\nReading header of template " ++ sname
+            (do liftIO $ logStderr $ "\nReading header of template " ++ sname ++ "\n"
                 mapM_ preparseStubTypeParam typeParams
                 superclasses <- readDeriving isderiving
                 superifaces <- readImplementing isimplementing

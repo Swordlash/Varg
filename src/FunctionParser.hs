@@ -41,8 +41,8 @@ parseFunction' ::
      [Abs.FunctionModifier]
   -> Abs.FunTemplateParams
   -> [Abs.ArgDef]
-  -> (LookupFunction -> HierarchyMonad TypeDef)
-  -> (LookupFunction -> HierarchyMonad Expr)
+  -> (Lookup -> HierarchyMonad TypeDef)
+  -> (Lookup -> HierarchyMonad Expr)
   -> HierarchyMonad Function
 parseFunction' modifs templateParams argdefs retfun bodyfun = do
   clsname <- asks currentParsedTypeName

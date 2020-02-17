@@ -7,6 +7,7 @@ module ErrM where
 -- the Error monad: like Maybe type with error msgs
 
 import Control.Monad (MonadPlus(..), liftM)
+import Control.Monad.Fail
 import Control.Applicative (Applicative(..), Alternative(..))
 
 data Err a = Ok a | Bad String
@@ -14,14 +15,16 @@ data Err a = Ok a | Bad String
 
 instance Monad Err where
   return      = Ok
-  fail        = Bad
   Ok a  >>= f = f a
   Bad s >>= _ = Bad s
+
+instance MonadFail Err where
+  fail = Bad
 
 instance Applicative Err where
   pure = Ok
   (Bad s) <*> _ = Bad s
-  (Ok f) <*> o  = liftM f o
+  (Ok f) <*> o  = fmap f o
 
 
 instance Functor Err where

@@ -48,9 +48,9 @@ type ClassHierarchy = S.Set Type
 
 type ClassContents = (S.Set Variant, Mapping Function)
 
-type LookupFunction = String -> Maybe String
+type Lookup = Mapping String
 
-type ConstrLookupFunction = String -> Maybe [TypeParamConstraint]
+type ConstrLookup = String -> Maybe [TypeParamConstraint]
 
 type Notifier a = a -> a
 

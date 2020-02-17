@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f7d0883039e73517e51f2d272fc2a552e8fb6d3aecbd324438daa73ac74b7b9f
+-- hash: a106ecf8269a1271b8f11947643067467ae16bf463d37be57cba40a934b147c5
 
 name:           VargInterpreter
 version:        1.0
@@ -52,7 +52,7 @@ library
       Paths_VargInterpreter
   hs-source-dirs:
       src
-  default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
+  default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances TupleSections
   build-depends:
       ansi-terminal
     , array
@@ -67,7 +67,7 @@ executable Varg
       Paths_VargInterpreter
   hs-source-dirs:
       app
-  default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
+  default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances TupleSections
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       VargInterpreter
@@ -85,7 +85,7 @@ test-suite Interpreter-test
       Paths_VargInterpreter
   hs-source-dirs:
       test
-  default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances
+  default-extensions: LambdaCase FlexibleContexts FlexibleInstances TypeSynonymInstances TupleSections
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       VargInterpreter

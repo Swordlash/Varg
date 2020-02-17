@@ -106,25 +106,19 @@ type PreprocessMonad c = VargStatefulMonad PreprocessRuntime PreprocessState c
 
 type HierarchyMonad c = VargStatefulMonad HierarchyRuntime HierarchyState c
 
-readSubstsFromCurrentStub :: HierarchyMonad LookupFunction
+readSubstsFromCurrentStub :: HierarchyMonad Lookup
 readSubstsFromCurrentStub = do
   tname <- asks currentParsedTypeName
   readSubstsFromStub tname
 
-readSubstsFromStub :: TypeName -> HierarchyMonad LookupFunction
-readSubstsFromStub tname = do
-  substs <- gets ((\(_, _, _, s) -> s) . fromJust . M.lookup tname . preparsedStubs)
-  return $ flip M.lookup substs
+readSubstsFromStub :: TypeName -> HierarchyMonad Lookup
+readSubstsFromStub tname = gets ((\(_, _, _, s) -> s) . fromJust . M.lookup tname . preparsedStubs)
 
-readFunctionSubsts :: HierarchyMonad LookupFunction
-readFunctionSubsts = do
-  substs <- gets templateFunctionSubsts
-  return $ flip M.lookup substs
+readFunctionSubsts :: HierarchyMonad Lookup
+readFunctionSubsts = gets templateFunctionSubsts
 
-combineLookups :: [a -> Maybe b] -> (a -> Maybe b)
-combineLookups lookups name =
-  let results = map ($ name) lookups
-   in fromJust <$> find isJust results
+combineLookups :: [Mapping String] -> Mapping String
+combineLookups = M.unions
 
 --lookupVariantFromType :: TypeName -> Type -> VargExceptionMonad Variant
 lookupVariantFromType name Type {qualifiedTypeName = n, typeVariants = v} =

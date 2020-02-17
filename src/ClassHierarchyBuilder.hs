@@ -24,8 +24,7 @@ parseMember (Abs.EmptyMemberDefinition (Abs.UIdent name) der) = pure $ emptyVari
 parseMember (Abs.MemberDefinition (Abs.UIdent name) der fields) =
   local
     (setParsedTypeVariant name)
-    (do parsedFields <- parseFields fields
-        return $ Variant name (parseSuperVariant der) parsedFields)
+    (Variant name (parseSuperVariant der) <$> parseFields fields)
 
 parseClassContents :: Abs.ClassContents -> HierarchyMonad ClassContents
 parseClassContents (Abs.ClassContent members fundefs) = do
@@ -41,8 +40,7 @@ parseClass classDef =
     Abs.ClassDefinition modifs (Abs.UIdent name) _ _ contents -> do
       liftIO $ logStderr $ "\nParsing class " ++ name ++ "\n"
       classModifs <- mapM readModifier modifs
-      stub <- gets (M.lookup name . preparsedStubs)
-      case stub of
+      gets (M.lookup name . preparsedStubs) >>= \case
         Just (0, deriv, impls, substs) ->
           local
             (setParsedTypeName name)
@@ -53,12 +51,11 @@ parseClass classDef =
       let paramlen = length typeParams
        in do liftIO $ logStderr $ "\nParsing template " ++ name ++ "\n"
              classModifs <- mapM readModifier modifs
-             stub <- gets (M.lookup name . preparsedStubs)
-             case stub of
+             gets (M.lookup name . preparsedStubs) >>= \case
                Just (paramlen, deriv, impls, substs) ->
                  local
                    (setParsedTypeName name)
-                   (do constrs <- mapM (registerConstrainedTypeName (`M.lookup` substs) (flip const)) typeParams
+                   (do constrs <- mapM (registerConstrainedTypeName substs (flip const)) typeParams
                        modify (\state -> foldl (flip registerTemplateParamConstraints) state constrs)
                        (variants, functions) <- parseClassContents contents
                        return $ Type name deriv impls variants paramlen (map snd constrs) functions)

@@ -25,7 +25,7 @@ nshow Abs.Op_appl   = "$"
 nshow Abs.Op_append = "++"
 
 {-
-parseFunctorial :: LookupFunction -> Abs.Functorial -> HierarchyMonad Expr
+parseFunctorial :: Lookup -> Abs.Functorial -> HierarchyMonad Expr
 parseFunctorial lookupFun funct =
   case funct of
     Abs.ThisFunctor -> pure EThis
@@ -37,7 +37,7 @@ parseFunctorial lookupFun funct =
     Abs.OperatorFunctor op -> pure $ EOperator op
 
 
-accumulateApplication :: LookupFunction -> Expr -> Abs.Arg -> HierarchyMonad Expr
+accumulateApplication :: Lookup -> Expr -> Abs.Arg -> HierarchyMonad Expr
 accumulateApplication lookupFun expr (Abs.ArgExpr argexpr) = do
   pexpr <- parseExpression lookupFun argexpr
   return $ EApply expr pexpr
@@ -52,7 +52,7 @@ accumulateApplication lookupFun expr (Abs.ArgFunc funct) =
       pexpr <- parseExpression lookupFun fexpr
       return $ EApply expr pexpr
     Abs.OperatorFunctor op -> pure $ EApply expr $ EOperator op-}
-makeList :: LookupFunction -> Expr -> Abs.Expr -> HierarchyMonad Expr
+makeList :: Lookup -> Expr -> Abs.Expr -> HierarchyMonad Expr
 makeList lookupFun head newfirst = do
   pfirst <- parseExpression lookupFun newfirst
   return $ ECons pfirst head
@@ -67,16 +67,13 @@ shiftDefinition lst rettype body =
       return (t, ELambda s td t restbody)
 
 -- TODO: zaorać tę funkcję, jest mnóstwo boilerplate
-parseExpression :: LookupFunction -> Abs.Expr -> HierarchyMonad Expr
+parseExpression :: Lookup -> Abs.Expr -> HierarchyMonad Expr
 parseExpression lookupFun expr =
   case expr of
     Abs.EInt val -> pure $ EInt val
     Abs.EReal val -> pure $ EDouble val
-    Abs.EBoolean val ->
-      pure $
-      if val == Abs.ETrue
-        then EBool True
-        else EBool False
+    Abs.EBoolean Abs.ETrue -> pure $ EBool True
+    Abs.EBoolean Abs.EFalse -> pure $ EBool False
     Abs.EChar val -> pure $ EChar val
     Abs.EWild -> pure EWild
     Abs.EThis -> pure EThis
@@ -99,17 +96,16 @@ parseExpression lookupFun expr =
       return $ ELet name shifted tdef pinexpr
     Abs.EDefinitionsList [h] expr -> parseExpression lookupFun $ Abs.EDefinition h expr
     Abs.EDefinitionsList (h:t) expr -> parseExpression lookupFun (Abs.EDefinition h (Abs.EDefinitionsList t expr))
-    Abs.EUnify e1 e2 ine3 -> do
-      p1 <- parseExpression lookupFun e1
-      p2 <- parseExpression lookupFun e2
-      p3 <- parseExpression lookupFun ine3
-      return $ EUnify p1 p2 p3
+    Abs.EUnify e1 e2 ine3 -> 
+      EUnify 
+      <$> parseExpression lookupFun e1 
+      <*> parseExpression lookupFun e2 
+      <*> parseExpression lookupFun ine3
     Abs.ELambda [argdef] typedef body --TODO: allow inferred typedefs
-     -> do
-      (name, pargtdef) <- parseArgDef lookupFun argdef
-      rettdef <- parseTypeDef lookupFun typedef
-      pbody <- parseExpression lookupFun body
-      return $ ELambda name pargtdef rettdef pbody
+     -> uncurry ELambda 
+      <$> parseArgDef lookupFun argdef
+      <*> parseTypeDef lookupFun typedef
+      <*> parseExpression lookupFun body
     Abs.ELambda (h:t) typedef body -> do
       (name, pargtdef) <- parseArgDef lookupFun h
       pbody <- parseExpression lookupFun (Abs.ELambda t typedef body)
@@ -118,144 +114,123 @@ parseExpression lookupFun expr =
       return $ ELambda name pargtdef frettype pbody
     Abs.EInferredLambda t body -> parseExpression lookupFun $ Abs.ELambda t (Abs.ConcreteType (Abs.UIdent "?") []) body
       --FIXME : change that to some AnyType
-    Abs.EApply expr (Abs.EMember (Abs.MFun name)) -> do
-      pexpr <- parseExpression lookupFun expr
-      return $ EMember pexpr (drop 1 name)
-    Abs.EApply func arg -> do
-      pfunc <- parseExpression lookupFun func
-      parg <- parseExpression lookupFun arg
-      return $ EApply pfunc parg
-    Abs.EList lelems -> do
-      let elems = reverse $ map (\(Abs.EListElem expr) -> expr) lelems
+    Abs.EApply expr (Abs.EMember (Abs.MFun name)) -> flip EMember (drop 1 name) <$> parseExpression lookupFun expr
+    Abs.EApply func arg -> 
+      EApply
+      <$> parseExpression lookupFun func
+      <*> parseExpression lookupFun arg
+    Abs.EList lelems -> let elems = reverse $ map (\(Abs.EListElem expr) -> expr) lelems in
       foldM (makeList lookupFun) (EMember (EClass "List") "Empty") elems
-    Abs.ERange beg end -> do
-      bege <- parseExpression lookupFun beg
-      ende <- parseExpression lookupFun end
-      return $ ERange bege ende
-    Abs.ERangeFr beg -> do
-      bege <- parseExpression lookupFun beg
-      return $ ERange bege EWild
+    Abs.ERange beg end -> 
+      ERange 
+      <$> parseExpression lookupFun beg
+      <*> parseExpression lookupFun end
+    Abs.ERangeFr beg -> flip ERange EWild <$> parseExpression lookupFun beg
     Abs.EEmptyList -> pure $ EMember (EClass "List") "Empty"
-    Abs.EAppend e1 e2 -> do
-      p1 <- parseExpression lookupFun e1
-      p2 <- parseExpression lookupFun e2
-      return $ EAppend p1 p2
-    Abs.EIfThenElse expr1 expr2 expr3 -> do
-      pe1 <- parseExpression lookupFun expr1
-      pe2 <- parseExpression lookupFun expr2
-      pe3 <- parseExpression lookupFun expr3
-      return $ EIfThenElse pe1 pe2 pe3
+    Abs.EAppend e1 e2 -> 
+      EAppend 
+      <$> parseExpression lookupFun e1
+      <*> parseExpression lookupFun e2
+    Abs.EIfThenElse expr1 expr2 expr3 -> 
+      EIfThenElse 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+      <*> parseExpression lookupFun expr3
     Abs.EString str -> pure $ EString str
-    Abs.ECompose expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EComp p1 p2
-    Abs.ECons hd tl -> do
-      phd <- parseExpression lookupFun hd
-      ptl <- parseExpression lookupFun tl
-      return $ ECons phd ptl
-    Abs.ESCons hd tl -> do
-      phd <- parseExpression lookupFun hd
-      ptl <- parseExpression lookupFun tl
-      return $ ESCons phd ptl
-    Abs.EOp expr1 (Abs.Op name) expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EApply (EMember p1 name) p2
+    Abs.ECompose expr1 expr2 -> 
+      EComp
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.ECons hd tl -> 
+      ECons 
+      <$> parseExpression lookupFun hd
+      <*> parseExpression lookupFun tl
+    Abs.ESCons hd tl ->  
+      ESCons 
+      <$> parseExpression lookupFun hd
+      <*> parseExpression lookupFun tl
+    Abs.EOp expr1 (Abs.Op name) expr2 -> 
+      (\x y -> EApply (EMember x name) y)
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
     Abs.EMemberAsFun (Abs.LIdent name) ->
       parseExpression lookupFun $
       Abs.ELambda
         [Abs.InferredArgumentDef (Abs.LIdent "x")]
         (Abs.ConcreteType (Abs.UIdent "Any") [])
         (Abs.EApply (Abs.EVar $ Abs.LIdent "x") (Abs.EMember (Abs.MFun $ "." ++ name)))
-    Abs.ELambdaMatch matchclauses -> do
-      pclauses <-
-        mapM
-          (\(Abs.IMatchClause e1 e2) -> do
-             pe1 <- parseExpression lookupFun e1
-             pe2 <- parseExpression lookupFun e2
-             return (pe1, pe2))
-          matchclauses
-      return $ ELambda "matchvar" AnyType AnyType (EMatch (EVar "matchvar") pclauses) -- FIXME: what about types?
-    Abs.EMatch mexpr matchclauses -> do
-      pm <- parseExpression lookupFun mexpr
-      pclauses <-
-        mapM
-          (\(Abs.IMatchClause e1 e2) -> do
-             pe1 <- parseExpression lookupFun e1
-             pe2 <- parseExpression lookupFun e2
-             return (pe1, pe2))
-          matchclauses
-      return $ EMatch pm pclauses
-    Abs.ETuple front exprs -> do
-      p1 <- parseExpression lookupFun front
-      rest <- mapM (\(Abs.EListElem expr) -> parseExpression lookupFun expr) exprs
-      return $ ETuple $ p1 : rest
+    Abs.ELambdaMatch matchclauses -> 
+      (\pclauses -> ELambda "matchvar" AnyType AnyType (EMatch (EVar "matchvar") pclauses))
+      <$> mapM (\(Abs.IMatchClause e1 e2) -> (,) <$> parseExpression lookupFun e1 <*> parseExpression lookupFun e2) matchclauses 
+      -- FIXME: what about types?
+    Abs.EMatch mexpr matchclauses -> 
+      EMatch
+      <$> parseExpression lookupFun mexpr
+      <*> mapM (\(Abs.IMatchClause e1 e2) -> (,) <$> parseExpression lookupFun e1 <*> parseExpression lookupFun e2) matchclauses
+    Abs.ETuple front exprs -> 
+      ETuple <$> ((:) <$> parseExpression lookupFun front <*> mapM (\(Abs.EListElem expr) -> parseExpression lookupFun expr) exprs)
+    
     --arithmetic exprs
-    Abs.ENot expr -> do
-      p <- parseExpression lookupFun expr
-      return $ ENot p
-    Abs.EMod expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EMod p1 p2
-    Abs.EAdd expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EAdd p1 p2
-    Abs.ESub expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ ESub p1 p2
-    Abs.EOr expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EOr p1 p2
-    Abs.EAnd expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EAnd p1 p2
-    Abs.EMul expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EMul p1 p2
-    Abs.EDiv expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EDiv p1 p2
-    Abs.EPow expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EPow p1 p2
-    Abs.ELt expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ ELt p1 p2
-    Abs.EGt expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EGt p1 p2
-    Abs.ELeq expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ ELeq p1 p2
-    Abs.EGeq expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EGeq p1 p2
-    Abs.EEq expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EEq p1 p2
-    Abs.EAppl expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ EApply p1 p2
-    Abs.ENeq expr1 expr2 -> do
-      p1 <- parseExpression lookupFun expr1
-      p2 <- parseExpression lookupFun expr2
-      return $ ENeq p1 p2
-    Abs.ENeg expr -> do
-      p <- parseExpression lookupFun expr
-      return $ ENeg p
+    Abs.ENot expr -> ENot <$> parseExpression lookupFun expr
+    Abs.EMod expr1 expr2 -> 
+      EMod 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EAdd expr1 expr2 -> 
+      EAdd
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.ESub expr1 expr2 -> 
+      ESub
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EOr expr1 expr2 -> 
+      EOr 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EAnd expr1 expr2 -> 
+      EAnd 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EMul expr1 expr2 -> 
+      EMul 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EDiv expr1 expr2 -> 
+      EDiv 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EPow expr1 expr2 -> 
+      EPow 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.ELt expr1 expr2 -> 
+      ELt 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EGt expr1 expr2 -> 
+      EGt 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.ELeq expr1 expr2 -> 
+      ELeq 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EGeq expr1 expr2 -> 
+      EGeq 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EEq expr1 expr2 -> 
+      EEq 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.EAppl expr1 expr2 -> 
+      EApply 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.ENeq expr1 expr2 -> 
+      ENeq 
+      <$> parseExpression lookupFun expr1
+      <*> parseExpression lookupFun expr2
+    Abs.ENeg expr -> ENeg <$> parseExpression lookupFun expr
     _ -> throwException $ "Cannot parse " ++ show expr ++ ". Not implemented."
